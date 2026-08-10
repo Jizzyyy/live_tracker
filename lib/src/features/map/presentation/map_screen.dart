@@ -5,6 +5,8 @@ import 'package:latlong2/latlong.dart';
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
 
+  static const _jakarta = LatLng(-6.200000, 106.816666);
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -25,7 +27,7 @@ class MapScreen extends StatelessWidget {
       ),
       body: FlutterMap(
         options: const MapOptions(
-          initialCenter: LatLng(-6.200000, 106.816666),
+          initialCenter: _jakarta,
           initialZoom: 13.0,
         ),
         children: [
@@ -33,7 +35,26 @@ class MapScreen extends StatelessWidget {
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             userAgentPackageName: 'com.example.live_tracker',
           ),
+          MarkerLayer(
+            markers: [
+              Marker(
+                point: _jakarta,
+                width: 40,
+                height: 40,
+                child: Icon(
+                  Icons.location_on,
+                  color: colorScheme.primary,
+                  size: 40,
+                ),
+              ),
+            ],
+          ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        tooltip: 'My Location',
+        child: const Icon(Icons.my_location),
       ),
     );
   }
