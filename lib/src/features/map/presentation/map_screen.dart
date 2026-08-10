@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'widgets/map_fab.dart';
 
 class MapScreen extends StatelessWidget {
   const MapScreen({super.key});
@@ -54,11 +55,7 @@ class MapScreen extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        tooltip: 'My Location',
-        child: const Icon(Icons.my_location),
-      ),
+      floatingActionButton: const MapFab(),
     );
   }
 }
