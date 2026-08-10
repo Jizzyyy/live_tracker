@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'src/core/app_theme.dart';
-import 'src/features/map/presentation/map_screen.dart';
+import 'src/features/splash/presentation/splash_screen.dart';
 
 void main() {
   runApp(
@@ -21,7 +21,7 @@ class LiveTrackerApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      home: const MapScreen(),
+      home: const SplashScreen(),
     );
   }
 }
