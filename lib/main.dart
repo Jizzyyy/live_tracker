@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'src/features/map/presentation/map_screen.dart';
 
 void main() {
-  runApp(const LiveTrackerApp());
+  runApp(
+    const ProviderScope(
+      child: LiveTrackerApp(),
+    ),
+  );
 }
 
 class LiveTrackerApp extends StatelessWidget {
