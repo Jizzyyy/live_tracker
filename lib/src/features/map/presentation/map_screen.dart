@@ -7,11 +7,25 @@ class MapScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Live Tracker')),
+      appBar: AppBar(
+        leading: Icon(Icons.track_changes, color: colorScheme.primary),
+        title: const Text(
+          'Live Tracker',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () {},
+          ),
+        ],
+      ),
       body: FlutterMap(
         options: const MapOptions(
-          initialCenter: LatLng(-6.200000, 106.816666), // Jakarta
+          initialCenter: LatLng(-6.200000, 106.816666),
           initialZoom: 13.0,
         ),
         children: [
