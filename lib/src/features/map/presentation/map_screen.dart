@@ -49,6 +49,9 @@ class MapScreen extends StatelessWidget {
               ),
             ],
           ),
+          const SimpleAttributionWidget(
+            source: Text('OpenStreetMap contributors'),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
