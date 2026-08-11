@@ -7,6 +7,7 @@ Real-time location sharing app built with Flutter.
 - **Framework:** Flutter
 - **State Management:** Riverpod
 - **Maps:** OpenStreetMap via `flutter_map`
+- **GPS:** Geolocator
 - **Architecture:** Feature-first
 
 ## Getting Started
@@ -21,6 +22,9 @@ flutter run
 - [x] Map rendering (OSM)
 - [x] Custom Material 3 theme
 - [x] Splash screen
-- [ ] GPS location tracking
+- [x] GPS location tracking
+- [x] Live position marker
+- [x] Auto-center on first fix
 - [ ] Real-time position sharing (WebSocket)
 - [ ] Group tracking
+- [ ] Route polyline
