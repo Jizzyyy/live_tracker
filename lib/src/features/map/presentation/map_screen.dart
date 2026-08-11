@@ -14,6 +14,7 @@ class MapScreen extends ConsumerStatefulWidget {
 
 class _MapScreenState extends ConsumerState<MapScreen> {
   final _mapController = MapController();
+  bool _hasCenteredOnce = false;
 
   static const _jakarta = LatLng(-6.200000, 106.816666);
 
@@ -21,6 +22,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final posAsync = ref.watch(positionStreamProvider);
+
+    // Auto-center on first GPS fix
+    ref.listen(positionStreamProvider, (prev, next) {
+      if (!_hasCenteredOnce && next.hasValue) {
+        final pos = next.value!;
+        _mapController.move(LatLng(pos.latitude, pos.longitude), 16);
+        _hasCenteredOnce = true;
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
