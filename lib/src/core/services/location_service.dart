@@ -1,26 +1,44 @@
 import 'package:geolocator/geolocator.dart';
 
-/// Ensures GPS is enabled and permission is granted.
-/// Returns true when location is usable.
-Future<bool> ensureLocationPermission() async {
+/// Result of a permission check with a user-friendly message.
+class PermissionResult {
+  const PermissionResult({required this.granted, this.message});
+  final bool granted;
+  final String? message;
+}
+
+/// Checks GPS service and permission status.
+/// Returns [PermissionResult] with a human-readable message on failure.
+Future<PermissionResult> ensureLocationPermission() async {
   if (!await Geolocator.isLocationServiceEnabled()) {
     await Geolocator.openLocationSettings();
-    return false;
+    return const PermissionResult(
+      granted: false,
+      message: 'GPS tidak aktif. Silakan nyalakan GPS.',
+    );
   }
 
   LocationPermission permission = await Geolocator.checkPermission();
 
   if (permission == LocationPermission.denied) {
     permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied) return false;
+    if (permission == LocationPermission.denied) {
+      return const PermissionResult(
+        granted: false,
+        message: 'Izin lokasi ditolak.',
+      );
+    }
   }
 
   if (permission == LocationPermission.deniedForever) {
     await Geolocator.openAppSettings();
-    return false;
+    return const PermissionResult(
+      granted: false,
+      message: 'Izin lokasi diblokir permanen. Buka pengaturan untuk mengizinkan.',
+    );
   }
 
-  return true;
+  return const PermissionResult(granted: true);
 }
 
 /// Returns a stream of GPS positions, updating when user moves >= 5 meters.
