@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
+import '../../../core/constants.dart';
 import '../providers/location_provider.dart';
 import 'widgets/gps_signal_indicator.dart';
 import 'widgets/location_info_card.dart';
@@ -20,8 +21,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   final _mapController = MapController();
   bool _hasCenteredOnce = false;
 
-  static const _jakarta = LatLng(-6.200000, 106.816666);
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -31,7 +30,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     ref.listen(positionStreamProvider, (prev, next) {
       if (!_hasCenteredOnce && next.hasValue) {
         final pos = next.value!;
-        _mapController.move(LatLng(pos.latitude, pos.longitude), 16);
+        _mapController.move(
+          LatLng(pos.latitude, pos.longitude),
+          MapDefaults.focusedZoom,
+        );
         _hasCenteredOnce = true;
       }
     });
@@ -56,13 +58,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           FlutterMap(
             mapController: _mapController,
             options: const MapOptions(
-              initialCenter: _jakarta,
-              initialZoom: 13.0,
+              initialCenter: MapDefaults.initialCenter,
+              initialZoom: MapDefaults.initialZoom,
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.live_tracker',
+                urlTemplate: MapDefaults.tileUrl,
+                userAgentPackageName: MapDefaults.packageName,
               ),
               MarkerLayer(
                 markers: [

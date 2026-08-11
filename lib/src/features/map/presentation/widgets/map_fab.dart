@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:latlong2/latlong.dart';
+import '../../../../core/constants.dart';
 import '../../providers/location_provider.dart';
 
 class MapFab extends ConsumerWidget {
@@ -16,7 +16,7 @@ class MapFab extends ConsumerWidget {
     return FloatingActionButton(
       onPressed: () {
         if (currentLatLng != null && mapController != null) {
-          mapController!.move(currentLatLng, 16);
+          mapController!.move(currentLatLng, MapDefaults.focusedZoom);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
