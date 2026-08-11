@@ -46,49 +46,96 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ),
         ],
       ),
-      body: FlutterMap(
-        mapController: _mapController,
-        options: const MapOptions(
-          initialCenter: _jakarta,
-          initialZoom: 13.0,
-        ),
+      body: Stack(
         children: [
-          TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.example.live_tracker',
-          ),
-          MarkerLayer(
-            markers: [
-              ...posAsync.when(
-                data: (pos) => [
-                  Marker(
-                    point: LatLng(pos.latitude, pos.longitude),
-                    width: 24,
-                    height: 24,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
-                        boxShadow: [
-                          BoxShadow(
-                            color: colorScheme.primary.withOpacity(0.3),
-                            blurRadius: 8,
-                            spreadRadius: 2,
+          FlutterMap(
+            mapController: _mapController,
+            options: const MapOptions(
+              initialCenter: _jakarta,
+              initialZoom: 13.0,
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.example.live_tracker',
+              ),
+              MarkerLayer(
+                markers: [
+                  ...posAsync.when(
+                    data: (pos) => [
+                      Marker(
+                        point: LatLng(pos.latitude, pos.longitude),
+                        width: 24,
+                        height: 24,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: colorScheme.primary.withOpacity(0.3),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
+                    loading: () => [],
+                    error: (_, __) => [],
                   ),
                 ],
-                loading: () => [],
-                error: (_, __) => [],
+              ),
+              const SimpleAttributionWidget(
+                source: Text('OpenStreetMap contributors'),
               ),
             ],
           ),
-          const SimpleAttributionWidget(
-            source: Text('OpenStreetMap contributors'),
-          ),
+          // Loading indicator while acquiring GPS
+          if (posAsync.isLoading)
+            Positioned(
+              top: 16,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Mencari sinyal GPS...',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
       floatingActionButton: MapFab(mapController: _mapController),
