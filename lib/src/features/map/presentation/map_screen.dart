@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import '../providers/location_provider.dart';
 import 'widgets/location_info_card.dart';
 import 'widgets/map_fab.dart';
+import 'widgets/zoom_controls.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -95,6 +96,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ],
           ),
           const LocationInfoCard(),
+          Positioned(
+            right: 16,
+            top: 16,
+            child: ZoomControls(mapController: _mapController),
+          ),
         ],
       ),
       floatingActionButton: MapFab(mapController: _mapController),
