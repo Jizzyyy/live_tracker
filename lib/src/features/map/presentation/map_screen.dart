@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import '../providers/location_provider.dart';
+import 'widgets/gps_signal_indicator.dart';
 import 'widgets/location_info_card.dart';
 import 'widgets/map_fab.dart';
 import 'widgets/zoom_controls.dart';
@@ -42,6 +43,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
         actions: [
+          const GpsSignalIndicator(),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {},
