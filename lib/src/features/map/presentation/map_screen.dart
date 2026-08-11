@@ -6,6 +6,7 @@ import '../providers/location_provider.dart';
 import 'widgets/gps_signal_indicator.dart';
 import 'widgets/location_info_card.dart';
 import 'widgets/map_fab.dart';
+import 'widgets/user_location_marker.dart';
 import 'widgets/zoom_controls.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
@@ -71,20 +72,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                         point: LatLng(pos.latitude, pos.longitude),
                         width: 24,
                         height: 24,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3),
-                            boxShadow: [
-                              BoxShadow(
-                                color: colorScheme.primary.withOpacity(0.3),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                          ),
-                        ),
+                        child: const UserLocationMarker(),
                       ),
                     ],
                     loading: () => [],
