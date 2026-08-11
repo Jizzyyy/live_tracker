@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
+import '../providers/location_provider.dart';
 import 'widgets/map_fab.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
@@ -19,6 +20,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final posAsync = ref.watch(positionStreamProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -47,15 +49,30 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ),
           MarkerLayer(
             markers: [
-              Marker(
-                point: _jakarta,
-                width: 40,
-                height: 40,
-                child: Icon(
-                  Icons.location_on,
-                  color: colorScheme.primary,
-                  size: 40,
-                ),
+              ...posAsync.when(
+                data: (pos) => [
+                  Marker(
+                    point: LatLng(pos.latitude, pos.longitude),
+                    width: 24,
+                    height: 24,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 3),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colorScheme.primary.withOpacity(0.3),
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+                loading: () => [],
+                error: (_, __) => [],
               ),
             ],
           ),
