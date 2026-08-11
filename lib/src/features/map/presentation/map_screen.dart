@@ -81,7 +81,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ),
         ],
       ),
-      floatingActionButton: const MapFab(),
+      floatingActionButton: MapFab(mapController: _mapController),
     );
   }
 }
