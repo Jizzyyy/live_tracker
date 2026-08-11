@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'widgets/map_fab.dart';
 
-class MapScreen extends StatelessWidget {
+class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
+
+  @override
+  ConsumerState<MapScreen> createState() => _MapScreenState();
+}
+
+class _MapScreenState extends ConsumerState<MapScreen> {
+  final _mapController = MapController();
 
   static const _jakarta = LatLng(-6.200000, 106.816666);
 
@@ -27,6 +35,7 @@ class MapScreen extends StatelessWidget {
         ],
       ),
       body: FlutterMap(
+        mapController: _mapController,
         options: const MapOptions(
           initialCenter: _jakarta,
           initialZoom: 13.0,
