@@ -3,6 +3,10 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/constants.dart';
+import '../../room/presentation/room_bottom_sheet.dart';
+import '../../room/presentation/widgets/member_list_drawer.dart';
+import '../../room/presentation/widgets/room_info_bar.dart';
+import '../../room/providers/room_provider.dart';
 import '../providers/location_provider.dart';
 import 'widgets/gps_signal_indicator.dart';
 import 'widgets/location_info_card.dart';
@@ -22,9 +26,28 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   bool _hasCenteredOnce = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Connect to WebSocket server on init
+    // Use 10.0.2.2 for Android emulator to access localhost
+    // Use localhost or your LAN IP for iOS simulator / real device
+    Future.microtask(() => ref.read(roomProvider.notifier).connect('ws://10.0.2.2:8080'));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final posAsync = ref.watch(positionStreamProvider);
+
+    final roomState = ref.watch(roomProvider);
+
+    // Send GPS to WebSocket room when location changes
+    ref.listen(positionStreamProvider, (prev, next) {
+      if (next.hasValue) {
+        final pos = next.value!;
+        ref.read(roomProvider.notifier).sendPosition(pos.latitude, pos.longitude);
+      }
+    });
 
     // Auto-center on first GPS fix
     ref.listen(positionStreamProvider, (prev, next) {
@@ -47,13 +70,34 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         ),
         actions: [
           const GpsSignalIndicator(),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {},
+          Builder(
+            builder: (context) => IconButton(
+              icon: Badge(
+                isLabelVisible: roomState.status == RoomStatus.inRoom,
+                label: Text('${roomState.members.length}'),
+                child: const Icon(Icons.group_outlined),
+              ),
+              onPressed: () {
+                if (roomState.status == RoomStatus.inRoom) {
+                  Scaffold.of(context).openEndDrawer();
+                } else {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (context) => const RoomBottomSheet(),
+                  );
+                }
+              },
+            ),
           ),
         ],
       ),
-      body: Stack(
+      endDrawer: const MemberListDrawer(),
+      body: Column(
+        children: [
+          const RoomInfoBar(),
+          Expanded(
+            child: Stack(
         children: [
           FlutterMap(
             mapController: _mapController,
@@ -88,12 +132,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ],
           ),
           const LocationInfoCard(),
-          Positioned(
-            right: 16,
-            top: 16,
-            child: ZoomControls(mapController: _mapController),
-          ),
-        ],
+            Positioned(
+              right: 16,
+              top: 16,
+              child: ZoomControls(mapController: _mapController),
+            ),
+          ],
+        ),
+        ),
+      ],
       ),
       floatingActionButton: MapFab(mapController: _mapController),
     );
