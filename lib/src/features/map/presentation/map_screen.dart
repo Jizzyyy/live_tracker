@@ -30,9 +30,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   void initState() {
     super.initState();
     // Connect to WebSocket server on init
-    // Use 10.0.2.2 for Android emulator to access localhost
-    // Use localhost or your LAN IP for iOS simulator / real device
-    Future.microtask(() => ref.read(roomProvider.notifier).connect('ws://10.0.2.2:8080'));
+    // Use localhost or your LAN IP for physical devices
+    Future.microtask(() => ref.read(roomProvider.notifier).connect('ws://192.168.18.13:8080'));
   }
 
   @override
