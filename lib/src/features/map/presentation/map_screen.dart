@@ -11,6 +11,7 @@ import '../providers/location_provider.dart';
 import 'widgets/gps_signal_indicator.dart';
 import 'widgets/location_info_card.dart';
 import 'widgets/map_fab.dart';
+import 'widgets/member_markers_layer.dart';
 import 'widgets/user_location_marker.dart';
 import 'widgets/zoom_controls.dart';
 
@@ -110,6 +111,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 urlTemplate: MapDefaults.tileUrl,
                 userAgentPackageName: MapDefaults.packageName,
               ),
+              const MemberMarkersLayer(),
               MarkerLayer(
                 markers: [
                   ...posAsync.when(
