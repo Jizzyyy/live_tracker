@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../providers/room_provider.dart';
 
 class RoomBottomSheet extends ConsumerStatefulWidget {
@@ -53,56 +54,65 @@ class _RoomBottomSheetState extends ConsumerState<RoomBottomSheet> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          if (roomState.status == RoomStatus.connecting)
-            const Center(child: CircularProgressIndicator())
-          else ...[
-            FilledButton.icon(
-              onPressed: () {
-                ref.read(roomProvider.notifier).createRoom();
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('Buat Room Baru'),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Row(
-                children: [
-                  Expanded(child: Divider()),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('ATAU', style: TextStyle(color: Colors.grey)),
+          Skeletonizer(
+            enabled: roomState.status == RoomStatus.connecting,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                FilledButton.icon(
+                  onPressed: roomState.status == RoomStatus.connecting
+                      ? null
+                      : () {
+                          ref.read(roomProvider.notifier).createRoom();
+                        },
+                  icon: const Icon(Icons.add),
+                  label: const Text('Buat Room Baru'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  Expanded(child: Divider()),
-                ],
-              ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Row(
+                    children: [
+                      Expanded(child: Divider()),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Text('ATAU', style: TextStyle(color: Colors.grey)),
+                      ),
+                      Expanded(child: Divider()),
+                    ],
+                  ),
+                ),
+                TextField(
+                  controller: _codeController,
+                  enabled: roomState.status != RoomStatus.connecting,
+                  decoration: const InputDecoration(
+                    labelText: 'Kode Room',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.group),
+                  ),
+                  textCapitalization: TextCapitalization.characters,
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: roomState.status == RoomStatus.connecting
+                      ? null
+                      : () {
+                          final code = _codeController.text.trim();
+                          if (code.isNotEmpty) {
+                            ref.read(roomProvider.notifier).joinRoom(code);
+                          }
+                        },
+                  icon: const Icon(Icons.login),
+                  label: const Text('Gabung Room'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              ],
             ),
-            TextField(
-              controller: _codeController,
-              decoration: const InputDecoration(
-                labelText: 'Kode Room',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.group),
-              ),
-              textCapitalization: TextCapitalization.characters,
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: () {
-                final code = _codeController.text.trim();
-                if (code.isNotEmpty) {
-                  ref.read(roomProvider.notifier).joinRoom(code);
-                }
-              },
-              icon: const Icon(Icons.login),
-              label: const Text('Gabung Room'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-            ),
-          ],
+          ),
           const SizedBox(height: 24),
         ],
       ),
