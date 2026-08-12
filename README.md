@@ -25,6 +25,6 @@ flutter run
 - [x] GPS location tracking
 - [x] Live position marker
 - [x] Auto-center on first fix
-- [ ] Real-time position sharing (WebSocket)
-- [ ] Group tracking
+- [x] Real-time position sharing (WebSocket)
+- [x] Group tracking
 - [ ] Route polyline
