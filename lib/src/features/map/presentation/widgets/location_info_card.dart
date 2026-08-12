@@ -40,11 +40,13 @@ class LocationInfoCard extends ConsumerWidget {
                                 data: (pos) =>
                                     '${pos.latitude.toStringAsFixed(6)}, ${pos.longitude.toStringAsFixed(6)}',
                                 loading: () => 'Mencari lokasi...',
-                                error: (_, __) => 'GPS tidak tersedia',
+                                error: (e, _) => e.toString().replaceFirst('Exception: ', ''),
                               ),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -54,7 +56,7 @@ class LocationInfoCard extends ConsumerWidget {
                                 data: (pos) =>
                                     'Akurasi: ${pos.accuracy.toStringAsFixed(0)}m',
                                 loading: () => 'Akurasi: --m',
-                                error: (_, __) => 'Periksa izin lokasi',
+                                error: (_, __) => 'Periksa izin lokasi di pengaturan',
                               ),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
