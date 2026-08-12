@@ -7,6 +7,8 @@ import '../../room/presentation/room_bottom_sheet.dart';
 import '../../room/presentation/widgets/member_list_drawer.dart';
 import '../../room/presentation/widgets/room_info_bar.dart';
 import '../../room/providers/room_provider.dart';
+import '../../settings/presentation/settings_screen.dart';
+import '../../settings/providers/settings_provider.dart';
 import '../providers/location_provider.dart';
 import 'widgets/gps_signal_indicator.dart';
 import 'widgets/location_info_card.dart';
@@ -29,9 +31,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   @override
   void initState() {
     super.initState();
-    // Connect to WebSocket server on init
-    // Use localhost or your LAN IP for physical devices
-    Future.microtask(() => ref.read(roomProvider.notifier).connect('ws://192.168.18.13:8080'));
+    Future.microtask(() {
+      final serverUrl = ref.read(settingsProvider);
+      ref.read(roomProvider.notifier).connect(serverUrl);
+    });
   }
 
   @override
@@ -70,6 +73,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         ),
         actions: [
           const GpsSignalIndicator(),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+          ),
           Builder(
             builder: (context) => IconButton(
               icon: Badge(
