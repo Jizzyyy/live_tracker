@@ -23,7 +23,7 @@ class MemberRouteLayer extends ConsumerWidget {
       return Polyline(
         points: route,
         strokeWidth: 4.0,
-        color: color.withOpacity(0.5),
+        color: color.withValues(alpha: 0.5),
         pattern: const StrokePattern.dotted(),
       );
     }).toList();

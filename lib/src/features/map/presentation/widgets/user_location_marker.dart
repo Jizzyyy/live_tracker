@@ -14,7 +14,7 @@ class UserLocationMarker extends StatelessWidget {
         border: Border.all(color: Colors.white, width: 3),
         boxShadow: [
           BoxShadow(
-            color: primary.withOpacity(0.3),
+            color: primary.withValues(alpha: 0.3),
             blurRadius: 8,
             spreadRadius: 2,
           ),

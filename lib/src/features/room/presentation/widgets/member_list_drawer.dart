@@ -17,20 +17,20 @@ class MemberListDrawer extends ConsumerWidget {
             decoration: BoxDecoration(color: colorScheme.primary),
             child: Row(
               children: [
-                const Icon(Icons.group, color: Colors.white, size: 40),
+                Icon(Icons.group, color: colorScheme.onPrimary, size: 40),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
+                      Text(
                         'Anggota Room',
-                        style: TextStyle(color: Colors.white, fontSize: 18),
+                        style: TextStyle(color: colorScheme.onPrimary, fontSize: 18),
                       ),
                       Text(
                         'Kode: ${roomState.roomCode ?? '-'}',
-                        style: const TextStyle(color: Colors.white70),
+                        style: TextStyle(color: colorScheme.onPrimary.withValues(alpha: 0.7)),
                       ),
                     ],
                   ),
@@ -49,18 +49,19 @@ class MemberListDrawer extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final memberId = roomState.members[index];
                   final isMe = memberId == roomState.userId;
+                  final initials = memberId.substring(0, memberId.length.clamp(0, 2)).toUpperCase();
                   
                   return ListTile(
                     leading: CircleAvatar(
                       backgroundColor: colorScheme.primaryContainer,
                       child: Text(
-                        memberId.substring(0, 2).toUpperCase(),
+                        initials,
                         style: TextStyle(color: colorScheme.onPrimaryContainer),
                       ),
                     ),
                     title: Text(isMe ? 'Kamu ($memberId)' : 'User $memberId'),
                     subtitle: const Text('Online'),
-                    trailing: const Icon(Icons.circle, color: Colors.green, size: 12),
+                    trailing: Icon(Icons.circle, color: colorScheme.tertiary, size: 12),
                   );
                 },
               ),
@@ -73,11 +74,11 @@ class MemberListDrawer extends ConsumerWidget {
                   ref.read(roomProvider.notifier).leaveRoom();
                   Navigator.of(context).pop();
                 },
-                icon: const Icon(Icons.exit_to_app, color: Colors.red),
-                label: const Text('Keluar Room', style: TextStyle(color: Colors.red)),
+                icon: Icon(Icons.exit_to_app, color: colorScheme.error),
+                label: Text('Keluar Room', style: TextStyle(color: colorScheme.error)),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
-                  side: const BorderSide(color: Colors.red),
+                  side: BorderSide(color: colorScheme.error),
                 ),
               ),
             ),

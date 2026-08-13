@@ -27,20 +27,21 @@ class MemberMarkersLayer extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(4),
                   border: Border.all(color: color, width: 1),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4),
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4),
                   ],
                 ),
                 child: Text(
-                  userId,
+                  userId.substring(0, userId.length.clamp(0, 6)),
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: color,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(height: 4),
@@ -53,7 +54,7 @@ class MemberMarkersLayer extends ConsumerWidget {
                   border: Border.all(color: Colors.white, width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: color.withOpacity(0.4),
+                      color: color.withValues(alpha: 0.4),
                       blurRadius: 6,
                       spreadRadius: 2,
                     ),
