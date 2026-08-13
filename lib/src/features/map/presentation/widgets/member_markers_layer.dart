@@ -15,7 +15,7 @@ class MemberMarkersLayer extends ConsumerWidget {
       markers: memberPositions.entries.map((entry) {
         final userId = entry.key;
         final latLng = entry.value;
-        final color = _getColorForUser(userId);
+        final color = getColorForUser(userId);
 
         return Marker(
           point: latLng,
@@ -71,7 +71,7 @@ class MemberMarkersLayer extends ConsumerWidget {
   }
 
   // Generate consistent color based on user ID string hash
-  Color _getColorForUser(String userId) {
+  static Color getColorForUser(String userId) {
     final colors = [
       Colors.red.shade600,
       Colors.green.shade600,
