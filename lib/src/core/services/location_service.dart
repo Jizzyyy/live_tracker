@@ -1,4 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geolocator_android/geolocator_android.dart';
+import 'package:geolocator_apple/geolocator_apple.dart';
 
 /// Result of a permission check with a user-friendly message.
 class PermissionResult {
@@ -41,12 +44,42 @@ Future<PermissionResult> ensureLocationPermission() async {
   return const PermissionResult(granted: true);
 }
 
-/// Returns a stream of GPS positions, updating when user moves >= 5 meters.
-Stream<Position> positionStream() {
-  return Geolocator.getPositionStream(
-    locationSettings: const LocationSettings(
+/// Returns platform-optimized location settings with foreground service
+/// to keep GPS alive when user locks their phone screen.
+LocationSettings _buildLocationSettings() {
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    return AndroidSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 5,
-    ),
+      intervalDuration: const Duration(seconds: 2),
+      foregroundNotificationConfig: const ForegroundNotificationConfig(
+        notificationTitle: 'Live Tracker aktif',
+        notificationText: 'Lokasi sedang dilacak untuk grup tracking.',
+        enableWakeLock: true,
+        notificationIcon: AndroidResource(name: 'ic_launcher', defType: 'mipmap'),
+      ),
+    );
+  } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+    return AppleSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 5,
+      activityType: ActivityType.fitness,
+      pauseLocationUpdatesAutomatically: false,
+      showBackgroundLocationIndicator: true,
+    );
+  }
+
+  return const LocationSettings(
+    accuracy: LocationAccuracy.high,
+    distanceFilter: 5,
+  );
+}
+
+/// Returns a stream of GPS positions with platform-optimized settings.
+/// On Android: uses foreground service notification to prevent OS from killing GPS.
+/// On iOS: uses fitness activity type for battery-optimized continuous tracking.
+Stream<Position> positionStream() {
+  return Geolocator.getPositionStream(
+    locationSettings: _buildLocationSettings(),
   );
 }
