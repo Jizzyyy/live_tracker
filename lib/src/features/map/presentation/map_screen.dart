@@ -46,18 +46,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     final roomState = ref.watch(roomProvider);
 
-    // Send GPS to WebSocket room when location changes
+    // Send GPS to WebSocket + auto-center on first fix (merged listener)
     ref.listen(positionStreamProvider, (prev, next) {
-      if (next.hasValue) {
-        final pos = next.value!;
-        ref.read(roomProvider.notifier).sendPosition(pos.latitude, pos.longitude);
-      }
-    });
+      if (!next.hasValue) return;
+      final pos = next.value!;
 
-    // Auto-center on first GPS fix
-    ref.listen(positionStreamProvider, (prev, next) {
-      if (!_hasCenteredOnce && next.hasValue) {
-        final pos = next.value!;
+      // Send to room
+      ref.read(roomProvider.notifier).sendPosition(pos.latitude, pos.longitude);
+
+      // Auto-center once
+      if (!_hasCenteredOnce) {
         _mapController.move(
           LatLng(pos.latitude, pos.longitude),
           MapDefaults.focusedZoom,

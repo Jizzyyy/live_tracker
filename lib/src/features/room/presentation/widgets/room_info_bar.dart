@@ -16,20 +16,20 @@ class RoomInfoBar extends ConsumerWidget {
     }
 
     return Container(
-      color: Colors.green.shade600,
+      color: colorScheme.primary,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          const Icon(Icons.people, color: Colors.white, size: 20),
+          Icon(Icons.people, color: colorScheme.onPrimary, size: 20),
           const SizedBox(width: 8),
           Text(
             '${roomState.members.length} anggota',
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            style: TextStyle(color: colorScheme.onPrimary, fontWeight: FontWeight.bold),
           ),
           const Spacer(),
           Text(
             'Kode: ${roomState.roomCode}',
-            style: const TextStyle(color: Colors.white, letterSpacing: 1.2),
+            style: TextStyle(color: colorScheme.onPrimary, letterSpacing: 1.2),
           ),
           const SizedBox(width: 8),
           InkWell(
@@ -39,7 +39,7 @@ class RoomInfoBar extends ConsumerWidget {
                 const SnackBar(content: Text('Kode room disalin')),
               );
             },
-            child: const Icon(Icons.copy, color: Colors.white, size: 20),
+            child: Icon(Icons.copy, color: colorScheme.onPrimary, size: 20),
           ),
         ],
       ),

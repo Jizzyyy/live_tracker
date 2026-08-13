@@ -51,8 +51,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               final newUrl = _urlController.text.trim();
               if (newUrl.isNotEmpty) {
                 ref.read(settingsProvider.notifier).updateServerUrl(newUrl);
-                // Force reconnect
-                ref.read(roomProvider.notifier).connect(newUrl);
+                // Safe reconnect: leave room first if connected
+                ref.read(roomProvider.notifier).reconnect(newUrl);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('URL tersimpan. Menghubungkan ulang...')),
                 );
