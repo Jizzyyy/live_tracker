@@ -27,4 +27,6 @@ flutter run
 - [x] Auto-center on first fix
 - [x] Real-time position sharing (WebSocket)
 - [x] Group tracking
-- [ ] Route polyline
+- [x] Route polyline
+- [x] Background location service (foreground notification)
+- [ ] Route replay / history export
