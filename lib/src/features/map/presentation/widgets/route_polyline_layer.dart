@@ -19,7 +19,7 @@ class RoutePolylineLayer extends ConsumerWidget {
           points: routeHistory,
           strokeWidth: 5.0,
           color: colorScheme.primary.withOpacity(0.7),
-          isDotted: true,
+          pattern: const StrokePattern.dotted(),
         ),
       ],
     );

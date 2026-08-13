@@ -24,7 +24,7 @@ class MemberRouteLayer extends ConsumerWidget {
         points: route,
         strokeWidth: 4.0,
         color: color.withOpacity(0.5),
-        isDotted: true,
+        pattern: const StrokePattern.dotted(),
       );
     }).toList();
 
