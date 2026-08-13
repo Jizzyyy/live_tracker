@@ -47,9 +47,12 @@ class RoomNotifier extends StateNotifier<RoomState> {
   StreamSubscription? _sub;
 
   void connect(String serverUrl) {
-    state = state.copyWith(status: RoomStatus.connecting);
-    _ws.connect(serverUrl);
+    // Guard: don't reconnect if already connected
+    if (_ws.isConnected) return;
 
+    state = state.copyWith(status: RoomStatus.connecting);
+    _sub?.cancel();
+    _ws.connect(serverUrl);
     _sub = _ws.messages.listen(_handleMessage);
   }
 
@@ -63,6 +66,8 @@ class RoomNotifier extends StateNotifier<RoomState> {
 
   void leaveRoom() {
     _ws.send({'type': 'leave_room'});
+    ref.read(memberPositionsProvider.notifier).clear();
+    ref.read(memberRoutesProvider.notifier).clear();
     state = state.copyWith(
       status: RoomStatus.disconnected,
       roomCode: null,
@@ -70,9 +75,22 @@ class RoomNotifier extends StateNotifier<RoomState> {
     );
   }
 
+  void clearError() {
+    state = state.copyWith(error: null);
+  }
+
   void sendPosition(double lat, double lng) {
     if (state.status != RoomStatus.inRoom) return;
     _ws.send({'type': 'position_update', 'lat': lat, 'lng': lng});
+  }
+
+  void reconnect(String serverUrl) {
+    if (state.status == RoomStatus.inRoom) leaveRoom();
+    _sub?.cancel();
+    _ws.disconnect();
+    state = state.copyWith(status: RoomStatus.connecting);
+    _ws.connect(serverUrl);
+    _sub = _ws.messages.listen(_handleMessage);
   }
 
   void _handleMessage(Map<String, dynamic> msg) {
@@ -118,11 +136,11 @@ class RoomNotifier extends StateNotifier<RoomState> {
         break;
 
       case 'member_position':
-        final memberId = msg['userId'] as String;
-        final lat = (msg['lat'] as num).toDouble();
-        final lng = (msg['lng'] as num).toDouble();
-        
-        // Update both current position and route history
+        final memberId = msg['userId'] as String?;
+        final lat = (msg['lat'] as num?)?.toDouble();
+        final lng = (msg['lng'] as num?)?.toDouble();
+        if (memberId == null || lat == null || lng == null) return;
+
         ref.read(memberPositionsProvider.notifier).update(memberId, lat, lng);
         ref.read(memberRoutesProvider.notifier).addPoint(memberId, lat, lng);
         break;
@@ -142,7 +160,5 @@ class RoomNotifier extends StateNotifier<RoomState> {
 }
 
 final roomProvider = StateNotifierProvider<RoomNotifier, RoomState>((ref) {
-  final notifier = RoomNotifier(ref);
-  ref.onDispose(() => notifier.dispose());
-  return notifier;
+  return RoomNotifier(ref);
 });
