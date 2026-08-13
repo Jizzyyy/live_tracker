@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/websocket_service.dart';
 
+import 'member_positions_provider.dart';
+import 'member_routes_provider.dart';
+
 enum RoomStatus { disconnected, connecting, inRoom }
 
 class RoomState {
@@ -37,8 +40,9 @@ class RoomState {
 }
 
 class RoomNotifier extends StateNotifier<RoomState> {
-  RoomNotifier() : super(const RoomState());
+  RoomNotifier(this.ref) : super(const RoomState());
 
+  final Ref ref;
   final _ws = WebSocketService();
   StreamSubscription? _sub;
 
@@ -94,17 +98,33 @@ class RoomNotifier extends StateNotifier<RoomState> {
 
       case 'member_left':
         final leftId = msg['userId'] as String?;
+        if (leftId != null) {
+          ref.read(memberPositionsProvider.notifier).removeMember(leftId);
+          ref.read(memberRoutesProvider.notifier).removeMember(leftId);
+        }
         state = state.copyWith(
           members: state.members.where((id) => id != leftId).toList(),
         );
         break;
 
       case 'room_left':
+        ref.read(memberPositionsProvider.notifier).clear();
+        ref.read(memberRoutesProvider.notifier).clear();
         state = state.copyWith(
           status: RoomStatus.disconnected,
           roomCode: null,
           members: [],
         );
+        break;
+
+      case 'member_position':
+        final memberId = msg['userId'] as String;
+        final lat = (msg['lat'] as num).toDouble();
+        final lng = (msg['lng'] as num).toDouble();
+        
+        // Update both current position and route history
+        ref.read(memberPositionsProvider.notifier).update(memberId, lat, lng);
+        ref.read(memberRoutesProvider.notifier).addPoint(memberId, lat, lng);
         break;
 
       case 'error':
@@ -122,7 +142,7 @@ class RoomNotifier extends StateNotifier<RoomState> {
 }
 
 final roomProvider = StateNotifierProvider<RoomNotifier, RoomState>((ref) {
-  final notifier = RoomNotifier();
+  final notifier = RoomNotifier(ref);
   ref.onDispose(() => notifier.dispose());
   return notifier;
 });
