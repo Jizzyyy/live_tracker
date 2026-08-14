@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../core/constants.dart';
 import '../../room/presentation/room_bottom_sheet.dart';
+import '../../room/presentation/widgets/connection_status_icon.dart';
 import '../../room/presentation/widgets/member_list_drawer.dart';
 import '../../room/presentation/widgets/room_info_bar.dart';
 import '../../room/providers/room_provider.dart';
@@ -11,6 +12,7 @@ import '../../settings/presentation/settings_screen.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/location_provider.dart';
 import '../providers/map_style_provider.dart';
+import 'widgets/compass_button.dart';
 import 'widgets/gps_signal_indicator.dart';
 import 'widgets/location_info_card.dart';
 import 'widgets/map_fab.dart';
@@ -76,6 +78,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
         actions: [
+          const ConnectionStatusIcon(),
           IconButton(
             icon: const Icon(Icons.layers_outlined),
             onPressed: () {
@@ -160,11 +163,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ),
           const LocationInfoCard(),
           const TripStatsCard(),
-          Positioned(
+            Positioned(
               right: 16,
               top: 16,
               child: ZoomControls(mapController: _mapController),
             ),
+            CompassButton(mapController: _mapController),
           ],
         ),
         ),
