@@ -30,25 +30,31 @@ class TripStatsCard extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _StatItem(
-                  icon: Icons.route_outlined,
-                  value: '\${stats.distanceKm.toStringAsFixed(2)} km',
-                  label: 'Jarak',
-                  color: colorScheme.primary,
+                Expanded(
+                  child: _StatItem(
+                    icon: Icons.route_outlined,
+                    value: '${stats.distanceKm.toStringAsFixed(2)} km',
+                    label: 'Jarak',
+                    color: colorScheme.primary,
+                  ),
                 ),
-                _StatItem(
-                  icon: Icons.timer_outlined,
-                  value: formatDuration(stats.duration),
-                  label: 'Waktu',
-                  color: colorScheme.secondary,
+                Expanded(
+                  child: _StatItem(
+                    icon: Icons.timer_outlined,
+                    value: formatDuration(stats.duration),
+                    label: 'Waktu',
+                    color: colorScheme.secondary,
+                  ),
                 ),
-                _StatItem(
-                  icon: Icons.speed_outlined,
-                  value: '\${stats.speedKmh.toStringAsFixed(1)} km/h',
-                  label: 'Kecepatan',
-                  color: colorScheme.tertiary,
+                Expanded(
+                  child: _StatItem(
+                    icon: Icons.speed_outlined,
+                    value: '${stats.speedKmh.toStringAsFixed(1)} km/h',
+                    label: 'Kecepatan',
+                    color: colorScheme.tertiary,
+                  ),
                 ),
               ],
             ),
@@ -81,13 +87,18 @@ class _StatItem extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 10,
               ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
