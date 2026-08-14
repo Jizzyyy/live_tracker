@@ -47,7 +47,6 @@ class RoomNotifier extends StateNotifier<RoomState> {
   StreamSubscription? _sub;
 
   void connect(String serverUrl) {
-    // Guard: don't reconnect if already connected
     if (_ws.isConnected) return;
 
     state = state.copyWith(status: RoomStatus.connecting);
@@ -97,6 +96,10 @@ class RoomNotifier extends StateNotifier<RoomState> {
     switch (msg['type']) {
       case 'connected':
         state = state.copyWith(userId: msg['userId'] as String?);
+        // FIX: Auto-rejoin if we were in a room before connection dropped
+        if (state.status == RoomStatus.inRoom && state.roomCode != null) {
+          _ws.send({'type': 'join_room', 'roomCode': state.roomCode});
+        }
         break;
 
       case 'room_created':
@@ -154,7 +157,7 @@ class RoomNotifier extends StateNotifier<RoomState> {
   @override
   void dispose() {
     _sub?.cancel();
-    _ws.dispose();
+    _ws.disconnect(); // Use disconnect instead of dispose
     super.dispose();
   }
 }
