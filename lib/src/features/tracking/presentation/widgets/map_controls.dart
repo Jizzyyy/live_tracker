@@ -18,7 +18,7 @@ class MapCompassControl extends StatelessWidget {
         if (rotation == 0.0) return const SizedBox.shrink();
 
         return CyberGlassPanel(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: 20.0,
           padding: EdgeInsets.zero,
           child: InkWell(
             onTap: () => mapController.rotate(0.0),
@@ -47,7 +47,7 @@ class AutoCenterButton extends ConsumerWidget {
     final posAsync = ref.watch(positionStreamProvider);
 
     return CyberGlassPanel(
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: 24.0,
       padding: EdgeInsets.zero,
       child: InkWell(
         onTap: () {

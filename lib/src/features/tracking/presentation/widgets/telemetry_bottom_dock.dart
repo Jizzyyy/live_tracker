@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:ui';
 import '../../providers/tracking_providers.dart';
 import '../../../../shared/widgets/cyber_glass.dart';
 
@@ -16,7 +15,7 @@ class TelemetryBottomDock extends ConsumerWidget {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         child: CyberGlassPanel(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: 24.0,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

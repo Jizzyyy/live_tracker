@@ -1,5 +1,5 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'dart:ui';
 
 class CyberGlassPanel extends StatelessWidget {
   final Widget child;
@@ -29,11 +29,11 @@ class CyberGlassPanel extends StatelessWidget {
           padding: padding,
           decoration: BoxDecoration(
             color: const Color(0xFF00E5FF).withValues(alpha: fillOpacity),
+            borderRadius: BorderRadius.circular(borderRadius),
             border: Border.all(
               color: Colors.white.withValues(alpha: borderOpacity),
               width: 0.5,
             ),
-            borderRadius: BorderRadius.circular(borderRadius),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,

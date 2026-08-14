@@ -18,7 +18,7 @@ class DynamicTopIsland extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         child: CyberGlassPanel(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: 32.0,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
