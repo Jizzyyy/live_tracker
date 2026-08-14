@@ -29,4 +29,17 @@ flutter run
 - [x] Group tracking
 - [x] Route polyline
 - [x] Background location service (foreground notification)
+- [x] Map style switcher (multiple tile sources)
+- [x] Trip statistics (distance, duration, speed)
+- [x] Map UX controls (compass, scale bar)
 - [ ] Route replay / history export
+
+## Architecture
+
+This project uses a feature-first architecture:
+- `features/map`: Rendering, GPS, and stats
+- `features/room`: WebSocket connections and multi-user sync
+- `features/settings`: Persisted configurations
+
+State management powered by **Riverpod** with strict separation of `StateNotifierProviders` for routes, positions, and connections.
+
