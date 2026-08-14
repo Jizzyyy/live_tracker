@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map/plugin_api.dart';
 
 class CompassButton extends StatelessWidget {
   const CompassButton({super.key, required this.mapController});
