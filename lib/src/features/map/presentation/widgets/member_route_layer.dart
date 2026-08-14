@@ -22,12 +22,14 @@ class MemberRouteLayer extends ConsumerWidget {
 
       return Polyline(
         points: route,
-        strokeWidth: 4.0,
-        color: color.withValues(alpha: 0.5),
-        pattern: const StrokePattern.dotted(),
+        strokeWidth: 3.0,
+        color: color.withValues(alpha: 0.4),
+        pattern: const StrokePattern.solid(),
       );
     }).toList();
 
-    return PolylineLayer(polylines: polylines);
+    return RepaintBoundary(
+      child: PolylineLayer(polylines: polylines),
+    );
   }
 }
