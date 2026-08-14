@@ -16,6 +16,7 @@ import 'widgets/compass_button.dart';
 import 'widgets/gps_signal_indicator.dart';
 import 'widgets/location_info_card.dart';
 import 'widgets/map_fab.dart';
+import 'widgets/map_scale_bar.dart';
 import 'widgets/map_style_sheet.dart';
 import 'widgets/member_markers_layer.dart';
 import 'widgets/member_route_layer.dart';
@@ -169,6 +170,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               child: ZoomControls(mapController: _mapController),
             ),
             CompassButton(mapController: _mapController),
+            MapScaleBar(mapController: _mapController),
           ],
         ),
         ),
