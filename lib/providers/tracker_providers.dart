@@ -17,16 +17,21 @@ class SettingsNotifier extends Notifier<AppSettings> {
   AppSettings build() {
     final prefs = ref.watch(sharedPrefsProvider);
     return AppSettings(
-      serverUrl: prefs.getString('serverUrl') ?? 'ws://192.168.18.13:8080',
+      // URL statis yang langsung menunjuk ke cloud
+      serverUrl: 'wss://live-tracker-backend.onrender.com',
       isDarkMode: prefs.getBool('isDarkMode') ?? true,
+      highAccuracyGps: prefs.getBool('highAccuracyGps') ?? true,
+      backgroundService: prefs.getBool('backgroundService') ?? true,
     );
   }
 
   void updateSettings(AppSettings newSettings) {
     state = newSettings;
     final prefs = ref.read(sharedPrefsProvider);
-    prefs.setString('serverUrl', newSettings.serverUrl);
+    // Tidak lagi menyimpan serverUrl karena sudah statis
     prefs.setBool('isDarkMode', newSettings.isDarkMode);
+    prefs.setBool('highAccuracyGps', newSettings.highAccuracyGps);
+    prefs.setBool('backgroundService', newSettings.backgroundService);
   }
 }
 final appSettingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);
@@ -93,6 +98,7 @@ class RoomNotifier extends Notifier<RoomState> {
       _sub?.cancel();
       _ws.dispose();
     });
+    // Auto-connect using static settings URL
     Future.microtask(() => connect());
     return const RoomState();
   }
@@ -165,10 +171,11 @@ class TripSessionNotifier extends Notifier<TripSession> {
   TripSession build() {
     ref.onDispose(() => _timer?.cancel());
     
+    // Listen to GPS to calculate distance
     ref.listen(locationStreamProvider, (prev, next) {
       if (state.state != TripSessionState.active || !next.hasValue) return;
       final pos = next.value!;
-      if (pos.accuracy > 25.0) return; 
+      if (pos.accuracy > 25.0) return; // Ignore poor accuracy
       
       final currentLatLng = LatLng(pos.latitude, pos.longitude);
       
@@ -200,7 +207,6 @@ class TripSessionNotifier extends Notifier<TripSession> {
         }
       });
     } else {
-      // Fix: clear last position when paused so distance doesn't jump
       _lastPos = null;
       state = state.copyWith(state: TripSessionState.paused, currentSpeedKmh: 0);
       _timer?.cancel();
