@@ -11,76 +11,59 @@ class MemberMarkersLayer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final memberPositions = ref.watch(memberPositionsProvider);
 
-    return MarkerLayer(
-      markers: memberPositions.entries.map((entry) {
-        final userId = entry.key;
-        final latLng = entry.value;
-        final color = getColorForUser(userId);
+    return RepaintBoundary(
+      child: MarkerLayer(
+        markers: memberPositions.entries.map((entry) {
+          final userId = entry.key;
+          final latLng = entry.value;
+          final color = getColorForUser(userId);
 
-        return Marker(
-          point: latLng,
-          width: 80,
-          height: 80,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: color, width: 1),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4),
-                  ],
-                ),
-                child: Text(
-                  userId.substring(0, userId.length.clamp(0, 6)),
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: color,
+          return Marker(
+            point: latLng,
+            width: 48,
+            height: 48,
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: const Color(0xFF12151B),
+                shape: BoxShape.circle,
+                border: Border.all(color: color, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.4),
+                    blurRadius: 6,
+                    spreadRadius: 2,
                   ),
-                  overflow: TextOverflow.ellipsis,
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  userId.isNotEmpty ? userId[0].toUpperCase() : '?',
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
               ),
-              const SizedBox(height: 4),
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: color.withValues(alpha: 0.4),
-                      blurRadius: 6,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: Icon(Icons.person, color: Colors.white, size: 14),
-                ),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 
   // Generate consistent color based on user ID string hash
   static Color getColorForUser(String userId) {
-    final colors = [
-      Colors.red.shade600,
-      Colors.green.shade600,
-      Colors.orange.shade600,
-      Colors.purple.shade600,
-      Colors.teal.shade600,
-      Colors.pink.shade600,
-      Colors.indigo.shade600,
+    final colors = const [
+      Color(0xFFFF1744), // red
+      Color(0xFF00E676), // green
+      Color(0xFFFFD600), // amber
+      Color(0xFFAA00FF), // purple
+      Color(0xFF00BCD4), // teal
+      Color(0xFFFF6D00), // orange
+      Color(0xFF2979FF), // blue
     ];
     final hash = userId.codeUnits.fold<int>(0, (prev, curr) => prev + curr);
     return colors[hash % colors.length];
