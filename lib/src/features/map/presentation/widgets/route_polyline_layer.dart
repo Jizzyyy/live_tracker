@@ -9,19 +9,20 @@ class RoutePolylineLayer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final routeHistory = ref.watch(routeHistoryProvider);
-    final colorScheme = Theme.of(context).colorScheme;
 
     if (routeHistory.length < 2) return const SizedBox.shrink();
 
-    return PolylineLayer(
-      polylines: [
-        Polyline(
-          points: routeHistory,
-          strokeWidth: 5.0,
-          color: colorScheme.primary.withValues(alpha: 0.7),
-          pattern: const StrokePattern.dotted(),
-        ),
-      ],
+    return RepaintBoundary(
+      child: PolylineLayer(
+        polylines: [
+          Polyline(
+            points: routeHistory,
+            strokeWidth: 4.0,
+            color: const Color(0xFF00E5FF).withValues(alpha: 0.6),
+            pattern: const StrokePattern.solid(),
+          ),
+        ],
+      ),
     );
   }
 }
