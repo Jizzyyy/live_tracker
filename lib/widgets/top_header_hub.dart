@@ -53,13 +53,25 @@ class TopHeaderHub extends ConsumerWidget {
                           ),
                         ),
                       )
-                    : Text(
-                        'Live Tracker',
-                        style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                        ),
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            'assets/images/app_logo.png',
+                            height: 24,
+                            width: 24,
+                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.track_changes, size: 24, color: Color(0xFF00E5FF)),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Live Tracker',
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                            ),
+                          ),
+                        ],
                       ),
               ),
               

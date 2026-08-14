@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'screens/live_tracker_screen.dart';
+import 'screens/splash_screen.dart';
 import 'providers/tracker_providers.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -44,7 +44,7 @@ class LiveTrackerApp extends ConsumerWidget {
         textTheme: GoogleFonts.interTextTheme(ThemeData.light().textTheme),
         useMaterial3: true,
       ),
-      home: const LiveTrackerScreen(),
+      home: const SplashScreen(),
     );
   }
 }
