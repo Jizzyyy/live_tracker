@@ -49,11 +49,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final posAsync = ref.watch(positionStreamProvider);
-
     final roomState = ref.watch(roomProvider);
     final mapStyle = ref.watch(mapStyleProvider);
 
-    // Send GPS to WebSocket + auto-center on first fix (merged listener)
+    // Send GPS to WebSocket + auto-center on first fix
     ref.listen(positionStreamProvider, (prev, next) {
       if (!next.hasValue) return;
       final pos = next.value!;
@@ -61,12 +60,16 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       // Send to room
       ref.read(roomProvider.notifier).sendPosition(pos.latitude, pos.longitude);
 
-      // Auto-center once
+      // Auto-center once IF map is still at initial center (user hasn't panned)
       if (!_hasCenteredOnce) {
-        _mapController.move(
-          LatLng(pos.latitude, pos.longitude),
-          MapDefaults.focusedZoom,
-        );
+        final currentCenter = _mapController.camera.center;
+        if (currentCenter.latitude == MapDefaults.initialCenter.latitude &&
+            currentCenter.longitude == MapDefaults.initialCenter.longitude) {
+          _mapController.move(
+            LatLng(pos.latitude, pos.longitude),
+            MapDefaults.focusedZoom,
+          );
+        }
         _hasCenteredOnce = true;
       }
     });
@@ -79,7 +82,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
         actions: [
-          const ConnectionStatusIcon(),
           IconButton(
             icon: const Icon(Icons.layers_outlined),
             onPressed: () {
@@ -89,7 +91,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
               );
             },
           ),
-          const GpsSignalIndicator(),
+          const ConnectionStatusIcon(),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
@@ -126,55 +128,62 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           const RoomInfoBar(),
           Expanded(
             child: Stack(
-        children: [
-          FlutterMap(
-            mapController: _mapController,
-            options: const MapOptions(
-              initialCenter: MapDefaults.initialCenter,
-              initialZoom: MapDefaults.initialZoom,
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: mapStyle.urlTemplate,
-                userAgentPackageName: MapDefaults.packageName,
-              ),
-              const MemberRouteLayer(),
-              const RoutePolylineLayer(),
-              const MemberMarkersLayer(),
-              MarkerLayer(
-                markers: [
-                  ...posAsync.when(
-                    data: (pos) => [
-                      Marker(
-                        point: LatLng(pos.latitude, pos.longitude),
-                        width: 24,
-                        height: 24,
-                        child: const UserLocationMarker(),
-                      ),
-                    ],
-                    loading: () => [],
-                    error: (_, __) => [],
+              children: [
+                FlutterMap(
+                  mapController: _mapController,
+                  options: const MapOptions(
+                    initialCenter: MapDefaults.initialCenter,
+                    initialZoom: MapDefaults.initialZoom,
                   ),
-                ],
-              ),
-          const SimpleAttributionWidget(
-              source: Text('OpenStreetMap contributors'),
+                  children: [
+                    TileLayer(
+                      urlTemplate: mapStyle.urlTemplate,
+                      userAgentPackageName: MapDefaults.packageName,
+                    ),
+                    const MemberRouteLayer(),
+                    const RoutePolylineLayer(),
+                    const MemberMarkersLayer(),
+                    MarkerLayer(
+                      markers: [
+                        ...posAsync.when(
+                          data: (pos) => [
+                            Marker(
+                              point: LatLng(pos.latitude, pos.longitude),
+                              width: 24,
+                              height: 24,
+                              child: const UserLocationMarker(),
+                            ),
+                          ],
+                          loading: () => [],
+                          error: (_, __) => [],
+                        ),
+                      ],
+                    ),
+                    const SimpleAttributionWidget(
+                      source: Text('OpenStreetMap contributors'),
+                    ),
+                  ],
+                ),
+                // Stack UI Overlays using Flex to prevent overlapping
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ZoomControls(mapController: _mapController),
+                      const SizedBox(height: 16),
+                      CompassButton(mapController: _mapController),
+                    ],
+                  ),
+                ),
+                const TripStatsCard(),
+                const LocationInfoCard(),
+                MapScaleBar(mapController: _mapController),
+              ],
             ),
-          ],
           ),
-          const LocationInfoCard(),
-          const TripStatsCard(),
-            Positioned(
-              right: 16,
-              top: 16,
-              child: ZoomControls(mapController: _mapController),
-            ),
-            CompassButton(mapController: _mapController),
-            MapScaleBar(mapController: _mapController),
-          ],
-        ),
-        ),
-      ],
+        ],
       ),
       floatingActionButton: MapFab(mapController: _mapController),
     );
