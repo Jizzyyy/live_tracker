@@ -83,6 +83,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   color: const Color(0xFF00E5FF).withValues(alpha: 0.6),
                 ),
               ),
+              const SizedBox(height: 60), // Spacer untuk mendorong watermark agak ke bawah
+              Text(
+                'FORGED BY KADHAFIINL',
+                style: GoogleFonts.shareTechMono(
+                  fontSize: 10,
+                  letterSpacing: 3,
+                  color: Colors.white.withValues(alpha: 0.3), // Halus, tidak mencolok
+                ),
+              ),
             ],
           ),
         ),
