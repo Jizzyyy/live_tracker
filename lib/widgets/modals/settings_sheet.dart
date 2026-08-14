@@ -4,11 +4,30 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../providers/tracker_providers.dart';
 import '../../utils/ui_helpers.dart';
 
-class SettingsSheet extends ConsumerWidget {
+class SettingsSheet extends ConsumerStatefulWidget {
   const SettingsSheet({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsSheet> createState() => _SettingsSheetState();
+}
+
+class _SettingsSheetState extends ConsumerState<SettingsSheet> {
+  late final TextEditingController _urlController;
+
+  @override
+  void initState() {
+    super.initState();
+    _urlController = TextEditingController(text: ref.read(appSettingsProvider).serverUrl);
+  }
+
+  @override
+  void dispose() {
+    _urlController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final settings = ref.watch(appSettingsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -16,59 +35,90 @@ class SettingsSheet extends ConsumerWidget {
       child: PremiumGlass(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 40, height: 4,
-                  decoration: BoxDecoration(color: isDark ? Colors.white30 : Colors.black26, borderRadius: BorderRadius.circular(2)),
+          padding: EdgeInsets.only(
+            left: 24, 
+            right: 24, 
+            top: 24,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(color: isDark ? Colors.white30 : Colors.black26, borderRadius: BorderRadius.circular(2)),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              Text('Preferences', style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 24),
-              
-              _SettingsTile(
-                title: 'Dark Map Theme',
-                subtitle: 'Use high-contrast dark map tiles',
-                icon: Icons.dark_mode_outlined,
-                value: settings.isDarkMode,
-                onChanged: (val) {
-                  ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(isDarkMode: val));
-                  // Auto-switch map style based on preference
-                  ref.read(mapStyleProvider.notifier).state = val ? availableMapStyles[0] : availableMapStyles[1];
-                },
-              ),
-              const SizedBox(height: 12),
-              _SettingsTile(
-                title: 'High Accuracy Tracking',
-                subtitle: 'Consume more battery for precise routes',
-                icon: Icons.gps_fixed,
-                value: settings.highAccuracyGps,
-                onChanged: (val) => ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(highAccuracyGps: val)),
-              ),
-              const SizedBox(height: 12),
-              _SettingsTile(
-                title: 'Background Service',
-                subtitle: 'Keep tracking when app is closed',
-                icon: Icons.autorenew,
-                value: settings.backgroundService,
-                onChanged: (val) => ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(backgroundService: val)),
-              ),
-              const SizedBox(height: 32),
-              
-              FilledButton(
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                const SizedBox(height: 24),
+                Text('Preferences', style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 24),
+                
+                TextField(
+                  controller: _urlController,
+                  decoration: InputDecoration(
+                    labelText: 'WebSocket Server URL',
+                    hintText: 'ws://192.168.x.x:8080',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.check_circle_outline),
+                      onPressed: () {
+                        final url = _urlController.text.trim();
+                        if (url.isNotEmpty) {
+                           ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(serverUrl: url));
+                           ref.read(roomProvider.notifier).reconnect();
+                           FocusScope.of(context).unfocus();
+                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Server URL updated & Reconnecting...')));
+                        }
+                      },
+                    ),
+                  ),
+                  style: GoogleFonts.shareTechMono(fontSize: 14),
                 ),
-                onPressed: () => Navigator.pop(context),
-                child: Text('DONE', style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1)),
-              ),
-            ],
+                const SizedBox(height: 16),
+                
+                _SettingsTile(
+                  title: 'Dark Map Theme',
+                  subtitle: 'Use high-contrast dark map tiles',
+                  icon: Icons.dark_mode_outlined,
+                  value: settings.isDarkMode,
+                  onChanged: (val) {
+                    ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(isDarkMode: val));
+                    ref.read(mapStyleProvider.notifier).state = val ? availableMapStyles[0] : availableMapStyles[1];
+                  },
+                ),
+                const SizedBox(height: 12),
+                _SettingsTile(
+                  title: 'High Accuracy Tracking',
+                  subtitle: 'Consume more battery for precise routes',
+                  icon: Icons.gps_fixed,
+                  value: settings.highAccuracyGps,
+                  onChanged: (val) => ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(highAccuracyGps: val)),
+                ),
+                const SizedBox(height: 12),
+                _SettingsTile(
+                  title: 'Background Service',
+                  subtitle: 'Keep tracking when app is closed',
+                  icon: Icons.autorenew,
+                  value: settings.backgroundService,
+                  onChanged: (val) => ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(backgroundService: val)),
+                ),
+                const SizedBox(height: 32),
+                
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('DONE', style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                ),
+              ],
+            ),
           ),
         ),
       ),
