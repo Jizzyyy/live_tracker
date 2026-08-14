@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
@@ -17,8 +18,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
   AppSettings build() {
     final prefs = ref.watch(sharedPrefsProvider);
     return AppSettings(
-      // URL statis yang langsung menunjuk ke cloud
-      serverUrl: 'wss://live-tracker-backend.onrender.com',
+      serverUrl: prefs.getString('serverUrl') ?? 'ws://192.168.18.13:8080',
       isDarkMode: prefs.getBool('isDarkMode') ?? true,
       highAccuracyGps: prefs.getBool('highAccuracyGps') ?? true,
       backgroundService: prefs.getBool('backgroundService') ?? true,
@@ -28,7 +28,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
   void updateSettings(AppSettings newSettings) {
     state = newSettings;
     final prefs = ref.read(sharedPrefsProvider);
-    // Tidak lagi menyimpan serverUrl karena sudah statis
+    prefs.setString('serverUrl', newSettings.serverUrl);
     prefs.setBool('isDarkMode', newSettings.isDarkMode);
     prefs.setBool('highAccuracyGps', newSettings.highAccuracyGps);
     prefs.setBool('backgroundService', newSettings.backgroundService);
@@ -98,7 +98,6 @@ class RoomNotifier extends Notifier<RoomState> {
       _sub?.cancel();
       _ws.dispose();
     });
-    // Auto-connect using static settings URL
     Future.microtask(() => connect());
     return const RoomState();
   }
@@ -106,6 +105,17 @@ class RoomNotifier extends Notifier<RoomState> {
   void connect() {
     if (_ws.isConnected) return;
     state = state.copyWith(status: TrackingConnectionStatus.reconnecting);
+    _ws.connect(ref.read(appSettingsProvider).serverUrl);
+    _sub = _ws.messages.listen(_handleMessage);
+  }
+
+  void reconnect() {
+    if (state.status == TrackingConnectionStatus.connected && state.roomCode != null) {
+       leaveRoom();
+    }
+    _sub?.cancel();
+    _ws.disconnect();
+    state = const RoomState(status: TrackingConnectionStatus.reconnecting);
     _ws.connect(ref.read(appSettingsProvider).serverUrl);
     _sub = _ws.messages.listen(_handleMessage);
   }
@@ -171,11 +181,10 @@ class TripSessionNotifier extends Notifier<TripSession> {
   TripSession build() {
     ref.onDispose(() => _timer?.cancel());
     
-    // Listen to GPS to calculate distance
     ref.listen(locationStreamProvider, (prev, next) {
       if (state.state != TripSessionState.active || !next.hasValue) return;
       final pos = next.value!;
-      if (pos.accuracy > 25.0) return; // Ignore poor accuracy
+      if (pos.accuracy > 25.0) return; 
       
       final currentLatLng = LatLng(pos.latitude, pos.longitude);
       
@@ -216,19 +225,13 @@ class TripSessionNotifier extends Notifier<TripSession> {
   void stopSession() {
     _timer?.cancel();
     _lastPos = null;
-    
-    // Save to history before resetting
     if (state.distanceMeters > 0) {
       ref.read(tripHistoryProvider.notifier).saveTrip(state);
     }
-    
     state = const TripSession();
   }
 }
 final tripSessionProvider = NotifierProvider<TripSessionNotifier, TripSession>(TripSessionNotifier.new);
-
-// --- Focus State ---
-final focusedMemberProvider = StateProvider<MemberLocation?>((ref) => null);
 
 // --- Trip History Provider ---
 class TripHistoryNotifier extends Notifier<List<SavedTrip>> {
@@ -247,7 +250,6 @@ class TripHistoryNotifier extends Notifier<List<SavedTrip>> {
   }
 
   Future<void> saveTrip(TripSession session) async {
-    // Only save if it's a meaningful trip (e.g., > 10 meters or > 10 seconds)
     if (session.distanceMeters < 10 && session.activeDurationSeconds < 10) return;
 
     final newTrip = SavedTrip(
@@ -260,14 +262,10 @@ class TripHistoryNotifier extends Notifier<List<SavedTrip>> {
 
     final prefs = ref.read(sharedPrefsProvider);
     final currentList = prefs.getStringList(_historyKey) ?? [];
-    
-    // Save to SharedPreferences (keep max 50 recent trips to prevent bloat)
     currentList.add(newTrip.toJson());
     if (currentList.length > 50) currentList.removeAt(0);
     
     await prefs.setStringList(_historyKey, currentList);
-    
-    // Update active state
     state = [newTrip, ...state];
   }
   
@@ -278,3 +276,6 @@ class TripHistoryNotifier extends Notifier<List<SavedTrip>> {
   }
 }
 final tripHistoryProvider = NotifierProvider<TripHistoryNotifier, List<SavedTrip>>(TripHistoryNotifier.new);
+
+// --- Focus State ---
+final focusedMemberProvider = StateProvider<MemberLocation?>((ref) => null);
