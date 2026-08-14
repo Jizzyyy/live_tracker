@@ -14,7 +14,7 @@ import '../providers/location_provider.dart';
 import '../providers/map_style_provider.dart';
 import 'widgets/compass_button.dart';
 import 'widgets/location_info_card.dart';
-import 'widgets/map_fab.dart';
+import 'widgets/auto_center_button.dart';
 import 'widgets/map_scale_bar.dart';
 import 'widgets/map_style_sheet.dart';
 import 'widgets/member_markers_layer.dart';
@@ -22,7 +22,6 @@ import 'widgets/member_route_layer.dart';
 import 'widgets/route_polyline_layer.dart';
 import 'widgets/trip_stats_card.dart';
 import 'widgets/user_location_marker.dart';
-import 'widgets/zoom_controls.dart';
 
 class MapScreen extends ConsumerStatefulWidget {
   const MapScreen({super.key});
@@ -149,9 +148,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                           data: (pos) => [
                             Marker(
                               point: LatLng(pos.latitude, pos.longitude),
-                              width: 24,
-                              height: 24,
-                              child: const UserLocationMarker(),
+                              width: 48,
+                              height: 48,
+                              child: const PulsingGlowMarker(),
                             ),
                           ],
                           loading: () => [],
@@ -164,16 +163,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                     ),
                   ],
                 ),
-                // Stack UI Overlays using Flex to prevent overlapping
                 Positioned(
-                  top: 16,
+                  bottom: 100,
                   right: 16,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      ZoomControls(mapController: _mapController),
-                      const SizedBox(height: 16),
                       CompassButton(mapController: _mapController),
+                      const SizedBox(height: 8),
+                      AutoCenterButton(mapController: _mapController),
                     ],
                   ),
                 ),
@@ -185,7 +183,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ),
         ],
       ),
-      floatingActionButton: MapFab(mapController: _mapController),
     );
   }
 }
