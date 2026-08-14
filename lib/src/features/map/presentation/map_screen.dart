@@ -13,7 +13,6 @@ import '../../settings/providers/settings_provider.dart';
 import '../providers/location_provider.dart';
 import '../providers/map_style_provider.dart';
 import 'widgets/compass_button.dart';
-import 'widgets/gps_signal_indicator.dart';
 import 'widgets/location_info_card.dart';
 import 'widgets/map_fab.dart';
 import 'widgets/map_scale_bar.dart';

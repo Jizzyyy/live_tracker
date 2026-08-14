@@ -10,4 +10,4 @@ String formatDistance(double km) {
   return '${km.toStringAsFixed(1)} KM';
 }
 
-String formatSpeed(double kmh) => '${kmh.toStringAsFixed(1)}';
+String formatSpeed(double kmh) => kmh.toStringAsFixed(1);

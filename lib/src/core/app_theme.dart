@@ -19,7 +19,7 @@ class AppTheme {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
-      cardTheme: const CardTheme(
+      cardTheme: const CardThemeData(
         color: Colors.transparent,
         elevation: 0,
       ),
@@ -39,31 +39,31 @@ class AppTheme {
         ),
       ),
       textTheme: GoogleFonts.interTextTheme(base.textTheme).copyWith(
-        displayLarge: GoogleFonts.jetbrainsMono(
+        displayLarge: GoogleFonts.jetBrainsMono(
           textStyle: base.textTheme.displayLarge,
         ),
-        displayMedium: GoogleFonts.jetbrainsMono(
+        displayMedium: GoogleFonts.jetBrainsMono(
           textStyle: base.textTheme.displayMedium,
         ),
-        displaySmall: GoogleFonts.jetbrainsMono(
+        displaySmall: GoogleFonts.jetBrainsMono(
           textStyle: base.textTheme.displaySmall,
         ),
-        headlineLarge: GoogleFonts.jetbrainsMono(
+        headlineLarge: GoogleFonts.jetBrainsMono(
           textStyle: base.textTheme.headlineLarge,
         ),
-        headlineMedium: GoogleFonts.jetbrainsMono(
+        headlineMedium: GoogleFonts.jetBrainsMono(
           textStyle: base.textTheme.headlineMedium,
         ),
-        headlineSmall: GoogleFonts.jetbrainsMono(
+        headlineSmall: GoogleFonts.jetBrainsMono(
           textStyle: base.textTheme.headlineSmall,
         ),
-        titleLarge: GoogleFonts.jetbrainsMono(
+        titleLarge: GoogleFonts.jetBrainsMono(
           textStyle: base.textTheme.titleLarge,
         ),
-        titleMedium: GoogleFonts.jetbrainsMono(
+        titleMedium: GoogleFonts.jetBrainsMono(
           textStyle: base.textTheme.titleMedium,
         ),
-        titleSmall: GoogleFonts.jetbrainsMono(
+        titleSmall: GoogleFonts.jetBrainsMono(
           textStyle: base.textTheme.titleSmall,
         ),
       ),
