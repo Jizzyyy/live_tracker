@@ -51,6 +51,7 @@ class TopHeaderHub extends ConsumerWidget {
                             fontWeight: FontWeight.w800,
                             letterSpacing: 2,
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       )
                     : Row(
@@ -63,12 +64,15 @@ class TopHeaderHub extends ConsumerWidget {
                             errorBuilder: (context, error, stackTrace) => const Icon(Icons.track_changes, size: 24, color: Color(0xFF00E5FF)),
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            'Live Tracker',
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                          Expanded(
+                            child: Text(
+                              'Live Tracker',
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],

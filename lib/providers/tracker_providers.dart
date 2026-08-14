@@ -93,7 +93,6 @@ class RoomNotifier extends Notifier<RoomState> {
       _sub?.cancel();
       _ws.dispose();
     });
-    // Auto-connect using settings URL
     Future.microtask(() => connect());
     return const RoomState();
   }
@@ -166,21 +165,27 @@ class TripSessionNotifier extends Notifier<TripSession> {
   TripSession build() {
     ref.onDispose(() => _timer?.cancel());
     
-    // Listen to GPS to calculate distance
     ref.listen(locationStreamProvider, (prev, next) {
       if (state.state != TripSessionState.active || !next.hasValue) return;
       final pos = next.value!;
-      if (pos.accuracy > 25.0) return; // Ignore poor accuracy
+      if (pos.accuracy > 25.0) return; 
       
       final currentLatLng = LatLng(pos.latitude, pos.longitude);
+      
+      double addedDistance = 0;
       if (_lastPos != null) {
-        final dist = _distanceCalc.as(LengthUnit.Meter, _lastPos!, currentLatLng);
-        state = state.copyWith(
-          distanceMeters: state.distanceMeters + dist,
-          currentSpeedKmh: pos.speed * 3.6,
-        );
+        addedDistance = _distanceCalc.as(LengthUnit.Meter, _lastPos!, currentLatLng);
       }
       _lastPos = currentLatLng;
+
+      final totalDist = state.distanceMeters + addedDistance;
+      final avgSpeed = state.activeDurationSeconds > 0 ? (totalDist / 1000) / (state.activeDurationSeconds / 3600) : 0.0;
+
+      state = state.copyWith(
+        distanceMeters: totalDist,
+        currentSpeedKmh: pos.speed * 3.6,
+        avgSpeedKmh: avgSpeed,
+      );
     });
 
     return const TripSession();
@@ -195,6 +200,8 @@ class TripSessionNotifier extends Notifier<TripSession> {
         }
       });
     } else {
+      // Fix: clear last position when paused so distance doesn't jump
+      _lastPos = null;
       state = state.copyWith(state: TripSessionState.paused, currentSpeedKmh: 0);
       _timer?.cancel();
     }
