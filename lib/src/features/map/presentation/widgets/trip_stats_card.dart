@@ -17,7 +17,7 @@ class TripStatsCard extends ConsumerWidget {
       final hours = d.inHours;
       final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
       final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-      return hours > 0 ? '\$hours:\$minutes:\$seconds' : '\$minutes:\$seconds';
+      return hours > 0 ? '\${hours}:\${minutes}:\${seconds}' : '\${minutes}:\${seconds}';
     }
 
     return Positioned(
@@ -35,7 +35,7 @@ class TripStatsCard extends ConsumerWidget {
                 Expanded(
                   child: _StatItem(
                     icon: Icons.route_outlined,
-                    value: '${stats.distanceKm.toStringAsFixed(2)} km',
+                    value: '\${stats.distanceKm.toStringAsFixed(2)} km',
                     label: 'Jarak',
                     color: colorScheme.primary,
                   ),
@@ -51,7 +51,7 @@ class TripStatsCard extends ConsumerWidget {
                 Expanded(
                   child: _StatItem(
                     icon: Icons.speed_outlined,
-                    value: '${stats.speedKmh.toStringAsFixed(1)} km/h',
+                    value: '\${stats.speedKmh.toStringAsFixed(1)} km/h',
                     label: 'Kecepatan',
                     color: colorScheme.tertiary,
                   ),
