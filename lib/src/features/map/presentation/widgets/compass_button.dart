@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import '../../../../shared/widgets/cyber_glass.dart';
 
 class CompassButton extends StatelessWidget {
   const CompassButton({super.key, required this.mapController});
@@ -8,33 +9,29 @@ class CompassButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return StreamBuilder<MapEvent>(
       stream: mapController.mapEventStream,
       builder: (context, snapshot) {
         final rotation = mapController.camera.rotation;
         if (rotation == 0.0) return const SizedBox.shrink();
 
-        // Hapus Positioned dari sini karena dipanggil di dalam Column di map_screen
-        return Material(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          elevation: 2,
-          child: InkWell(
-            onTap: () {
-              mapController.rotate(0.0);
-            },
-            borderRadius: BorderRadius.circular(12),
-            child: SizedBox(
-              width: 40,
-              height: 40,
-              child: Transform.rotate(
-                angle: -rotation * (3.1415926535897932 / 180),
-                child: Icon(
-                  Icons.navigation,
-                  size: 20,
-                  color: colorScheme.error,
+        return GestureDetector(
+          onTap: () => mapController.rotate(0.0),
+          child: SizedBox(
+            width: 36,
+            height: 36,
+            child: CyberGlassPanel(
+              borderRadius: 18.0,
+              padding: EdgeInsets.zero,
+              child: Center(
+                child: AnimatedRotation(
+                  turns: -rotation / 360.0,
+                  duration: const Duration(milliseconds: 100),
+                  child: const Icon(
+                    Icons.navigation,
+                    size: 20,
+                    color: Color(0xFF00E5FF),
+                  ),
                 ),
               ),
             ),
