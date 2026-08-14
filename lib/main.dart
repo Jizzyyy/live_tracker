@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'src/core/app_theme.dart';
 import 'src/features/settings/providers/settings_provider.dart';
-import 'src/features/splash/presentation/splash_screen.dart';
+import 'src/features/tracking/presentation/live_tracker_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +29,8 @@ class LiveTrackerApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.dark,
       darkTheme: AppTheme.dark,
-      home: const SplashScreen(),
+      // Temporarily bypass splash screen to speed up testing during overhaul
+      home: const LiveTrackerScreen(),
     );
   }
 }
