@@ -138,6 +138,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   children: [
                     TileLayer(
                       urlTemplate: mapStyle.urlTemplate,
+                      subdomains: mapStyle.subdomains,
                       userAgentPackageName: MapDefaults.packageName,
                     ),
                     const MemberRouteLayer(),
