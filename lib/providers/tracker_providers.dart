@@ -216,6 +216,12 @@ class TripSessionNotifier extends Notifier<TripSession> {
   void stopSession() {
     _timer?.cancel();
     _lastPos = null;
+    
+    // Save to history before resetting
+    if (state.distanceMeters > 0) {
+      ref.read(tripHistoryProvider.notifier).saveTrip(state);
+    }
+    
     state = const TripSession();
   }
 }
@@ -223,3 +229,52 @@ final tripSessionProvider = NotifierProvider<TripSessionNotifier, TripSession>(T
 
 // --- Focus State ---
 final focusedMemberProvider = StateProvider<MemberLocation?>((ref) => null);
+
+// --- Trip History Provider ---
+class TripHistoryNotifier extends Notifier<List<SavedTrip>> {
+  static const _historyKey = 'trip_history';
+
+  @override
+  List<SavedTrip> build() {
+    _loadHistory();
+    return [];
+  }
+
+  void _loadHistory() {
+    final prefs = ref.read(sharedPrefsProvider);
+    final historyList = prefs.getStringList(_historyKey) ?? [];
+    state = historyList.map((jsonStr) => SavedTrip.fromJson(jsonStr)).toList().reversed.toList();
+  }
+
+  Future<void> saveTrip(TripSession session) async {
+    // Only save if it's a meaningful trip (e.g., > 10 meters or > 10 seconds)
+    if (session.distanceMeters < 10 && session.activeDurationSeconds < 10) return;
+
+    final newTrip = SavedTrip(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      date: DateTime.now(),
+      distanceMeters: session.distanceMeters,
+      durationSeconds: session.activeDurationSeconds,
+      avgSpeedKmh: session.avgSpeedKmh,
+    );
+
+    final prefs = ref.read(sharedPrefsProvider);
+    final currentList = prefs.getStringList(_historyKey) ?? [];
+    
+    // Save to SharedPreferences (keep max 50 recent trips to prevent bloat)
+    currentList.add(newTrip.toJson());
+    if (currentList.length > 50) currentList.removeAt(0);
+    
+    await prefs.setStringList(_historyKey, currentList);
+    
+    // Update active state
+    state = [newTrip, ...state];
+  }
+  
+  Future<void> clearHistory() async {
+    final prefs = ref.read(sharedPrefsProvider);
+    await prefs.remove(_historyKey);
+    state = [];
+  }
+}
+final tripHistoryProvider = NotifierProvider<TripHistoryNotifier, List<SavedTrip>>(TripHistoryNotifier.new);
