@@ -9,7 +9,6 @@ class RouteHistoryNotifier extends StateNotifier<List<LatLng>> {
   RouteHistoryNotifier() : super([]);
 
   void addPoint(LatLng point) {
-    // LatLng does not override == — compare coordinates explicitly
     if (state.isNotEmpty &&
         state.last.latitude == point.latitude &&
         state.last.longitude == point.longitude) {
@@ -31,9 +30,15 @@ final routeHistoryProvider =
     StateNotifierProvider<RouteHistoryNotifier, List<LatLng>>((ref) {
   final notifier = RouteHistoryNotifier();
 
-  ref.listen(currentLatLngProvider, (prev, next) {
-    if (next != null) {
-      notifier.addPoint(next);
+  // Listen to raw position stream to access accuracy metadata
+  ref.listen(positionStreamProvider, (prev, next) {
+    if (next.hasValue) {
+      final pos = next.value!;
+      // Only record route history if accuracy is better than 30 meters
+      // This prevents the "5km jump" bug on initial poor cell-tower fixes
+      if (pos.accuracy <= 30.0) {
+        notifier.addPoint(LatLng(pos.latitude, pos.longitude));
+      }
     }
   });
 
