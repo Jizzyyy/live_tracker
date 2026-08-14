@@ -28,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       if (mounted) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            pageBuilder: (_, _, _) => const LiveTrackerScreen(),
+            pageBuilder: (_, _, _) => const UrlSetupScreen(),
             transitionsBuilder: (_, anim, _, child) => FadeTransition(opacity: anim, child: child),
             transitionDuration: const Duration(milliseconds: 800),
           ),
