@@ -27,7 +27,7 @@ class LiveTrackerApp extends StatelessWidget {
     return MaterialApp(
       title: 'Live Tracker',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
+      themeMode: ThemeMode.dark,
       darkTheme: AppTheme.dark,
       home: const SplashScreen(),
     );
