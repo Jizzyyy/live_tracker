@@ -10,9 +10,11 @@ import '../../room/providers/room_provider.dart';
 import '../../settings/presentation/settings_screen.dart';
 import '../../settings/providers/settings_provider.dart';
 import '../providers/location_provider.dart';
+import '../providers/map_style_provider.dart';
 import 'widgets/gps_signal_indicator.dart';
 import 'widgets/location_info_card.dart';
 import 'widgets/map_fab.dart';
+import 'widgets/map_style_sheet.dart';
 import 'widgets/member_markers_layer.dart';
 import 'widgets/member_route_layer.dart';
 import 'widgets/route_polyline_layer.dart';
@@ -45,6 +47,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     final posAsync = ref.watch(positionStreamProvider);
 
     final roomState = ref.watch(roomProvider);
+    final mapStyle = ref.watch(mapStyleProvider);
 
     // Send GPS to WebSocket + auto-center on first fix (merged listener)
     ref.listen(positionStreamProvider, (prev, next) {
@@ -72,6 +75,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.layers_outlined),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => const MapStyleSheet(),
+              );
+            },
+          ),
           const GpsSignalIndicator(),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
@@ -118,7 +130,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             ),
             children: [
               TileLayer(
-                urlTemplate: MapDefaults.tileUrl,
+                urlTemplate: mapStyle.urlTemplate,
                 userAgentPackageName: MapDefaults.packageName,
               ),
               const MemberRouteLayer(),
