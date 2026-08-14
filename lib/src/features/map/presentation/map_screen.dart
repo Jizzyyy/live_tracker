@@ -18,6 +18,7 @@ import 'widgets/map_style_sheet.dart';
 import 'widgets/member_markers_layer.dart';
 import 'widgets/member_route_layer.dart';
 import 'widgets/route_polyline_layer.dart';
+import 'widgets/trip_stats_card.dart';
 import 'widgets/user_location_marker.dart';
 import 'widgets/zoom_controls.dart';
 
@@ -158,7 +159,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ],
           ),
           const LocationInfoCard(),
-            Positioned(
+          const TripStatsCard(),
+          Positioned(
               right: 16,
               top: 16,
               child: ZoomControls(mapController: _mapController),
