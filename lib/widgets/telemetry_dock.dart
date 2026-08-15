@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../providers/tracker_providers.dart';
 import '../models/tracker_models.dart';
 import '../utils/ui_helpers.dart';
+import '../utils/custom_snackbar.dart';
 
 class TelemetryBottomDock extends ConsumerWidget {
   const TelemetryBottomDock({super.key});
@@ -76,11 +77,10 @@ class TelemetryBottomDock extends ConsumerWidget {
                         if (trip.state == TripSessionState.active) {
                           final saved = await ref.read(tripSessionProvider.notifier).stopSession();
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(saved ? 'Trip saved!' : 'Trip too short to save.'),
-                                behavior: SnackBarBehavior.floating,
-                              ),
+                            CustomSnackbar.show(
+                              context,
+                              message: saved ? 'Trip saved successfully!' : 'Trip too short to save.',
+                              type: saved ? SnackbarType.success : SnackbarType.warning,
                             );
                           }
                         } else {

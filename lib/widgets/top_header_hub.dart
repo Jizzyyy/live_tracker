@@ -9,6 +9,7 @@ import '../screens/history/trip_history_screen.dart';
 import 'modals/member_list_sheet.dart';
 import 'modals/settings_sheet.dart';
 import 'modals/join_create_room_sheet.dart';
+import '../utils/custom_snackbar.dart';
 
 class TopHeaderHub extends ConsumerWidget {
   const TopHeaderHub({super.key});
@@ -26,24 +27,18 @@ class TopHeaderHub extends ConsumerWidget {
           borderRadius: BorderRadius.circular(32),
           child: Row(
             children: [
-              // Connection Status Pulse
               _PulseDot(status: roomState.status),
               const SizedBox(width: 12),
-              
-              // Room Code or Branding
               Expanded(
                 child: roomState.roomCode != null
                     ? GestureDetector(
                         onTap: () {
                           HapticFeedback.lightImpact();
                           Clipboard.setData(ClipboardData(text: roomState.roomCode!));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Room Code Copied!', style: GoogleFonts.inter()),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              duration: const Duration(seconds: 1),
-                            ),
+                          CustomSnackbar.show(
+                            context,
+                            message: 'Room Code Copied!',
+                            type: SnackbarType.success,
                           );
                         },
                         child: Text(
@@ -80,8 +75,6 @@ class TopHeaderHub extends ConsumerWidget {
                         ],
                       ),
               ),
-              
-              // Action Icons
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -90,7 +83,6 @@ class TopHeaderHub extends ConsumerWidget {
                     onTap: () => _showMapStyleSheet(context, ref),
                   ),
                   const SizedBox(width: 8),
-                  
                   _ActionButton(
                     icon: Icons.group_outlined,
                     badgeCount: roomState.members.length,
@@ -108,7 +100,6 @@ class TopHeaderHub extends ConsumerWidget {
                     },
                   ),
                   const SizedBox(width: 8),
-
                   _ActionButton(
                     icon: Icons.history,
                     onTap: () => _showHistorySheet(context),

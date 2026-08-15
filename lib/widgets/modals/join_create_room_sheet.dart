@@ -2,6 +2,7 @@ import '../../models/tracker_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../providers/tracker_providers.dart';
 import '../../utils/ui_helpers.dart';
 import '../../utils/custom_snackbar.dart';
@@ -29,10 +30,12 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
 
     ref.listen(roomProvider, (prev, next) {
       if (next.status == TrackingConnectionStatus.connected && next.roomCode != null && prev?.roomCode == null) {
-        CustomSnackbar.show(context, message: 'Berhasil masuk ke Room \${next.roomCode}', type: SnackbarType.success);
+        CustomSnackbar.show(context, message: 'Berhasil masuk ke Room ${next.roomCode}', type: SnackbarType.success);
         Navigator.pop(context);
       }
     });
+
+    final isLoading = roomState.status == TrackingConnectionStatus.reconnecting;
 
     return SafeArea(
       child: PremiumGlass(
@@ -42,24 +45,23 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
             left: 24, right: 24, top: 24,
             bottom: MediaQuery.of(context).viewInsets.bottom + 24,
           ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40, height: 4,
-                    decoration: BoxDecoration(color: isDark ? Colors.white30 : Colors.black26, borderRadius: BorderRadius.circular(2)),
+          child: Skeletonizer(
+            enabled: isLoading,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40, height: 4,
+                      decoration: BoxDecoration(color: isDark ? Colors.white30 : Colors.black26, borderRadius: BorderRadius.circular(2)),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                Text('Group Tracking', style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-                const SizedBox(height: 24),
-                
-                if (roomState.status == TrackingConnectionStatus.reconnecting)
-                  const Center(child: CircularProgressIndicator(color: Color(0xFF00E5FF)))
-                else ...[
+                  const SizedBox(height: 24),
+                  Text('Group Tracking', style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                  const SizedBox(height: 24),
+                  
                   FilledButton.icon(
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -67,7 +69,7 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
-                    onPressed: () => ref.read(roomProvider.notifier).createRoom(),
+                    onPressed: isLoading ? null : () => ref.read(roomProvider.notifier).createRoom(),
                     icon: const Icon(Icons.add_circle_outline),
                     label: Text('BUAT ROOM BARU', style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1)),
                   ),
@@ -87,6 +89,7 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
                     controller: _codeController,
                     textCapitalization: TextCapitalization.characters,
                     maxLength: 6,
+                    enabled: !isLoading,
                     decoration: InputDecoration(
                       counterText: '',
                       labelText: 'Kode Room',
@@ -106,7 +109,7 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
                       side: const BorderSide(color: Color(0xFF00E5FF)),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
-                    onPressed: () {
+                    onPressed: isLoading ? null : () {
                       final code = _codeController.text.trim();
                       if (code.length >= 6) {
                         ref.read(roomProvider.notifier).joinRoom(code);
@@ -118,7 +121,7 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
                     label: Text('GABUNG ROOM', style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: const Color(0xFF00E5FF), letterSpacing: 1)),
                   ),
                 ],
-              ],
+              ),
             ),
           ),
         ),
