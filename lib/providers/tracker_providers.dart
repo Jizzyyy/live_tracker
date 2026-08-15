@@ -1,18 +1,19 @@
 import 'dart:async';
-import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/tracker_models.dart';
+import '../models/trip_history_model.dart';
+import '../repositories/trip_history_repository.dart';
 import '../src/core/services/location_service.dart';
 import '../src/core/services/websocket_service.dart';
 
-// --- Shared Prefs & Settings ---
-final sharedPrefsProvider = Provider<SharedPreferences>((ref) {
-  throw UnimplementedError();
-});
+// --- Shared Prefs ---
+final sharedPrefsProvider = Provider<SharedPreferences>((ref) => throw UnimplementedError());
 
+// --- Settings ---
 class SettingsNotifier extends Notifier<AppSettings> {
   @override
   AppSettings build() {
@@ -24,42 +25,26 @@ class SettingsNotifier extends Notifier<AppSettings> {
       backgroundService: prefs.getBool('backgroundService') ?? true,
     );
   }
-
-  void updateSettings(AppSettings newSettings) {
-    state = newSettings;
+  void updateSettings(AppSettings s) {
+    state = s;
     final prefs = ref.read(sharedPrefsProvider);
-    prefs.setString('serverUrl', newSettings.serverUrl);
-    prefs.setBool('isDarkMode', newSettings.isDarkMode);
-    prefs.setBool('highAccuracyGps', newSettings.highAccuracyGps);
-    prefs.setBool('backgroundService', newSettings.backgroundService);
+    prefs.setString('serverUrl', s.serverUrl);
+    prefs.setBool('isDarkMode', s.isDarkMode);
+    prefs.setBool('highAccuracyGps', s.highAccuracyGps);
+    prefs.setBool('backgroundService', s.backgroundService);
   }
 }
 final appSettingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);
 
 // --- Map Styles ---
 final availableMapStyles = [
-  const MapStyleOption(
-    id: 'apple_dark',
-    name: 'Midnight Dark',
-    urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    attribution: 'CartoDB, OSM',
-  ),
-  const MapStyleOption(
-    id: 'apple_light',
-    name: 'Clean Light',
-    urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    attribution: 'CartoDB, OSM',
-  ),
-  const MapStyleOption(
-    id: 'osm',
-    name: 'OSM Standard',
-    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: 'OpenStreetMap',
-  ),
+  const MapStyleOption(id: 'dark', name: 'Midnight Dark', urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attribution: 'CartoDB, OSM'),
+  const MapStyleOption(id: 'light', name: 'Clean Light', urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', attribution: 'CartoDB, OSM'),
+  const MapStyleOption(id: 'osm', name: 'OSM Standard', urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: 'OpenStreetMap'),
 ];
 final mapStyleProvider = StateProvider<MapStyleOption>((ref) => availableMapStyles.first);
 
-// --- GPS Location Stream ---
+// --- GPS Stream ---
 final locationStreamProvider = StreamProvider.autoDispose<Position>((ref) async* {
   final result = await ensureLocationPermission();
   if (!result.granted) throw Exception(result.message);
@@ -68,24 +53,12 @@ final locationStreamProvider = StreamProvider.autoDispose<Position>((ref) async*
 
 // --- Room Session ---
 class RoomState {
-  const RoomState({
-    this.status = TrackingConnectionStatus.disconnected,
-    this.roomCode,
-    this.members = const {},
-  });
+  const RoomState({this.status = TrackingConnectionStatus.disconnected, this.roomCode, this.members = const {}});
   final TrackingConnectionStatus status;
   final String? roomCode;
   final Map<String, MemberLocation> members;
-
-  RoomState copyWith({
-    TrackingConnectionStatus? status,
-    String? roomCode,
-    Map<String, MemberLocation>? members,
-  }) => RoomState(
-    status: status ?? this.status,
-    roomCode: roomCode ?? this.roomCode,
-    members: members ?? this.members,
-  );
+  RoomState copyWith({TrackingConnectionStatus? status, String? roomCode, Map<String, MemberLocation>? members}) =>
+    RoomState(status: status ?? this.status, roomCode: roomCode ?? this.roomCode, members: members ?? this.members);
 }
 
 class RoomNotifier extends Notifier<RoomState> {
@@ -94,10 +67,7 @@ class RoomNotifier extends Notifier<RoomState> {
 
   @override
   RoomState build() {
-    ref.onDispose(() {
-      _sub?.cancel();
-      _ws.dispose();
-    });
+    ref.onDispose(() { _sub?.cancel(); _ws.dispose(); });
     Future.microtask(() => connect());
     return const RoomState();
   }
@@ -110,21 +80,14 @@ class RoomNotifier extends Notifier<RoomState> {
   }
 
   void reconnect() {
-    if (state.status == TrackingConnectionStatus.connected && state.roomCode != null) {
-       leaveRoom();
-    }
-    _sub?.cancel();
-    _ws.disconnect();
+    if (state.status == TrackingConnectionStatus.connected && state.roomCode != null) leaveRoom();
+    _sub?.cancel(); _ws.disconnect();
     state = const RoomState(status: TrackingConnectionStatus.reconnecting);
     _ws.connect(ref.read(appSettingsProvider).serverUrl);
     _sub = _ws.messages.listen(_handleMessage);
   }
 
-  void disconnect() {
-    _ws.disconnect();
-    state = const RoomState();
-  }
-
+  void disconnect() { _ws.disconnect(); state = const RoomState(); }
   void createRoom() => _ws.send({'type': 'create_room'});
   void joinRoom(String code) => _ws.send({'type': 'join_room', 'roomCode': code});
   void leaveRoom() {
@@ -134,81 +97,66 @@ class RoomNotifier extends Notifier<RoomState> {
 
   void sendPosition(Position pos) {
     if (state.status != TrackingConnectionStatus.connected) return;
-    _ws.send({
-      'type': 'position_update',
-      'lat': pos.latitude,
-      'lng': pos.longitude,
-      'speed': pos.speed,
-      'heading': pos.heading,
-      'timestamp': pos.timestamp.millisecondsSinceEpoch,
-    });
+    _ws.send({'type': 'position_update', 'lat': pos.latitude, 'lng': pos.longitude, 'speed': pos.speed, 'heading': pos.heading, 'timestamp': pos.timestamp.millisecondsSinceEpoch});
   }
 
   void _handleMessage(Map<String, dynamic> msg) {
     switch (msg['type']) {
-      case 'connected':
-        if (state.roomCode != null) joinRoom(state.roomCode!);
-        break;
-      case 'room_created':
-      case 'room_joined':
-        state = state.copyWith(status: TrackingConnectionStatus.connected, roomCode: msg['roomCode']);
-        break;
+      case 'connected': if (state.roomCode != null) joinRoom(state.roomCode!); break;
+      case 'room_created': case 'room_joined':
+        state = state.copyWith(status: TrackingConnectionStatus.connected, roomCode: msg['roomCode']); break;
       case 'member_position':
-        try {
-          final loc = MemberLocation.fromJson(msg);
-          state = state.copyWith(members: {...state.members, loc.id: loc});
-        } catch (_) {}
-        break;
+        try { final loc = MemberLocation.fromJson(msg); state = state.copyWith(members: {...state.members, loc.id: loc}); } catch (_) {} break;
       case 'member_left':
-        final leftId = msg['userId'];
-        if (leftId != null) {
-          final newMembers = Map<String, MemberLocation>.from(state.members)..remove(leftId);
-          state = state.copyWith(members: newMembers);
-        }
-        break;
+        final id = msg['userId']; if (id != null) state = state.copyWith(members: Map.from(state.members)..remove(id)); break;
     }
   }
 }
 final roomProvider = NotifierProvider<RoomNotifier, RoomState>(RoomNotifier.new);
 
-// --- Trip Session & Route History ---
+// --- Trip Session (with coordinate buffer) ---
 class TripSessionNotifier extends Notifier<TripSession> {
-  final _distanceCalc = const Distance();
+  final _distCalc = const Distance();
   LatLng? _lastPos;
   Timer? _timer;
+  DateTime? _startTime;
+  double _maxSpeed = 0;
+  final List<RoutePoint> _routeBuffer = [];
 
   @override
   TripSession build() {
     ref.onDispose(() => _timer?.cancel());
-    
     ref.listen(locationStreamProvider, (prev, next) {
       if (state.state != TripSessionState.active || !next.hasValue) return;
       final pos = next.value!;
-      if (pos.accuracy > 25.0) return; 
+      if (pos.accuracy > 25.0) return;
       
-      final currentLatLng = LatLng(pos.latitude, pos.longitude);
-      
-      double addedDistance = 0;
-      if (_lastPos != null) {
-        addedDistance = _distanceCalc.as(LengthUnit.Meter, _lastPos!, currentLatLng);
-      }
-      _lastPos = currentLatLng;
+      final ll = LatLng(pos.latitude, pos.longitude);
+      double added = 0;
+      if (_lastPos != null) added = _distCalc.as(LengthUnit.Meter, _lastPos!, ll);
+      _lastPos = ll;
 
-      final totalDist = state.distanceMeters + addedDistance;
+      // Record breadcrumb
+      _routeBuffer.add(RoutePoint(
+        latitude: pos.latitude, longitude: pos.longitude,
+        timestamp: pos.timestamp.millisecondsSinceEpoch,
+        speed: pos.speed * 3.6, altitude: pos.altitude,
+      ));
+
+      final speedKmh = pos.speed * 3.6;
+      if (speedKmh > _maxSpeed) _maxSpeed = speedKmh;
+
+      final totalDist = state.distanceMeters + added;
       final avgSpeed = state.activeDurationSeconds > 0 ? (totalDist / 1000) / (state.activeDurationSeconds / 3600) : 0.0;
 
-      state = state.copyWith(
-        distanceMeters: totalDist,
-        currentSpeedKmh: pos.speed * 3.6,
-        avgSpeedKmh: avgSpeed,
-      );
+      state = state.copyWith(distanceMeters: totalDist, currentSpeedKmh: speedKmh, avgSpeedKmh: avgSpeed);
     });
-
     return const TripSession();
   }
 
   void toggleSession() {
     if (state.state == TripSessionState.inactive || state.state == TripSessionState.paused) {
+      _startTime ??= DateTime.now();
       state = state.copyWith(state: TripSessionState.active);
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (state.state == TripSessionState.active) {
@@ -222,60 +170,79 @@ class TripSessionNotifier extends Notifier<TripSession> {
     }
   }
 
-  void stopSession() {
+  /// CRITICAL FIX: async stop that awaits persistence before resetting state
+  Future<void> stopSession(BuildContext context) async {
     _timer?.cancel();
-    _lastPos = null;
-    if (state.distanceMeters > 0) {
-      ref.read(tripHistoryProvider.notifier).saveTrip(state);
+
+    // Guard: discard meaningless trips
+    if (_routeBuffer.length < 2 || state.distanceMeters < 10) {
+      _reset();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Trip too short to save.'), behavior: SnackBarBehavior.floating),
+      );
+      return;
     }
+
+    final trip = CompletedTrip(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      startTime: _startTime ?? DateTime.now(),
+      endTime: DateTime.now(),
+      durationSeconds: state.activeDurationSeconds,
+      distanceMeters: state.distanceMeters,
+      avgSpeedKmh: state.avgSpeedKmh,
+      maxSpeedKmh: _maxSpeed,
+      routePoints: List.unmodifiable(_routeBuffer),
+    );
+
+    // AWAIT persistence before resetting state
+    final saved = await ref.read(tripHistoryProvider.notifier).saveTrip(trip);
+
+    if (saved) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Trip saved!'), behavior: SnackBarBehavior.floating),
+      );
+    }
+
+    _reset();
+  }
+
+  void _reset() {
+    _lastPos = null;
+    _startTime = null;
+    _maxSpeed = 0;
+    _routeBuffer.clear();
     state = const TripSession();
   }
 }
 final tripSessionProvider = NotifierProvider<TripSessionNotifier, TripSession>(TripSessionNotifier.new);
 
-// --- Trip History Provider ---
-class TripHistoryNotifier extends Notifier<List<SavedTrip>> {
-  static const _historyKey = 'trip_history';
+// --- Trip History Provider (backed by repository) ---
+class TripHistoryNotifier extends Notifier<List<CompletedTrip>> {
+  late final TripHistoryRepository _repo;
 
   @override
-  List<SavedTrip> build() {
-    _loadHistory();
-    return [];
+  List<CompletedTrip> build() {
+    _repo = TripHistoryRepository(ref.read(sharedPrefsProvider));
+    return _repo.loadAll();
   }
 
-  void _loadHistory() {
-    final prefs = ref.read(sharedPrefsProvider);
-    final historyList = prefs.getStringList(_historyKey) ?? [];
-    state = historyList.map((jsonStr) => SavedTrip.fromJson(jsonStr)).toList().reversed.toList();
+  Future<bool> saveTrip(CompletedTrip trip) async {
+    final ok = await _repo.save(trip);
+    if (ok) state = [trip, ...state];
+    return ok;
   }
 
-  Future<void> saveTrip(TripSession session) async {
-    if (session.distanceMeters < 10 && session.activeDurationSeconds < 10) return;
-
-    final newTrip = SavedTrip(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      date: DateTime.now(),
-      distanceMeters: session.distanceMeters,
-      durationSeconds: session.activeDurationSeconds,
-      avgSpeedKmh: session.avgSpeedKmh,
-    );
-
-    final prefs = ref.read(sharedPrefsProvider);
-    final currentList = prefs.getStringList(_historyKey) ?? [];
-    currentList.add(newTrip.toJson());
-    if (currentList.length > 50) currentList.removeAt(0);
-    
-    await prefs.setStringList(_historyKey, currentList);
-    state = [newTrip, ...state];
+  Future<void> deleteTrip(String id) async {
+    await _repo.delete(id);
+    state = state.where((t) => t.id != id).toList();
   }
-  
-  Future<void> clearHistory() async {
-    final prefs = ref.read(sharedPrefsProvider);
-    await prefs.remove(_historyKey);
+
+  Future<void> clearAll() async {
+    await _repo.clearAll();
     state = [];
   }
 }
-final tripHistoryProvider = NotifierProvider<TripHistoryNotifier, List<SavedTrip>>(TripHistoryNotifier.new);
+final tripHistoryProvider = NotifierProvider<TripHistoryNotifier, List<CompletedTrip>>(TripHistoryNotifier.new);
 
 // --- Focus State ---
 final focusedMemberProvider = StateProvider<MemberLocation?>((ref) => null);
