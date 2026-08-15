@@ -128,7 +128,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen> with Tick
           // Re-add Compass and AutoCenter widgets stacked on the right side dynamically
           Positioned(
             right: 16,
-            bottom: 180, // Sit above telemetry dock cleanly
+            bottom: 240, // Sit cleanly above the taller telemetry bottom dock (replaces 180)
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

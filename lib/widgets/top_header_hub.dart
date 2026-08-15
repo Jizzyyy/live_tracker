@@ -11,107 +11,170 @@ import 'modals/settings_sheet.dart';
 import 'modals/join_create_room_sheet.dart';
 import '../utils/custom_snackbar.dart';
 
-class TopHeaderHub extends ConsumerWidget {
+class TopHeaderHub extends ConsumerStatefulWidget {
   const TopHeaderHub({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TopHeaderHub> createState() => _TopHeaderHubState();
+}
+
+class _TopHeaderHubState extends ConsumerState<TopHeaderHub> with SingleTickerProviderStateMixin {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
     final roomState = ref.watch(roomProvider);
     final theme = Theme.of(context);
 
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        child: PremiumGlass(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          borderRadius: BorderRadius.circular(32),
-          child: Row(
-            children: [
-              _PulseDot(status: roomState.status),
-              const SizedBox(width: 12),
-              Expanded(
-                child: roomState.roomCode != null
-                    ? GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          Clipboard.setData(ClipboardData(text: roomState.roomCode!));
-                          CustomSnackbar.show(
-                            context,
-                            message: 'Room Code Copied!',
-                            type: SnackbarType.success,
-                          );
-                        },
-                        child: Text(
-                          roomState.roomCode!,
-                          style: GoogleFonts.inter(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 2,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      )
-                    : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Image.asset(
-                            'assets/images/app_logo.png',
-                            height: 24,
-                            width: 24,
-                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.track_changes, size: 24, color: Color(0xFF00E5FF)),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Live Tracker',
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+        child: FocusScope(
+          child: Focus(
+            onFocusChange: (hasFocus) {
+              if (!hasFocus && _isExpanded) {
+                setState(() => _isExpanded = false);
+              }
+            },
+            child: PremiumGlass(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              borderRadius: BorderRadius.circular(32),
+              child: AnimatedSize(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOutCubic,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  transitionBuilder: (Widget child, Animation<double> animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: child,
+                    );
+                  },
+                  child: _isExpanded
+                      ? Row(
+                          key: const ValueKey('expanded_hub'),
+                          children: [
+                            _PulseDot(status: roomState.status),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  _ActionButton(
+                                    icon: Icons.map_outlined,
+                                    onTap: () {
+                                      setState(() => _isExpanded = false);
+                                      _showMapStyleSheet(context, ref);
+                                    },
+                                  ),
+                                  _ActionButton(
+                                    icon: Icons.group_outlined,
+                                    badgeCount: roomState.members.length,
+                                    onTap: () {
+                                      setState(() => _isExpanded = false);
+                                      if (roomState.roomCode == null) {
+                                        showModalBottomSheet(
+                                          context: context,
+                                          backgroundColor: Colors.transparent,
+                                          isScrollControlled: true,
+                                          builder: (_) => const JoinCreateRoomSheet(),
+                                        );
+                                      } else {
+                                        _showMemberSheet(context);
+                                      }
+                                    },
+                                  ),
+                                  _ActionButton(
+                                    icon: Icons.history,
+                                    onTap: () {
+                                      setState(() => _isExpanded = false);
+                                      _showHistorySheet(context);
+                                    },
+                                  ),
+                                  _ActionButton(
+                                    icon: Icons.settings_outlined,
+                                    onTap: () {
+                                      setState(() => _isExpanded = false);
+                                      _showSettingsSheet(context);
+                                    },
+                                  ),
+                                ],
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 8),
+                            _ActionButton(
+                              icon: Icons.close_rounded,
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                setState(() => _isExpanded = false);
+                              },
+                            ),
+                          ],
+                        )
+                      : Row(
+                          key: const ValueKey('collapsed_hub'),
+                          children: [
+                            _PulseDot(status: roomState.status),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: roomState.roomCode != null
+                                  ? GestureDetector(
+                                      onTap: () {
+                                        HapticFeedback.lightImpact();
+                                        Clipboard.setData(ClipboardData(text: roomState.roomCode!));
+                                        CustomSnackbar.show(
+                                          context,
+                                          message: 'Room Code Copied!',
+                                          type: SnackbarType.success,
+                                        );
+                                      },
+                                      child: Text(
+                                        roomState.roomCode!,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 2,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    )
+                                  : Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Image.asset(
+                                          'assets/images/app_logo.png',
+                                          height: 24,
+                                          width: 24,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              const Icon(Icons.track_changes, size: 24, color: Color(0xFF00E5FF)),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            'Live Tracker',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                            _ActionButton(
+                              icon: Icons.more_vert_rounded,
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                setState(() => _isExpanded = true);
+                              },
+                            ),
+                          ],
+                        ),
+                ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _ActionButton(
-                    icon: Icons.map_outlined,
-                    onTap: () => _showMapStyleSheet(context, ref),
-                  ),
-                  const SizedBox(width: 8),
-                  _ActionButton(
-                    icon: Icons.group_outlined,
-                    badgeCount: roomState.members.length,
-                    onTap: () {
-                      if (roomState.roomCode == null) {
-                        showModalBottomSheet(
-                          context: context,
-                          backgroundColor: Colors.transparent,
-                          isScrollControlled: true,
-                          builder: (_) => const JoinCreateRoomSheet(),
-                        );
-                      } else {
-                        _showMemberSheet(context);
-                      }
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  _ActionButton(
-                    icon: Icons.history,
-                    onTap: () => _showHistorySheet(context),
-                  ),
-                  const SizedBox(width: 8),
-                  _ActionButton(
-                    icon: Icons.settings_outlined,
-                    onTap: () => _showSettingsSheet(context),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),
