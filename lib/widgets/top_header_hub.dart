@@ -8,6 +8,7 @@ import '../utils/ui_helpers.dart';
 import '../screens/history/trip_history_screen.dart';
 import 'modals/member_list_sheet.dart';
 import 'modals/settings_sheet.dart';
+import 'modals/join_create_room_sheet.dart';
 
 class TopHeaderHub extends ConsumerWidget {
   const TopHeaderHub({super.key});
@@ -89,14 +90,25 @@ class TopHeaderHub extends ConsumerWidget {
                     onTap: () => _showMapStyleSheet(context, ref),
                   ),
                   const SizedBox(width: 8),
-                  if (roomState.roomCode != null) ...[
-                    _ActionButton(
-                      icon: Icons.group_outlined,
-                      badgeCount: roomState.members.length,
-                      onTap: () => _showMemberSheet(context),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
+                  
+                  _ActionButton(
+                    icon: Icons.group_outlined,
+                    badgeCount: roomState.members.length,
+                    onTap: () {
+                      if (roomState.roomCode == null) {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.transparent,
+                          isScrollControlled: true,
+                          builder: (_) => const JoinCreateRoomSheet(),
+                        );
+                      } else {
+                        _showMemberSheet(context);
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 8),
+
                   _ActionButton(
                     icon: Icons.history,
                     onTap: () => _showHistorySheet(context),
