@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
@@ -171,16 +170,13 @@ class TripSessionNotifier extends Notifier<TripSession> {
   }
 
   /// CRITICAL FIX: async stop that awaits persistence before resetting state
-  Future<void> stopSession(BuildContext context) async {
+  Future<bool> stopSession() async {
     _timer?.cancel();
 
     // Guard: discard meaningless trips
     if (_routeBuffer.length < 2 || state.distanceMeters < 10) {
       _reset();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Trip too short to save.'), behavior: SnackBarBehavior.floating),
-      );
-      return;
+      return false;
     }
 
     final trip = CompletedTrip(
@@ -196,14 +192,8 @@ class TripSessionNotifier extends Notifier<TripSession> {
 
     // AWAIT persistence before resetting state
     final saved = await ref.read(tripHistoryProvider.notifier).saveTrip(trip);
-
-    if (saved) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Trip saved!'), behavior: SnackBarBehavior.floating),
-      );
-    }
-
     _reset();
+    return saved;
   }
 
   void _reset() {

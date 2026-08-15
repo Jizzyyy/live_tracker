@@ -74,8 +74,15 @@ class TelemetryBottomDock extends ConsumerWidget {
                       ),
                       onPressed: () async {
                         if (trip.state == TripSessionState.active) {
-                          // CRITICAL: await async stopSession to guarantee persistence
-                          await ref.read(tripSessionProvider.notifier).stopSession(context);
+                          final saved = await ref.read(tripSessionProvider.notifier).stopSession();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(saved ? 'Trip saved!' : 'Trip too short to save.'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
                         } else {
                           ref.read(tripSessionProvider.notifier).toggleSession();
                         }
