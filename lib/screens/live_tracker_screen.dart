@@ -7,6 +7,7 @@ import '../providers/tracker_providers.dart';
 import '../widgets/top_header_hub.dart';
 import '../widgets/telemetry_dock.dart';
 import '../widgets/custom_member_marker.dart';
+import '../widgets/auto_center_button.dart';
 
 class LiveTrackerScreen extends ConsumerStatefulWidget {
   const LiveTrackerScreen({super.key});
