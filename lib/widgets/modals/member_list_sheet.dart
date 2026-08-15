@@ -63,7 +63,7 @@ class MemberListSheet extends ConsumerWidget {
                   child: ListView.separated(
                     shrinkWrap: true,
                     itemCount: members.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1, color: Colors.white12),
+                    separatorBuilder: (_, _) => const Divider(height: 1, color: Colors.white12),
                     itemBuilder: (context, index) {
                       final m = members[index];
                       return ListTile(

@@ -22,11 +22,9 @@ class TelemetryBottomDock extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Metrics Row
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // Speedometer
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,8 +37,7 @@ class TelemetryBottomDock extends ConsumerWidget {
                             Text(
                               trip.formattedSpeed,
                               style: GoogleFonts.inter(
-                                fontSize: 40, 
-                                fontWeight: FontWeight.w900,
+                                fontSize: 40, fontWeight: FontWeight.w900,
                                 fontFeatures: const [FontFeature.tabularFigures()],
                               ),
                             ),
@@ -51,8 +48,6 @@ class TelemetryBottomDock extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  
-                  // Secondary Metrics
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -63,24 +58,24 @@ class TelemetryBottomDock extends ConsumerWidget {
                   ),
                 ],
               ),
-              
               const SizedBox(height: 20),
-              
-              // Action Buttons
               Row(
                 children: [
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: trip.state == TripSessionState.active ? Colors.redAccent.withValues(alpha: 0.2) : Colors.blueAccent,
+                        backgroundColor: trip.state == TripSessionState.active
+                            ? Colors.redAccent.withValues(alpha: 0.2)
+                            : Colors.blueAccent,
                         foregroundColor: trip.state == TripSessionState.active ? Colors.redAccent : Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      onPressed: () {
+                      onPressed: () async {
                         if (trip.state == TripSessionState.active) {
-                          ref.read(tripSessionProvider.notifier).stopSession();
+                          // CRITICAL: await async stopSession to guarantee persistence
+                          await ref.read(tripSessionProvider.notifier).stopSession(context);
                         } else {
                           ref.read(tripSessionProvider.notifier).toggleSession();
                         }
@@ -124,14 +119,7 @@ class _MiniMetric extends StatelessWidget {
       children: [
         Icon(icon, size: 16, color: Colors.grey),
         const SizedBox(width: 6),
-        Text(
-          value,
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        ),
+        Text(value, style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, fontFeatures: const [FontFeature.tabularFigures()])),
       ],
     );
   }

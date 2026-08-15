@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/tracker_models.dart';
 import '../providers/tracker_providers.dart';
 import '../utils/ui_helpers.dart';
-import 'modals/history_sheet.dart';
+import '../screens/history/trip_history_screen.dart';
 import 'modals/member_list_sheet.dart';
 import 'modals/settings_sheet.dart';
 
@@ -156,12 +156,7 @@ class TopHeaderHub extends ConsumerWidget {
   }
 
   void _showHistorySheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) => const TripHistorySheet(),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const TripHistoryScreen()));
   }
 
   void _showSettingsSheet(BuildContext context) {
