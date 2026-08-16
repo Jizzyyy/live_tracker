@@ -120,7 +120,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
   Timer? _timer;
   DateTime? _startTime;
   double _maxSpeed = 0;
-  final List<RoutePoint> _routeBuffer = [];
+  final List<RoutePoint> routeBuffer = [];
 
   @override
   TripSession build() {
@@ -136,7 +136,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
       _lastPos = ll;
 
       // Record breadcrumb
-      _routeBuffer.add(RoutePoint(
+      routeBuffer.add(RoutePoint(
         latitude: pos.latitude, longitude: pos.longitude,
         timestamp: pos.timestamp.millisecondsSinceEpoch,
         speed: pos.speed * 3.6, altitude: pos.altitude,
@@ -174,7 +174,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
     _timer?.cancel();
 
     // Guard: discard meaningless trips
-    if (_routeBuffer.length < 2 || state.distanceMeters < 10) {
+    if (routeBuffer.length < 2 || state.distanceMeters < 10) {
       _reset();
       return false;
     }
@@ -187,7 +187,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
       distanceMeters: state.distanceMeters,
       avgSpeedKmh: state.avgSpeedKmh,
       maxSpeedKmh: _maxSpeed,
-      routePoints: List.unmodifiable(_routeBuffer),
+      routePoints: List.unmodifiable(routeBuffer),
     );
 
     // AWAIT persistence before resetting state
@@ -200,7 +200,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
     _lastPos = null;
     _startTime = null;
     _maxSpeed = 0;
-    _routeBuffer.clear();
+    routeBuffer.clear();
     state = const TripSession();
   }
 }

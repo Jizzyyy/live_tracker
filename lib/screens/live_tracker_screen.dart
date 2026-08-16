@@ -99,6 +99,18 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen> with Tick
                   );
                 }).toList(),
               ),
+              if (ref.watch(tripSessionProvider).state == TripSessionState.active)
+                PolylineLayer(
+                  polylines: [
+                    Polyline(
+                      points: ref.read(tripSessionProvider.notifier).routeBuffer
+                          .map((p) => LatLng(p.latitude, p.longitude))
+                          .toList(),
+                      strokeWidth: 4.0,
+                      color: Colors.blueAccent,
+                    ),
+                  ],
+                ),
               if (posAsync.hasValue)
                 MarkerLayer(
                   markers: [
