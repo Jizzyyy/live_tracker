@@ -10,6 +10,7 @@ import '../widgets/telemetry_dock.dart';
 import '../widgets/custom_user_marker.dart';
 import '../widgets/auto_center_button.dart';
 import '../widgets/map_compass_control.dart';
+import '../services/background_tracking_service.dart';
 
 class LiveTrackerScreen extends ConsumerStatefulWidget {
   const LiveTrackerScreen({super.key});
@@ -18,9 +19,32 @@ class LiveTrackerScreen extends ConsumerStatefulWidget {
   ConsumerState<LiveTrackerScreen> createState() => _LiveTrackerScreenState();
 }
 
-class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen> with TickerProviderStateMixin {
+class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   final _mapController = MapController();
   bool _initialCentered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Initialize background task settings on screen load
+    BackgroundTrackingManager.init();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Re-trigger GPS stream if needed or refresh map viewport
+      ref.invalidate(locationStreamProvider);
+    }
+  }
 
   void _animatedMapMove(LatLng destLocation, double destZoom) {
     final latTween = Tween<double>(begin: _mapController.camera.center.latitude, end: destLocation.latitude);

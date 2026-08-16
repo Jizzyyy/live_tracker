@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import '../models/tracker_models.dart';
 import '../models/trip_history_model.dart';
 import '../repositories/trip_history_repository.dart';
+import '../services/background_tracking_service.dart';
 import '../src/core/services/location_service.dart';
 import '../src/core/services/websocket_service.dart';
 
@@ -113,7 +115,7 @@ class RoomNotifier extends Notifier<RoomState> {
 }
 final roomProvider = NotifierProvider<RoomNotifier, RoomState>(RoomNotifier.new);
 
-// --- Trip Session (with coordinate buffer) ---
+// --- Trip Session (with coordinate buffer & foreground service) ---
 class TripSessionNotifier extends Notifier<TripSession> {
   final _distCalc = const Distance();
   LatLng? _lastPos;
@@ -124,42 +126,114 @@ class TripSessionNotifier extends Notifier<TripSession> {
 
   @override
   TripSession build() {
-    ref.onDispose(() => _timer?.cancel());
+    ref.onDispose(() {
+      _timer?.cancel();
+      FlutterForegroundTask.removeTaskDataCallback(_onForegroundData);
+    });
+
+    FlutterForegroundTask.addTaskDataCallback(_onForegroundData);
+
+    // Also listen to local stream when app is in foreground
     ref.listen(locationStreamProvider, (prev, next) {
       if (state.state != TripSessionState.active || !next.hasValue) return;
       final pos = next.value!;
-      if (pos.accuracy > 25.0) return;
-      
-      final ll = LatLng(pos.latitude, pos.longitude);
-      double added = 0;
-      if (_lastPos != null) added = _distCalc.as(LengthUnit.Meter, _lastPos!, ll);
-      _lastPos = ll;
-
-      // Record breadcrumb
-      routeBuffer.add(RoutePoint(
-        latitude: pos.latitude, longitude: pos.longitude,
-        timestamp: pos.timestamp.millisecondsSinceEpoch,
-        speed: pos.speed * 3.6, altitude: pos.altitude,
-      ));
-
-      final speedKmh = pos.speed * 3.6;
-      if (speedKmh > _maxSpeed) _maxSpeed = speedKmh;
-
-      final totalDist = state.distanceMeters + added;
-      final avgSpeed = state.activeDurationSeconds > 0 ? (totalDist / 1000) / (state.activeDurationSeconds / 3600) : 0.0;
-
-      state = state.copyWith(distanceMeters: totalDist, currentSpeedKmh: speedKmh, avgSpeedKmh: avgSpeed);
+      _processPosition(
+        latitude: pos.latitude,
+        longitude: pos.longitude,
+        speedMps: pos.speed,
+        heading: pos.heading,
+        altitude: pos.altitude,
+        accuracy: pos.accuracy,
+        timestampMs: pos.timestamp.millisecondsSinceEpoch,
+      );
     });
+
     return const TripSession();
   }
 
-  void toggleSession() {
+  void _onForegroundData(Object data) {
+    if (data is Map<String, dynamic>) {
+      if (data['action'] == 'stop_session') {
+        stopSession();
+      } else if (data.containsKey('lat') && data.containsKey('lng')) {
+        _processPosition(
+          latitude: (data['lat'] as num).toDouble(),
+          longitude: (data['lng'] as num).toDouble(),
+          speedMps: (data['speed'] as num?)?.toDouble() ?? 0.0,
+          heading: (data['heading'] as num?)?.toDouble() ?? 0.0,
+          altitude: (data['altitude'] as num?)?.toDouble(),
+          accuracy: (data['accuracy'] as num?)?.toDouble() ?? 10.0,
+          timestampMs: data['timestamp'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+        );
+      }
+    }
+  }
+
+  void _processPosition({
+    required double latitude,
+    required double longitude,
+    required double speedMps,
+    required double heading,
+    double? altitude,
+    required double accuracy,
+    required int timestampMs,
+  }) {
+    if (state.state != TripSessionState.active) return;
+    if (accuracy > 25.0) return;
+
+    final ll = LatLng(latitude, longitude);
+    double added = 0;
+    if (_lastPos != null) added = _distCalc.as(LengthUnit.Meter, _lastPos!, ll);
+    _lastPos = ll;
+
+    routeBuffer.add(RoutePoint(
+      latitude: latitude,
+      longitude: longitude,
+      timestamp: timestampMs,
+      speed: speedMps * 3.6,
+      altitude: altitude,
+    ));
+
+    final speedKmh = speedMps * 3.6;
+    if (speedKmh > _maxSpeed) _maxSpeed = speedKmh;
+
+    final totalDist = state.distanceMeters + added;
+    final avgSpeed = state.activeDurationSeconds > 0
+        ? (totalDist / 1000) / (state.activeDurationSeconds / 3600)
+        : 0.0;
+
+    state = state.copyWith(
+      distanceMeters: totalDist,
+      currentSpeedKmh: speedKmh,
+      avgSpeedKmh: avgSpeed,
+    );
+
+    // Update foreground notification status dynamically
+    BackgroundTrackingManager.updateNotificationData(
+      distance: state.formattedDistance,
+      duration: state.formattedDuration,
+    );
+  }
+
+  void toggleSession() async {
     if (state.state == TripSessionState.inactive || state.state == TripSessionState.paused) {
       _startTime ??= DateTime.now();
       state = state.copyWith(state: TripSessionState.active);
+
+      // Start Android/iOS persistent Foreground Service
+      final backgroundEnabled = ref.read(appSettingsProvider).backgroundService;
+      if (backgroundEnabled) {
+        await BackgroundTrackingManager.startService();
+      }
+
+      _timer?.cancel();
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (state.state == TripSessionState.active) {
           state = state.copyWith(activeDurationSeconds: state.activeDurationSeconds + 1);
+          BackgroundTrackingManager.updateNotificationData(
+            distance: state.formattedDistance,
+            duration: state.formattedDuration,
+          );
         }
       });
     } else {
@@ -169,9 +243,10 @@ class TripSessionNotifier extends Notifier<TripSession> {
     }
   }
 
-  /// CRITICAL FIX: async stop that awaits persistence before resetting state
+  /// CRITICAL FIX: async stop that terminates Foreground Service & flushes buffer
   Future<bool> stopSession() async {
     _timer?.cancel();
+    await BackgroundTrackingManager.stopService();
 
     // Guard: discard meaningless trips
     if (routeBuffer.length < 2 || state.distanceMeters < 10) {
