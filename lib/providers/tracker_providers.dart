@@ -10,6 +10,7 @@ import '../repositories/trip_history_repository.dart';
 import '../services/background_tracking_service.dart';
 import '../src/core/services/location_service.dart';
 import '../src/core/services/websocket_service.dart';
+import '../utils/polyline_simplifier.dart';
 
 // --- Shared Prefs ---
 final sharedPrefsProvider = Provider<SharedPreferences>((ref) => throw UnimplementedError());
@@ -20,7 +21,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
   AppSettings build() {
     final prefs = ref.watch(sharedPrefsProvider);
     return AppSettings(
-      serverUrl: prefs.getString('serverUrl') ?? 'ws://192.168.18.13:8080',
+      serverUrl: prefs.getString('serverUrl') ?? 'wss://live-tracker-backend.onrender.com',
       isDarkMode: prefs.getBool('isDarkMode') ?? true,
       highAccuracyGps: prefs.getBool('highAccuracyGps') ?? true,
       backgroundService: prefs.getBool('backgroundService') ?? true,
@@ -45,7 +46,7 @@ final availableMapStyles = [
 ];
 final mapStyleProvider = StateProvider<MapStyleOption>((ref) => availableMapStyles.first);
 
-// --- GPS Stream ---
+// --- GPS Stream (Throttled via distanceFilter) ---
 final locationStreamProvider = StreamProvider.autoDispose<Position>((ref) async* {
   final result = await ensureLocationPermission();
   if (!result.granted) throw Exception(result.message);
@@ -65,6 +66,7 @@ class RoomState {
 class RoomNotifier extends Notifier<RoomState> {
   final _ws = WebSocketService();
   StreamSubscription? _sub;
+  int _lastWsSendMs = 0;
 
   @override
   RoomState build() {
@@ -96,9 +98,21 @@ class RoomNotifier extends Notifier<RoomState> {
     state = state.copyWith(status: TrackingConnectionStatus.disconnected, roomCode: null, members: {});
   }
 
+  /// Throttled WS Broadcast to max 1 Hz (1000ms) to reduce battery/bandwidth
   void sendPosition(Position pos) {
     if (state.status != TrackingConnectionStatus.connected) return;
-    _ws.send({'type': 'position_update', 'lat': pos.latitude, 'lng': pos.longitude, 'speed': pos.speed, 'heading': pos.heading, 'timestamp': pos.timestamp.millisecondsSinceEpoch});
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (now - _lastWsSendMs < 1000) return;
+    _lastWsSendMs = now;
+
+    _ws.send({
+      'type': 'position_update',
+      'lat': pos.latitude,
+      'lng': pos.longitude,
+      'speed': pos.speed,
+      'heading': pos.heading,
+      'timestamp': pos.timestamp.millisecondsSinceEpoch,
+    });
   }
 
   void _handleMessage(Map<String, dynamic> msg) {
@@ -115,7 +129,7 @@ class RoomNotifier extends Notifier<RoomState> {
 }
 final roomProvider = NotifierProvider<RoomNotifier, RoomState>(RoomNotifier.new);
 
-// --- Trip Session (with coordinate buffer & foreground service) ---
+// --- Trip Session (Optimized with displacement filter & downsampling) ---
 class TripSessionNotifier extends Notifier<TripSession> {
   final _distCalc = const Distance();
   LatLng? _lastPos;
@@ -123,6 +137,10 @@ class TripSessionNotifier extends Notifier<TripSession> {
   DateTime? _startTime;
   double _maxSpeed = 0;
   final List<RoutePoint> routeBuffer = [];
+  List<LatLng> _simplifiedCache = [];
+  int _lastUiEmitMs = 0;
+
+  List<LatLng> get simplifiedRoute => _simplifiedCache;
 
   @override
   TripSession build() {
@@ -133,7 +151,6 @@ class TripSessionNotifier extends Notifier<TripSession> {
 
     FlutterForegroundTask.addTaskDataCallback(_onForegroundData);
 
-    // Also listen to local stream when app is in foreground
     ref.listen(locationStreamProvider, (prev, next) {
       if (state.state != TripSessionState.active || !next.hasValue) return;
       final pos = next.value!;
@@ -181,10 +198,14 @@ class TripSessionNotifier extends Notifier<TripSession> {
     if (state.state != TripSessionState.active) return;
     if (accuracy > 25.0) return;
 
-    final ll = LatLng(latitude, longitude);
-    double added = 0;
-    if (_lastPos != null) added = _distCalc.as(LengthUnit.Meter, _lastPos!, ll);
-    _lastPos = ll;
+    final currentLatLng = LatLng(latitude, longitude);
+    double addedDist = 0;
+    if (_lastPos != null) {
+      addedDist = _distCalc.as(LengthUnit.Meter, _lastPos!, currentLatLng);
+      // Filter out micro jitter (< 2.0 meters) to avoid polyline bloating
+      if (addedDist < 2.0) return;
+    }
+    _lastPos = currentLatLng;
 
     routeBuffer.add(RoutePoint(
       latitude: latitude,
@@ -194,25 +215,33 @@ class TripSessionNotifier extends Notifier<TripSession> {
       altitude: altitude,
     ));
 
+    // Dynamic downsampling: update cache with displacement filter
+    final rawPoints = routeBuffer.map((p) => LatLng(p.latitude, p.longitude)).toList();
+    _simplifiedCache = PolylineSimplifier.filterDisplacement(rawPoints, minDistanceMeters: 2.5);
+
     final speedKmh = speedMps * 3.6;
     if (speedKmh > _maxSpeed) _maxSpeed = speedKmh;
 
-    final totalDist = state.distanceMeters + added;
+    final totalDist = state.distanceMeters + addedDist;
     final avgSpeed = state.activeDurationSeconds > 0
         ? (totalDist / 1000) / (state.activeDurationSeconds / 3600)
         : 0.0;
 
-    state = state.copyWith(
-      distanceMeters: totalDist,
-      currentSpeedKmh: speedKmh,
-      avgSpeedKmh: avgSpeed,
-    );
+    // Throttle state update to at most once per 500ms to preserve 60/120 FPS
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (now - _lastUiEmitMs >= 500 || state.distanceMeters == 0) {
+      _lastUiEmitMs = now;
+      state = state.copyWith(
+        distanceMeters: totalDist,
+        currentSpeedKmh: speedKmh,
+        avgSpeedKmh: avgSpeed,
+      );
 
-    // Update foreground notification status dynamically
-    BackgroundTrackingManager.updateNotificationData(
-      distance: state.formattedDistance,
-      duration: state.formattedDuration,
-    );
+      BackgroundTrackingManager.updateNotificationData(
+        distance: state.formattedDistance,
+        duration: state.formattedDuration,
+      );
+    }
   }
 
   void toggleSession() async {
@@ -220,7 +249,6 @@ class TripSessionNotifier extends Notifier<TripSession> {
       _startTime ??= DateTime.now();
       state = state.copyWith(state: TripSessionState.active);
 
-      // Start Android/iOS persistent Foreground Service
       final backgroundEnabled = ref.read(appSettingsProvider).backgroundService;
       if (backgroundEnabled) {
         await BackgroundTrackingManager.startService();
@@ -243,12 +271,10 @@ class TripSessionNotifier extends Notifier<TripSession> {
     }
   }
 
-  /// CRITICAL FIX: async stop that terminates Foreground Service & flushes buffer
   Future<bool> stopSession() async {
     _timer?.cancel();
     await BackgroundTrackingManager.stopService();
 
-    // Guard: discard meaningless trips
     if (routeBuffer.length < 2 || state.distanceMeters < 10) {
       _reset();
       return false;
@@ -265,7 +291,6 @@ class TripSessionNotifier extends Notifier<TripSession> {
       routePoints: List.unmodifiable(routeBuffer),
     );
 
-    // AWAIT persistence before resetting state
     final saved = await ref.read(tripHistoryProvider.notifier).saveTrip(trip);
     _reset();
     return saved;
@@ -276,12 +301,13 @@ class TripSessionNotifier extends Notifier<TripSession> {
     _startTime = null;
     _maxSpeed = 0;
     routeBuffer.clear();
+    _simplifiedCache.clear();
     state = const TripSession();
   }
 }
 final tripSessionProvider = NotifierProvider<TripSessionNotifier, TripSession>(TripSessionNotifier.new);
 
-// --- Trip History Provider (backed by repository) ---
+// --- Trip History Provider ---
 class TripHistoryNotifier extends Notifier<List<CompletedTrip>> {
   late final TripHistoryRepository _repo;
 

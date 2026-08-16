@@ -10,6 +10,7 @@ void startCallback() {
 
 class TrackingTaskHandler extends TaskHandler {
   StreamSubscription<Position>? _positionSubscription;
+  int _lastNotificationUpdateMs = 0;
 
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
@@ -17,7 +18,7 @@ class TrackingTaskHandler extends TaskHandler {
     _positionSubscription = Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.high,
-        distanceFilter: 5,
+        distanceFilter: 3, // Throttles hardware GPS events to >= 3 meters
       ),
     ).listen((Position position) {
       FlutterForegroundTask.sendDataToMain({
@@ -30,11 +31,16 @@ class TrackingTaskHandler extends TaskHandler {
         'timestamp': position.timestamp.millisecondsSinceEpoch,
       });
 
-      final speedKmh = (position.speed * 3.6).toStringAsFixed(1);
-      FlutterForegroundTask.updateService(
-        notificationTitle: 'Live Tracker Active',
-        notificationText: 'Live GPS Active • $speedKmh km/h',
-      );
+      // Throttle IPC notification updates to at most once every 3000ms
+      final now = DateTime.now().millisecondsSinceEpoch;
+      if (now - _lastNotificationUpdateMs > 3000) {
+        _lastNotificationUpdateMs = now;
+        final speedKmh = (position.speed * 3.6).toStringAsFixed(1);
+        FlutterForegroundTask.updateService(
+          notificationTitle: 'Live Tracker Active',
+          notificationText: 'Live GPS Active • $speedKmh km/h',
+        );
+      }
     });
   }
 
@@ -79,6 +85,8 @@ class TrackingTaskHandler extends TaskHandler {
 }
 
 class BackgroundTrackingManager {
+  static int _lastIpcUpdateMs = 0;
+
   static Future<void> init() async {
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
@@ -128,10 +136,15 @@ class BackgroundTrackingManager {
     return res is ServiceRequestSuccess;
   }
 
+  /// Throttled notification IPC to avoid main-thread overhead
   static void updateNotificationData({required String distance, required String duration}) {
-    FlutterForegroundTask.sendDataToTask({
-      'distance': distance,
-      'duration': duration,
-    });
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (now - _lastIpcUpdateMs > 3000) {
+      _lastIpcUpdateMs = now;
+      FlutterForegroundTask.sendDataToTask({
+        'distance': distance,
+        'duration': duration,
+      });
+    }
   }
 }

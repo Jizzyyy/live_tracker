@@ -28,7 +28,6 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Initialize background task settings on screen load
     BackgroundTrackingManager.init();
   }
 
@@ -41,7 +40,6 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // Re-trigger GPS stream if needed or refresh map viewport
       ref.invalidate(locationStreamProvider);
     }
   }
@@ -51,7 +49,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
     final lngTween = Tween<double>(begin: _mapController.camera.center.longitude, end: destLocation.longitude);
     final zoomTween = Tween<double>(begin: _mapController.camera.zoom, end: destZoom);
 
-    final controller = AnimationController(duration: const Duration(milliseconds: 600), vsync: this);
+    final controller = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
     final animation = CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn);
 
     controller.addListener(() {
@@ -71,10 +69,9 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
   @override
   Widget build(BuildContext context) {
     final mapStyle = ref.watch(mapStyleProvider);
-    final roomState = ref.watch(roomProvider);
     final posAsync = ref.watch(locationStreamProvider);
     
-    // Handle Auto-centering and Position Broadcasting
+    // Auto-centering on first fix and position broadcasting
     ref.listen(locationStreamProvider, (prev, next) {
       if (!next.hasValue) return;
       final pos = next.value!;
@@ -87,60 +84,94 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
       }
     });
 
-    // Handle Member Focus Fly-to
+    // Fly-to animation when selecting member from sheet/island
     ref.listen(focusedMemberProvider, (prev, next) {
       if (next != null) {
         _animatedMapMove(LatLng(next.latitude, next.longitude), 16.5);
-        Future.delayed(const Duration(milliseconds: 700), () {
+        Future.delayed(const Duration(milliseconds: 600), () {
           if (mounted) ref.read(focusedMemberProvider.notifier).state = null;
         });
       }
     });
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color(0xFF0B0D11),
       body: Stack(
         children: [
+          // 1. High-Performance Map Viewport with Caching
           FlutterMap(
             mapController: _mapController,
             options: const MapOptions(
               initialCenter: LatLng(-6.2, 106.8),
               initialZoom: 13,
-              interactionOptions: InteractionOptions(flags: InteractiveFlag.all), // Re-enable rotation
+              interactionOptions: InteractionOptions(flags: InteractiveFlag.all),
             ),
             children: [
               TileLayer(
                 urlTemplate: mapStyle.urlTemplate,
                 subdomains: mapStyle.subdomains,
                 userAgentPackageName: 'com.livetracker.app',
+                maxZoom: 19,
+                keepBuffer: 3, // Tile buffer optimization
               ),
-              MarkerLayer(
-                markers: roomState.members.values.map((m) {
-                  return Marker(
-                    point: LatLng(m.latitude, m.longitude),
-                    width: 56, height: 56,
-                    child: CustomUserMarker(location: m, color: _getColorForId(m.id)),
+
+              // Active Route Polyline (Throttled & Downsampled with RDP)
+              Consumer(
+                builder: (context, ref, _) {
+                  final sessionState = ref.watch(tripSessionProvider.select((s) => s.state));
+                  if (sessionState != TripSessionState.active) {
+                    return const SizedBox.shrink();
+                  }
+
+                  // Watch simplified downsampled points for GPU fill-rate protection
+                  final routePoints = ref.watch(
+                    tripSessionProvider.notifier.select((n) => n.simplifiedRoute),
                   );
-                }).toList(),
-              ),
-              if (ref.watch(tripSessionProvider).state == TripSessionState.active)
-                PolylineLayer(
-                  polylines: [
-                    Polyline(
-                      points: ref.read(tripSessionProvider.notifier).routeBuffer
-                          .map((p) => LatLng(p.latitude, p.longitude))
-                          .toList(),
-                      strokeWidth: 4.0,
-                      color: Colors.blueAccent,
+
+                  if (routePoints.length < 2) return const SizedBox.shrink();
+
+                  return RepaintBoundary(
+                    child: PolylineLayer(
+                      polylines: [
+                        Polyline(
+                          points: routePoints,
+                          strokeWidth: 4.5,
+                          color: const Color(0xFF00E5FF).withValues(alpha: 0.85),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
+              ),
+
+              // Member Markers Layer (Isolated RepaintBoundary)
+              Consumer(
+                builder: (context, ref, _) {
+                  final members = ref.watch(roomProvider.select((r) => r.members.values.toList()));
+                  return MarkerLayer(
+                    markers: members.map((m) {
+                      return Marker(
+                        point: LatLng(m.latitude, m.longitude),
+                        width: 56,
+                        height: 56,
+                        child: CustomUserMarker(
+                          location: m,
+                          color: _getColorForId(m.id),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+
+              // Local User Marker Layer
               if (posAsync.hasValue)
                 MarkerLayer(
                   markers: [
                     Marker(
                       point: LatLng(posAsync.value!.latitude, posAsync.value!.longitude),
-                      width: 56, height: 56,
+                      width: 56,
+                      height: 56,
                       child: CustomUserMarker(
                         isLocalUser: true,
                         location: MemberLocation(
@@ -159,12 +190,16 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
             ],
           ),
           
-          const Align(alignment: Alignment.topCenter, child: TopHeaderHub()),
+          // 2. Floating Top Header Capsule
+          const Align(
+            alignment: Alignment.topCenter,
+            child: TopHeaderHub(),
+          ),
           
-          // Re-add Compass and AutoCenter widgets stacked on the right side dynamically
+          // 3. Floating Micro-Controls Stack
           Positioned(
             right: 16,
-            bottom: 240, // Sit cleanly above the taller telemetry bottom dock (replaces 180)
+            bottom: 240,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -175,14 +210,18 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
             ),
           ),
           
-          const Align(alignment: Alignment.bottomCenter, child: TelemetryBottomDock()),
+          // 4. Floating Telemetry Dock
+          const Align(
+            alignment: Alignment.bottomCenter,
+            child: TelemetryBottomDock(),
+          ),
         ],
       ),
     );
   }
 
   Color _getColorForId(String id) {
-    final colors = const [
+    const colors = [
       Color(0xFFFF1744), Color(0xFF00E676), Color(0xFFFFD600),
       Color(0xFFAA00FF), Color(0xFF00BCD4), Color(0xFFFF6D00),
     ];

@@ -24,7 +24,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
     super.initState();
     _expandCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 350),
+      duration: const Duration(milliseconds: 300),
     );
     _expandAnimation = CurvedAnimation(
       parent: _expandCtrl,
@@ -51,8 +51,6 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
 
   @override
   Widget build(BuildContext context) {
-    final trip = ref.watch(tripSessionProvider);
-    final roomState = ref.watch(roomProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SafeArea(
@@ -103,7 +101,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                   ),
                 ),
 
-                // Primary Metrics Row
+                // Primary Metrics Row with Granular Rebuilds via Consumer
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -120,28 +118,33 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                               color: Colors.grey,
                             ),
                           ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: [
-                              Text(
-                                trip.formattedSpeed,
-                                style: GoogleFonts.inter(
-                                  fontSize: 38,
-                                  fontWeight: FontWeight.w900,
-                                  fontFeatures: const [FontFeature.tabularFigures()],
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'km/h',
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
+                          Consumer(
+                            builder: (context, ref, _) {
+                              final speedStr = ref.watch(tripSessionProvider.select((s) => s.formattedSpeed));
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
+                                children: [
+                                  Text(
+                                    speedStr,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 38,
+                                      fontWeight: FontWeight.w900,
+                                      fontFeatures: const [FontFeature.tabularFigures()],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'km/h',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -149,16 +152,26 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        _MiniMetric(
-                          icon: Icons.route_outlined,
-                          value: trip.formattedDistance,
-                          color: const Color(0xFF00E676),
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final dist = ref.watch(tripSessionProvider.select((s) => s.formattedDistance));
+                            return _MiniMetric(
+                              icon: Icons.route_outlined,
+                              value: dist,
+                              color: const Color(0xFF00E676),
+                            );
+                          },
                         ),
                         const SizedBox(height: 6),
-                        _MiniMetric(
-                          icon: Icons.timer_outlined,
-                          value: trip.formattedDuration,
-                          color: const Color(0xFFFFD600),
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final dur = ref.watch(tripSessionProvider.select((s) => s.formattedDuration));
+                            return _MiniMetric(
+                              icon: Icons.timer_outlined,
+                              value: dur,
+                              color: const Color(0xFFFFD600),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -189,27 +202,37 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                   color: Colors.white60,
                                 ),
                               ),
-                              Text(
-                                '${roomState.members.length} Members Active',
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  color: const Color(0xFF00E5FF),
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              Consumer(
+                                builder: (context, ref, _) {
+                                  final count = ref.watch(roomProvider.select((r) => r.members.length));
+                                  return Text(
+                                    '$count Members Active',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      color: const Color(0xFF00E5FF),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),
                           const SizedBox(height: 10),
-                          if (roomState.members.isEmpty)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8.0),
-                              child: Text(
-                                'No group members in room. Create or join a room to sync.',
-                                style: GoogleFonts.inter(color: Colors.grey, fontSize: 12),
-                              ),
-                            )
-                          else
-                            ...roomState.members.values.take(3).map(
+                          Consumer(
+                            builder: (context, ref, _) {
+                              final members = ref.watch(roomProvider.select((r) => r.members.values.toList()));
+                              if (members.isEmpty) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Text(
+                                    'No group members in room. Create or join a room to sync.',
+                                    style: GoogleFonts.inter(color: Colors.grey, fontSize: 12),
+                                  ),
+                                );
+                              }
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: members.take(3).map(
                                   (m) => Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                                     child: Row(
@@ -232,7 +255,10 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                       ],
                                     ),
                                   ),
-                                ),
+                                ).toList(),
+                              );
+                            },
+                          ),
                           const SizedBox(height: 12),
                         ],
                       ),
@@ -242,59 +268,66 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
 
                 const SizedBox(height: 16),
 
-                // Trip Action Buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: trip.state == TripSessionState.active
-                              ? Colors.redAccent.withValues(alpha: 0.2)
-                              : const Color(0xFF00E5FF),
-                          foregroundColor: trip.state == TripSessionState.active
-                              ? Colors.redAccent
-                              : Colors.black,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                // Trip Action Buttons with Granular State Selection
+                Consumer(
+                  builder: (context, ref, _) {
+                    final sessionState = ref.watch(tripSessionProvider.select((s) => s.state));
+                    final isActive = sessionState == TripSessionState.active;
+
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isActive
+                                  ? Colors.redAccent.withValues(alpha: 0.2)
+                                  : const Color(0xFF00E5FF),
+                              foregroundColor: isActive
+                                  ? Colors.redAccent
+                                  : Colors.black,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            onPressed: () async {
+                              if (isActive) {
+                                final saved = await ref.read(tripSessionProvider.notifier).stopSession();
+                                if (context.mounted) {
+                                  CustomSnackbar.show(
+                                    context,
+                                    message: saved ? 'Trip saved to history!' : 'Trip too short to save.',
+                                    type: saved ? SnackbarType.success : SnackbarType.warning,
+                                  );
+                                }
+                              } else {
+                                ref.read(tripSessionProvider.notifier).toggleSession();
+                              }
+                            },
+                            child: Text(
+                              isActive ? 'STOP SESSION' : 'START TRACKING',
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1,
+                              ),
+                            ),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        onPressed: () async {
-                          if (trip.state == TripSessionState.active) {
-                            final saved = await ref.read(tripSessionProvider.notifier).stopSession();
-                            if (context.mounted) {
-                              CustomSnackbar.show(
-                                context,
-                                message: saved ? 'Trip saved to history!' : 'Trip too short to save.',
-                                type: saved ? SnackbarType.success : SnackbarType.warning,
-                              );
-                            }
-                          } else {
-                            ref.read(tripSessionProvider.notifier).toggleSession();
-                          }
-                        },
-                        child: Text(
-                          trip.state == TripSessionState.active ? 'STOP SESSION' : 'START TRACKING',
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
+                        if (isActive) ...[
+                          const SizedBox(width: 12),
+                          IconButton.filled(
+                            onPressed: () => ref.read(tripSessionProvider.notifier).toggleSession(),
+                            icon: const Icon(Icons.pause),
+                            style: IconButton.styleFrom(
+                              backgroundColor: isDark ? Colors.white12 : Colors.black12,
+                              padding: const EdgeInsets.all(16),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                    if (trip.state == TripSessionState.active) ...[
-                      const SizedBox(width: 12),
-                      IconButton.filled(
-                        onPressed: () => ref.read(tripSessionProvider.notifier).toggleSession(),
-                        icon: const Icon(Icons.pause),
-                        style: IconButton.styleFrom(
-                          backgroundColor: isDark ? Colors.white12 : Colors.black12,
-                          padding: const EdgeInsets.all(16),
-                        ),
-                      ),
-                    ],
-                  ],
+                        ],
+                      ],
+                    );
+                  },
                 ),
               ],
             ),
