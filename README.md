@@ -5,7 +5,7 @@ A real-time group location sharing and trip telemetry app built with Flutter & N
 ## ✨ Features
 - 👥 **Real-Time Group Tracking:** Create/join rooms and see live member locations via WebSockets.
 - 📊 **Trip Telemetry:** Live dashboard for distance, duration, and average speed.
-- 🗺️ **Route History:** Save and view past trips locally.
+- 🗺️ **Route History & GPX Export:** Save and view past trips locally with one-tap GPX 1.1 file export for Strava/Garmin.
 - 🔋 **Background Service:** Keep tracking when the app is minimized (Android).
 - 🎨 **Dynamic Map Styles:** Switch map tiles instantly.
 - 🪟 **Glassmorphism UI:** Clean, responsive, and modern design.

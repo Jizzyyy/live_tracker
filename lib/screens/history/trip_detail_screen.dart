@@ -3,24 +3,60 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import '../../models/trip_history_model.dart';
+import '../../utils/gpx_exporter.dart';
 import '../../utils/ui_helpers.dart';
+import '../../utils/custom_snackbar.dart';
 
-class TripDetailScreen extends StatelessWidget {
+class TripDetailScreen extends StatefulWidget {
   final CompletedTrip trip;
   const TripDetailScreen({super.key, required this.trip});
 
   @override
+  State<TripDetailScreen> createState() => _TripDetailScreenState();
+}
+
+class _TripDetailScreenState extends State<TripDetailScreen> {
+  bool _isExporting = false;
+
+  Future<void> _handleExport() async {
+    setState(() => _isExporting = true);
+    try {
+      await GpxExporter.exportAndShare(widget.trip);
+    } catch (e) {
+      if (mounted) {
+        CustomSnackbar.show(context, message: 'Gagal mengekspor GPX: $e', type: SnackbarType.error);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isExporting = false);
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final trip = widget.trip;
     final points = trip.routePoints.map((p) => LatLng(p.latitude, p.longitude)).toList();
 
-    // Calculate bounding box for auto-fit
-    final bounds = LatLngBounds.fromPoints(points);
+    final bounds = points.isNotEmpty 
+        ? LatLngBounds.fromPoints(points)
+        : LatLngBounds(const LatLng(-6.2, 106.8), const LatLng(-6.2, 106.8));
 
     return Scaffold(
       backgroundColor: const Color(0xFF0B0D11),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text(trip.formattedDate, style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+        actions: [
+          IconButton(
+            tooltip: 'Export GPX',
+            icon: _isExporting 
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF00E5FF)))
+                : const Icon(Icons.share_outlined, color: Color(0xFF00E5FF)),
+            onPressed: _isExporting ? null : _handleExport,
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Column(
         children: [
@@ -73,7 +109,7 @@ class TripDetailScreen extends StatelessWidget {
             ),
           ),
 
-          // Telemetry breakdown
+          // Telemetry breakdown & export action
           Expanded(
             flex: 2,
             child: SingleChildScrollView(
