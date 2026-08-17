@@ -45,7 +45,7 @@ class MemberListSheet extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      '\${members.length} Online',
+                      '${members.length} Online',
                       style: GoogleFonts.inter(color: const Color(0xFF00E676), fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                   ),
@@ -75,12 +75,12 @@ class MemberListSheet extends ConsumerWidget {
                             style: GoogleFonts.jetBrainsMono(color: const Color(0xFF00E5FF), fontWeight: FontWeight.bold),
                           ),
                         ),
-                        title: Text('User \${m.id}', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                        title: Text('User ${m.id}', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
                         subtitle: Row(
                           children: [
                             const Icon(Icons.speed, size: 12, color: Colors.grey),
                             const SizedBox(width: 4),
-                            Text('\${(m.speedKmh ?? 0).toStringAsFixed(1)} km/h', style: GoogleFonts.jetBrainsMono(color: Colors.grey, fontSize: 12)),
+                            Text('${(m.speedKmh ?? 0).toStringAsFixed(1)} km/h', style: GoogleFonts.jetBrainsMono(color: Colors.grey, fontSize: 12)),
                           ],
                         ),
                         trailing: IconButton.filledTonal(
