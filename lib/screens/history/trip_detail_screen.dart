@@ -37,50 +37,108 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
   }
 
   void _showShareCardDialog() {
+    bool cardIsDark = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TripShareCard(trip: widget.trip, boundaryKey: _shareCardKey),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white24),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    onPressed: () => Navigator.pop(ctx),
-                    icon: const Icon(Icons.close, size: 18),
-                    label: const Text('TUTUP'),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Theme Toggle Bar for Share Card
+                Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF12151B).withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white12),
                   ),
-                  const SizedBox(width: 12),
-                  FilledButton.icon(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF00E5FF),
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    onPressed: () async {
-                      Navigator.pop(ctx);
-                      CustomSnackbar.show(context, message: 'Menyiapkan kartu rute...', type: SnackbarType.info);
-                      await TripShareCard.captureAndShare(_shareCardKey, widget.trip);
-                    },
-                    icon: const Icon(Icons.share, size: 18),
-                    label: const Text('BAGIKAN GAMBAR', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'TEMA KARTU:',
+                        style: GoogleFonts.shareTechMono(color: Colors.white70, fontSize: 11, letterSpacing: 1),
+                      ),
+                      const SizedBox(width: 12),
+                      ChoiceChip(
+                        label: const Text('DARK'),
+                        selected: cardIsDark,
+                        selectedColor: const Color(0xFF00E5FF),
+                        labelStyle: TextStyle(
+                          color: cardIsDark ? Colors.black : Colors.white70,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
+                        onSelected: (val) {
+                          if (val) setDialogState(() => cardIsDark = true);
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      ChoiceChip(
+                        label: const Text('LIGHT'),
+                        selected: !cardIsDark,
+                        selectedColor: const Color(0xFF00E5FF),
+                        labelStyle: TextStyle(
+                          color: !cardIsDark ? Colors.black : Colors.white70,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
+                        onSelected: (val) {
+                          if (val) setDialogState(() => cardIsDark = false);
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ],
+                ),
+
+                // Card with selectable Theme (Dark/Light)
+                TripShareCard(
+                  trip: widget.trip, 
+                  boundaryKey: _shareCardKey,
+                  isDark: cardIsDark,
+                ),
+                const SizedBox(height: 16),
+                
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white24),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: () => Navigator.pop(ctx),
+                      icon: const Icon(Icons.close, size: 18),
+                      label: const Text('TUTUP'),
+                    ),
+                    const SizedBox(width: 12),
+                    FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF00E5FF),
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: () async {
+                        Navigator.pop(ctx);
+                        CustomSnackbar.show(context, message: 'Menyiapkan kartu rute...', type: SnackbarType.info);
+                        await TripShareCard.captureAndShare(_shareCardKey, widget.trip);
+                      },
+                      icon: const Icon(Icons.share, size: 18),
+                      label: const Text('BAGIKAN GAMBAR', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

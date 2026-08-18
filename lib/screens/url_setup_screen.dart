@@ -29,8 +29,10 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0D11),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -44,10 +46,16 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF00E5FF).withValues(alpha: 0.1),
+                      color: isDark 
+                          ? const Color(0xFF00E5FF).withValues(alpha: 0.1)
+                          : const Color(0xFF0284C7).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.satellite_alt, size: 48, color: Color(0xFF00E5FF)),
+                    child: Icon(
+                      Icons.satellite_alt, 
+                      size: 48, 
+                      color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Text(
@@ -56,38 +64,59 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2,
-                      color: Colors.white,
+                      color: isDark ? Colors.white : const Color(0xFF0D1117),
                     ),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'Masukkan URL Ngrok atau server cloud Anda untuk menginisialisasi sistem pelacakan.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(color: Colors.grey, fontSize: 14),
+                    style: GoogleFonts.inter(
+                      color: isDark ? Colors.white60 : const Color(0xFF64748B), 
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(height: 32),
                   TextField(
                     controller: _urlCtrl,
-                    style: GoogleFonts.jetBrainsMono(color: const Color(0xFF00E5FF)),
+                    style: GoogleFonts.jetBrainsMono(
+                      color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                      fontWeight: FontWeight.w600,
+                    ),
                     decoration: InputDecoration(
                       labelText: 'WebSocket URL',
-                      labelStyle: const TextStyle(color: Colors.grey),
+                      labelStyle: TextStyle(
+                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                      ),
                       hintText: 'wss://xxxx.ngrok.app',
+                      hintStyle: TextStyle(
+                        color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                      ),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.white24),
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                          color: isDark ? Colors.white24 : Colors.black12,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.white24),
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                          color: isDark ? Colors.white24 : Colors.black12,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF00E5FF)),
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                          color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                          width: 2,
+                        ),
                       ),
                       filled: true,
-                      fillColor: Colors.black45,
-                      prefixIcon: const Icon(Icons.link, color: Colors.grey),
+                      fillColor: isDark ? Colors.black38 : const Color(0xFFF1F5F9),
+                      prefixIcon: Icon(
+                        Icons.link, 
+                        color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -96,18 +125,15 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                     child: FilledButton(
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        backgroundColor: const Color(0xFF00E5FF),
-                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        backgroundColor: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                        foregroundColor: isDark ? Colors.black : Colors.white,
                       ),
                       onPressed: () {
                         final url = _urlCtrl.text.trim();
                         if (url.isNotEmpty) {
                           final settings = ref.read(appSettingsProvider);
-                          // Simpan URL ke SharedPreferences
                           ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(serverUrl: url));
-                          
-                          // Lanjut ke Map Screen (Provider RoomNotifier akan otomatis membaca URL baru ini saat diinisialisasi di MapScreen)
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(builder: (_) => const LiveTrackerScreen()),

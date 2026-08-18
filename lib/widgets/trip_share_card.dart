@@ -12,11 +12,13 @@ import '../models/trip_history_model.dart';
 class TripShareCard extends StatelessWidget {
   final CompletedTrip trip;
   final GlobalKey boundaryKey;
+  final bool isDark;
 
   const TripShareCard({
     super.key,
     required this.trip,
     required this.boundaryKey,
+    this.isDark = true,
   });
 
   static Future<void> captureAndShare(GlobalKey key, CompletedTrip trip) async {
@@ -52,17 +54,29 @@ class TripShareCard extends StatelessWidget {
         ? LatLngBounds.fromPoints(points) 
         : LatLngBounds(const LatLng(-6.2, 106.8), const LatLng(-6.2, 106.8));
 
+    final bgColor = isDark ? const Color(0xFF0B0D11) : const Color(0xFFFFFFFF);
+    final cardBorder = isDark ? Colors.white12 : Colors.black12;
+    final textHeader = isDark ? Colors.white : const Color(0xFF0D1117);
+    final textSecondary = isDark ? Colors.white60 : const Color(0xFF64748B);
+    final dividerColor = isDark ? Colors.white10 : Colors.black12;
+    final mapTileUrl = isDark 
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+    final polylineColor = isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7);
+    final footerBg = isDark ? const Color(0xFF12151B) : const Color(0xFFF1F5F9);
+    final footerText = isDark ? Colors.white30 : const Color(0xFF94A3B8);
+
     return RepaintBoundary(
       key: boundaryKey,
       child: Container(
         width: 360,
         decoration: BoxDecoration(
-          color: const Color(0xFF0B0D11),
+          color: bgColor,
           borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: Colors.white12, width: 1),
+          border: Border.all(color: cardBorder, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.6),
+              color: isDark ? Colors.black.withValues(alpha: 0.6) : Colors.black.withValues(alpha: 0.12),
               blurRadius: 24,
               spreadRadius: 4,
             ),
@@ -84,13 +98,17 @@ class TripShareCard extends StatelessWidget {
                         'assets/images/app_logo.png',
                         height: 24,
                         width: 24,
-                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.track_changes, color: Color(0xFF00E5FF), size: 24),
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.track_changes, 
+                          color: polylineColor, 
+                          size: 24,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'LIVE TRACKER',
                         style: GoogleFonts.shareTechMono(
-                          color: Colors.white,
+                          color: textHeader,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 2,
@@ -100,7 +118,7 @@ class TripShareCard extends StatelessWidget {
                   ),
                   Text(
                     trip.formattedDate,
-                    style: GoogleFonts.inter(color: Colors.grey, fontSize: 12),
+                    style: GoogleFonts.inter(color: textSecondary, fontSize: 12, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -112,7 +130,7 @@ class TripShareCard extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white10),
+                border: Border.all(color: cardBorder),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(19),
@@ -126,7 +144,7 @@ class TripShareCard extends StatelessWidget {
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                      urlTemplate: mapTileUrl,
                       subdomains: const ['a', 'b', 'c'],
                       userAgentPackageName: 'com.livetracker.app',
                     ),
@@ -135,7 +153,7 @@ class TripShareCard extends StatelessWidget {
                         Polyline(
                           points: points,
                           strokeWidth: 4.0,
-                          color: const Color(0xFF00E5FF),
+                          color: polylineColor,
                         ),
                       ],
                     ),
@@ -144,7 +162,7 @@ class TripShareCard extends StatelessWidget {
               ),
             ),
 
-            // Stats Grid (Strava-style)
+            // Stats Grid
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -152,18 +170,38 @@ class TripShareCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _StatColumn(label: 'DISTANCE', value: trip.formattedDistance, color: const Color(0xFF00E676)),
-                      _StatColumn(label: 'DURATION', value: trip.formattedDuration, color: const Color(0xFFFFD600)),
+                      _StatColumn(
+                        label: 'DISTANCE', 
+                        value: trip.formattedDistance, 
+                        color: isDark ? const Color(0xFF00E676) : const Color(0xFF059669),
+                        isDark: isDark,
+                      ),
+                      _StatColumn(
+                        label: 'DURATION', 
+                        value: trip.formattedDuration, 
+                        color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
+                        isDark: isDark,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Divider(color: Colors.white10, height: 1),
+                  Divider(color: dividerColor, height: 1),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _StatColumn(label: 'AVG PACE', value: trip.formattedPace, color: const Color(0xFF00E5FF)),
-                      _StatColumn(label: 'MAX SPEED', value: trip.formattedMaxSpeed, color: const Color(0xFFFF1744)),
+                      _StatColumn(
+                        label: 'AVG PACE', 
+                        value: trip.formattedPace, 
+                        color: polylineColor,
+                        isDark: isDark,
+                      ),
+                      _StatColumn(
+                        label: 'MAX SPEED', 
+                        value: trip.formattedMaxSpeed, 
+                        color: isDark ? const Color(0xFFFF1744) : const Color(0xFFDC2626),
+                        isDark: isDark,
+                      ),
                     ],
                   ),
                 ],
@@ -173,9 +211,9 @@ class TripShareCard extends StatelessWidget {
             // Footer Watermark
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: const BoxDecoration(
-                color: Color(0xFF12151B),
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(27)),
+              decoration: BoxDecoration(
+                color: footerBg,
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(27)),
               ),
               child: Center(
                 child: Text(
@@ -183,7 +221,7 @@ class TripShareCard extends StatelessWidget {
                   style: GoogleFonts.shareTechMono(
                     fontSize: 9,
                     letterSpacing: 3,
-                    color: Colors.white30,
+                    color: footerText,
                   ),
                 ),
               ),
@@ -199,8 +237,14 @@ class _StatColumn extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
+  final bool isDark;
 
-  const _StatColumn({required this.label, required this.value, required this.color});
+  const _StatColumn({
+    required this.label, 
+    required this.value, 
+    required this.color,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -208,7 +252,12 @@ class _StatColumn extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.shareTechMono(fontSize: 10, letterSpacing: 2, color: Colors.grey),
+          style: GoogleFonts.shareTechMono(
+            fontSize: 10, 
+            letterSpacing: 2, 
+            color: isDark ? Colors.white60 : const Color(0xFF64748B),
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
