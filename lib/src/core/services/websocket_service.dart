@@ -33,7 +33,28 @@ class WebSocketService {
     _channel?.sink.close();
     _channel = null;
 
-    _channel = WebSocketChannel.connect(Uri.parse(_url!));
+    // Ensure URL has ws: or wss: scheme
+    String wsUrl = _url!;
+    if (wsUrl.startsWith('http://')) {
+      wsUrl = wsUrl.replaceFirst('http://', 'ws://');
+    } else if (wsUrl.startsWith('https://')) {
+      wsUrl = wsUrl.replaceFirst('https://', 'wss://');
+    } else if (!wsUrl.startsWith('ws://') && !wsUrl.startsWith('wss://')) {
+      wsUrl = 'wss://$wsUrl'; // Default to secure wss:// for public servers
+    }
+
+    try {
+      // Some versions of web_socket_channel expect Uri, others expect String or Uri.
+      // We parse it and pass the Uri. If that fails, we fallback to String or handle error gracefully.
+      final uri = Uri.parse(wsUrl);
+      _channel = WebSocketChannel.connect(uri);
+    } catch (e) {
+      debugPrint('WS connection initiation failed: $e');
+      _channel = null;
+      if (!_intentionalClose) _scheduleReconnect();
+      return;
+    }
+
     _reconnectAttempts = 0;
 
     _subscription = _channel!.stream.listen(

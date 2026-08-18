@@ -117,7 +117,10 @@ class RoomNotifier extends Notifier<RoomState> {
 
   void _handleMessage(Map<String, dynamic> msg) {
     switch (msg['type']) {
-      case 'connected': if (state.roomCode != null) joinRoom(state.roomCode!); break;
+      case 'connected':
+        state = state.copyWith(status: TrackingConnectionStatus.connected);
+        if (state.roomCode != null) joinRoom(state.roomCode!);
+        break;
       case 'room_created': case 'room_joined':
         state = state.copyWith(status: TrackingConnectionStatus.connected, roomCode: msg['roomCode']); break;
       case 'member_position':
