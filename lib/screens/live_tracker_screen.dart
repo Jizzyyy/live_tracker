@@ -10,6 +10,7 @@ import '../widgets/telemetry_dock.dart';
 import '../widgets/custom_user_marker.dart';
 import '../widgets/auto_center_button.dart';
 import '../widgets/map_compass_control.dart';
+import '../utils/ui_helpers.dart';
 import '../services/background_tracking_service.dart';
 
 class LiveTrackerScreen extends ConsumerStatefulWidget {
@@ -71,16 +72,24 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
     final mapStyle = ref.watch(mapStyleProvider);
     final posAsync = ref.watch(locationStreamProvider);
     
-    // Auto-centering on first fix and position broadcasting
+    // Auto-centering on first fix and auto-follow camera navigation
     ref.listen(locationStreamProvider, (prev, next) {
       if (!next.hasValue) return;
       final pos = next.value!;
       
       ref.read(roomProvider.notifier).sendPosition(pos);
 
+      final isAutoFollow = ref.read(autoFollowProvider);
+
       if (!_initialCentered) {
         _animatedMapMove(LatLng(pos.latitude, pos.longitude), MapDefaults.focusedZoom);
         _initialCentered = true;
+      } else if (isAutoFollow) {
+        // Auto-follow live user movement smoothly
+        _mapController.move(
+          LatLng(pos.latitude, pos.longitude),
+          _mapController.camera.zoom,
+        );
       }
     });
 
@@ -101,10 +110,16 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
           // 1. High-Performance Map Viewport with Caching
           FlutterMap(
             mapController: _mapController,
-            options: const MapOptions(
-              initialCenter: LatLng(-6.2, 106.8),
+            options: MapOptions(
+              initialCenter: const LatLng(-6.2, 106.8),
               initialZoom: 13,
-              interactionOptions: InteractionOptions(flags: InteractiveFlag.all),
+              interactionOptions: const InteractionOptions(flags: InteractiveFlag.all),
+              onPositionChanged: (pos, hasGesture) {
+                // If user manually drags/gestures on the map, disable auto-follow
+                if (hasGesture && ref.read(autoFollowProvider)) {
+                  ref.read(autoFollowProvider.notifier).state = false;
+                }
+              },
             ),
             children: [
               TileLayer(
@@ -194,6 +209,45 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
           const Align(
             alignment: Alignment.topCenter,
             child: TopHeaderHub(),
+          ),
+          
+          // Re-center Floating Hint Pill when user panned away
+          Consumer(
+            builder: (context, ref, _) {
+              final isAutoFollow = ref.watch(autoFollowProvider);
+              final isTracking = ref.watch(tripSessionProvider.select((s) => s.state == TripSessionState.active));
+              if (isAutoFollow || !isTracking) return const SizedBox.shrink();
+
+              return Positioned(
+                top: 90,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: PremiumGlass(
+                    borderRadius: BorderRadius.circular(20),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    onTap: () {
+                      final pos = posAsync.valueOrNull;
+                      if (pos != null) {
+                        _animatedMapMove(LatLng(pos.latitude, pos.longitude), MapDefaults.focusedZoom);
+                        ref.read(autoFollowProvider.notifier).state = true;
+                      }
+                    },
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.gps_fixed, size: 14, color: Color(0xFF00E5FF)),
+                        SizedBox(width: 8),
+                        Text(
+                          'Ketuk untuk ikuti lokasi otomatis',
+                          style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
           
           // 3. Floating Micro-Controls Stack

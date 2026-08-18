@@ -129,6 +129,9 @@ class RoomNotifier extends Notifier<RoomState> {
 }
 final roomProvider = NotifierProvider<RoomNotifier, RoomState>(RoomNotifier.new);
 
+// --- Auto-Follow Camera State ---
+final autoFollowProvider = StateProvider<bool>((ref) => true);
+
 // --- Trip Session (Optimized with displacement filter & downsampling) ---
 class TripSessionNotifier extends Notifier<TripSession> {
   final _distCalc = const Distance();

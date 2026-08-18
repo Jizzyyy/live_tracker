@@ -13,6 +13,7 @@ class AutoCenterButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final posAsync = ref.watch(locationStreamProvider);
+    final isAutoFollow = ref.watch(autoFollowProvider);
 
     return PremiumGlass(
       borderRadius: BorderRadius.circular(24),
@@ -21,12 +22,11 @@ class AutoCenterButton extends ConsumerWidget {
         onTap: () {
           final pos = posAsync.valueOrNull;
           if (pos != null) {
-            // Smooth Camera Glide (assuming _animatedMapMove logic is used in map_screen, 
-            // but we trigger direct move here as a fallback)
             mapController.move(LatLng(pos.latitude, pos.longitude), 16.0);
-            CustomSnackbar.show(context, message: 'Lokasi Dipusatkan', type: SnackbarType.success);
+            ref.read(autoFollowProvider.notifier).state = true;
+            CustomSnackbar.show(context, message: 'Auto-follow aktif', type: SnackbarType.success);
           } else {
-             CustomSnackbar.show(context, message: 'Menunggu sinyal GPS...', type: SnackbarType.warning);
+            CustomSnackbar.show(context, message: 'Menunggu sinyal GPS...', type: SnackbarType.warning);
           }
         },
         borderRadius: BorderRadius.circular(24),
@@ -34,9 +34,9 @@ class AutoCenterButton extends ConsumerWidget {
           width: 48,
           height: 48,
           child: Icon(
-            posAsync.hasValue ? Icons.my_location : Icons.location_searching,
+            posAsync.hasValue ? (isAutoFollow ? Icons.my_location : Icons.location_searching) : Icons.location_disabled,
             size: 20,
-            color: posAsync.hasValue ? const Color(0xFF00E5FF) : Colors.white.withValues(alpha: 0.5),
+            color: isAutoFollow ? const Color(0xFF00E5FF) : Colors.white.withValues(alpha: 0.6),
           ),
         ),
       ),

@@ -56,11 +56,17 @@ class CompletedTrip {
   final double maxSpeedKmh;
   final List<RoutePoint> routePoints;
 
-  // --- Formatted Getters ---
+  // --- Strava-Grade Formatted Telemetry ---
   String get formattedDate {
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return '${startTime.day} ${months[startTime.month - 1]} ${startTime.year}, '
-           '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
+    return '${startTime.day} ${months[startTime.month - 1]} ${startTime.year}';
+  }
+
+  String get formattedTimeRange {
+    final startStr = '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}';
+    final endStr = '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}';
+    final diffMin = endTime.difference(startTime).inMinutes;
+    return '$startStr - $endStr ($diffMin min)';
   }
 
   String get formattedDistance {
@@ -75,10 +81,20 @@ class CompletedTrip {
     return h > 0 ? '${h}h ${m}m ${s}s' : '${m}m ${s}s';
   }
 
+  /// Calculates Pace in MM'SS" /km
+  String get formattedPace {
+    final distKm = distanceMeters / 1000;
+    if (distKm <= 0.05 || durationSeconds <= 0) return "--'--\" /km";
+    final totalSecondsPerKm = (durationSeconds / distKm).round();
+    final paceMin = totalSecondsPerKm ~/ 60;
+    final paceSec = totalSecondsPerKm % 60;
+    if (paceMin > 99) return "--'--\" /km";
+    return "${paceMin.toString().padLeft(2, '0')}'${paceSec.toString().padLeft(2, '0')}\" /km";
+  }
+
   String get formattedAvgSpeed => '${avgSpeedKmh.toStringAsFixed(1)} km/h';
   String get formattedMaxSpeed => '${maxSpeedKmh.toStringAsFixed(1)} km/h';
 
-  // --- Serialization ---
   Map<String, dynamic> toMap() => {
     'id': id,
     'startTime': startTime.toIso8601String(),
