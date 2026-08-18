@@ -146,7 +146,7 @@ class TripShareCard extends StatelessWidget {
                     TileLayer(
                       urlTemplate: mapTileUrl,
                       subdomains: const ['a', 'b', 'c'],
-                      userAgentPackageName: 'com.livetracker.app',
+                      userAgentPackageName: 'VellumLiveTracker/1.0 (contact: kadhafiinl@github)',
                     ),
                     PolylineLayer(
                       polylines: [

@@ -58,42 +58,45 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: Colors.white12),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'TEMA KARTU:',
-                        style: GoogleFonts.shareTechMono(color: Colors.white70, fontSize: 11, letterSpacing: 1),
-                      ),
-                      const SizedBox(width: 12),
-                      ChoiceChip(
-                        label: const Text('DARK'),
-                        selected: cardIsDark,
-                        selectedColor: const Color(0xFF00E5FF),
-                        labelStyle: TextStyle(
-                          color: cardIsDark ? Colors.black : Colors.white70,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'TEMA KARTU:',
+                          style: GoogleFonts.shareTechMono(color: Colors.white70, fontSize: 11, letterSpacing: 1),
                         ),
-                        onSelected: (val) {
-                          if (val) setDialogState(() => cardIsDark = true);
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      ChoiceChip(
-                        label: const Text('LIGHT'),
-                        selected: !cardIsDark,
-                        selectedColor: const Color(0xFF00E5FF),
-                        labelStyle: TextStyle(
-                          color: !cardIsDark ? Colors.black : Colors.white70,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11,
+                        const SizedBox(width: 12),
+                        ChoiceChip(
+                          label: const Text('DARK'),
+                          selected: cardIsDark,
+                          selectedColor: const Color(0xFF00E5FF),
+                          labelStyle: TextStyle(
+                            color: cardIsDark ? Colors.black : Colors.white70,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                          onSelected: (val) {
+                            if (val) setDialogState(() => cardIsDark = true);
+                          },
                         ),
-                        onSelected: (val) {
-                          if (val) setDialogState(() => cardIsDark = false);
-                        },
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        ChoiceChip(
+                          label: const Text('LIGHT'),
+                          selected: !cardIsDark,
+                          selectedColor: const Color(0xFF00E5FF),
+                          labelStyle: TextStyle(
+                            color: !cardIsDark ? Colors.black : Colors.white70,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                          onSelected: (val) {
+                            if (val) setDialogState(() => cardIsDark = false);
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
@@ -219,7 +222,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                       TileLayer(
                         urlTemplate: _selectedMapStyle.urlTemplate,
                         subdomains: _selectedMapStyle.subdomains,
-                        userAgentPackageName: 'com.livetracker.app',
+                        userAgentPackageName: 'VellumLiveTracker/1.0 (contact: kadhafiinl@github)',
                       ),
                       PolylineLayer(
                         polylines: [

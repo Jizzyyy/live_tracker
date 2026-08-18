@@ -70,7 +70,6 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
   @override
   Widget build(BuildContext context) {
     final mapStyle = ref.watch(mapStyleProvider);
-    final posAsync = ref.watch(locationStreamProvider);
     
     // Auto-centering on first fix and auto-follow camera navigation
     ref.listen(locationStreamProvider, (prev, next) {
@@ -125,7 +124,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
               TileLayer(
                 urlTemplate: mapStyle.urlTemplate,
                 subdomains: mapStyle.subdomains,
-                userAgentPackageName: 'com.livetracker.app',
+                userAgentPackageName: 'VellumLiveTracker/1.0 (contact: kadhafiinl@github)',
                 maxZoom: 19,
                 keepBuffer: 3, // Tile buffer optimization
               ),
@@ -179,29 +178,36 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                 },
               ),
 
-              // Local User Marker Layer
-              if (posAsync.hasValue)
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: LatLng(posAsync.value!.latitude, posAsync.value!.longitude),
-                      width: 56,
-                      height: 56,
-                      child: CustomUserMarker(
-                        isLocalUser: true,
-                        location: MemberLocation(
-                          id: 'YOU',
-                          latitude: posAsync.value!.latitude,
-                          longitude: posAsync.value!.longitude,
-                          lastUpdated: posAsync.value!.timestamp,
-                          heading: posAsync.value!.heading,
-                          speedKmh: posAsync.value!.speed * 3.6,
+              // Local User Marker Layer (Consumer-isolated to avoid full-screen rebuilds on GPS ticks)
+              Consumer(
+                builder: (context, ref, _) {
+                  final posAsync = ref.watch(locationStreamProvider);
+                  if (!posAsync.hasValue) return const SizedBox.shrink();
+                  final pos = posAsync.value!;
+
+                  return MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: LatLng(pos.latitude, pos.longitude),
+                        width: 56,
+                        height: 56,
+                        child: CustomUserMarker(
+                          isLocalUser: true,
+                          location: MemberLocation(
+                            id: 'YOU',
+                            latitude: pos.latitude,
+                            longitude: pos.longitude,
+                            lastUpdated: pos.timestamp,
+                            heading: pos.heading,
+                            speedKmh: pos.speed * 3.6,
+                          ),
+                          color: const Color(0xFF00E5FF),
                         ),
-                        color: const Color(0xFF00E5FF),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  );
+                },
+              ),
             ],
           ),
           
@@ -227,7 +233,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                     borderRadius: BorderRadius.circular(20),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     onTap: () {
-                      final pos = posAsync.valueOrNull;
+                      final pos = ref.read(locationStreamProvider).valueOrNull;
                       if (pos != null) {
                         _animatedMapMove(LatLng(pos.latitude, pos.longitude), MapDefaults.focusedZoom);
                         ref.read(autoFollowProvider.notifier).state = true;

@@ -42,7 +42,7 @@ final appSettingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(Sett
 final availableMapStyles = [
   const MapStyleOption(id: 'dark', name: 'Midnight Dark', urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attribution: 'CartoDB, OSM'),
   const MapStyleOption(id: 'light', name: 'Clean Light', urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', attribution: 'CartoDB, OSM'),
-  const MapStyleOption(id: 'osm', name: 'OSM Standard', urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: 'OpenStreetMap'),
+  const MapStyleOption(id: 'osm', name: 'OSM Standard', urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: 'OpenStreetMap'),
 ];
 final mapStyleProvider = StateProvider<MapStyleOption>((ref) => availableMapStyles.first);
 
