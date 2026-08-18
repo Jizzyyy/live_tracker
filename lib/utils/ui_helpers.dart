@@ -19,24 +19,32 @@ class PremiumGlass extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
-    // Performance optimization: Lowered sigmaX/Y from 16 to 7.0 for 60/120 FPS GPU fill-rate
     final glassContent = ClipRRect(
       borderRadius: borderRadius,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 7.0, sigmaY: 7.0),
+        filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
             color: isDark 
                 ? const Color(0xFF12151B).withValues(alpha: 0.88)
-                : Colors.white.withValues(alpha: 0.82),
+                : const Color(0xFFFFFFFF).withValues(alpha: 0.88),
             borderRadius: borderRadius,
             border: Border.all(
               color: isDark 
-                  ? Colors.white.withValues(alpha: 0.08) 
-                  : Colors.white.withValues(alpha: 0.4),
-              width: 0.7,
+                  ? Colors.white.withValues(alpha: 0.10) 
+                  : Colors.black.withValues(alpha: 0.08),
+              width: 1.0,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: isDark 
+                    ? Colors.black.withValues(alpha: 0.4) 
+                    : Colors.black.withValues(alpha: 0.06),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: child,
         ),

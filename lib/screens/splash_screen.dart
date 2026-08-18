@@ -85,7 +85,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               ),
               const SizedBox(height: 60), // Spacer untuk mendorong watermark agak ke bawah
               Text(
-                'FORGED BY KADHAFIINL',
+                'CREATED BY KADHAFIINL',
                 style: GoogleFonts.shareTechMono(
                   fontSize: 10,
                   letterSpacing: 3,

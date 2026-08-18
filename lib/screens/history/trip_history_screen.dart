@@ -12,16 +12,23 @@ class TripHistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final trips = ref.watch(tripHistoryProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0D11),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text(
           'Trip History',
-          style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18),
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white : const Color(0xFF0D1117),
+            fontSize: 18,
+          ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(
+          color: isDark ? Colors.white : const Color(0xFF0D1117),
+        ),
         actions: [
           if (trips.isNotEmpty)
             IconButton(
@@ -36,11 +43,27 @@ class TripHistoryScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.route_outlined, size: 64, color: Colors.white.withValues(alpha: 0.2)),
+                  Icon(
+                    Icons.route_outlined, 
+                    size: 64, 
+                    color: isDark ? Colors.white.withValues(alpha: 0.2) : Colors.black.withValues(alpha: 0.2),
+                  ),
                   const SizedBox(height: 16),
-                  Text('No trips recorded yet', style: GoogleFonts.inter(color: Colors.white70, fontSize: 16)),
+                  Text(
+                    'No trips recorded yet', 
+                    style: GoogleFonts.inter(
+                      color: isDark ? Colors.white70 : const Color(0xFF4A5568), 
+                      fontSize: 16,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text('Start a session to build your route history.', style: GoogleFonts.inter(color: Colors.white38, fontSize: 13)),
+                  Text(
+                    'Start a session to build your route history.', 
+                    style: GoogleFonts.inter(
+                      color: isDark ? Colors.white38 : const Color(0xFF718096), 
+                      fontSize: 13,
+                    ),
+                  ),
                 ],
               ),
             )
@@ -85,17 +108,25 @@ class TripHistoryScreen extends ConsumerWidget {
                               children: [
                                 Text(
                                   trip.formattedDate,
-                                  style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.bold, 
+                                    fontSize: 16, 
+                                    color: isDark ? Colors.white : const Color(0xFF0D1117),
+                                  ),
                                 ),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: Colors.white10,
+                                    color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     trip.formattedTimeRange.split(' ')[0],
-                                    style: GoogleFonts.jetBrainsMono(fontSize: 11, color: Colors.white70),
+                                    style: GoogleFonts.jetBrainsMono(
+                                      fontSize: 11, 
+                                      color: isDark ? Colors.white70 : const Color(0xFF4A5568),
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -103,11 +134,23 @@ class TripHistoryScreen extends ConsumerWidget {
                             const SizedBox(height: 12),
                             Row(
                               children: [
-                                _StatChip(icon: Icons.route, value: trip.formattedDistance, color: const Color(0xFF00E676)),
+                                _StatChip(
+                                  icon: Icons.route, 
+                                  value: trip.formattedDistance, 
+                                  color: isDark ? const Color(0xFF00E676) : const Color(0xFF059669),
+                                ),
                                 const SizedBox(width: 12),
-                                _StatChip(icon: Icons.timer_outlined, value: trip.formattedDuration, color: const Color(0xFFFFD600)),
+                                _StatChip(
+                                  icon: Icons.timer_outlined, 
+                                  value: trip.formattedDuration, 
+                                  color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
+                                ),
                                 const SizedBox(width: 12),
-                                _StatChip(icon: Icons.speed, value: trip.formattedAvgSpeed, color: const Color(0xFF00E5FF)),
+                                _StatChip(
+                                  icon: Icons.speed, 
+                                  value: trip.formattedAvgSpeed, 
+                                  color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 8),
@@ -116,11 +159,18 @@ class TripHistoryScreen extends ConsumerWidget {
                               children: [
                                 Text(
                                   'Pace: ${trip.formattedPace}',
-                                  style: GoogleFonts.jetBrainsMono(fontSize: 11, color: const Color(0xFF38BDF8)),
+                                  style: GoogleFonts.jetBrainsMono(
+                                    fontSize: 11, 
+                                    color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                                 Text(
                                   '${trip.routePoints.length} pts',
-                                  style: GoogleFonts.jetBrainsMono(fontSize: 11, color: Colors.white38),
+                                  style: GoogleFonts.jetBrainsMono(
+                                    fontSize: 11, 
+                                    color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                                  ),
                                 ),
                               ],
                             ),

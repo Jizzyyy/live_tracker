@@ -90,30 +90,52 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final trip = widget.trip;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final points = trip.routePoints.map((p) => LatLng(p.latitude, p.longitude)).toList();
     final bounds = points.isNotEmpty 
         ? LatLngBounds.fromPoints(points)
         : LatLngBounds(const LatLng(-6.2, 106.8), const LatLng(-6.2, 106.8));
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0D11),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: Text(trip.formattedDate, style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          trip.formattedDate, 
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.bold, 
+            color: isDark ? Colors.white : const Color(0xFF0D1117),
+          ),
+        ),
+        iconTheme: IconThemeData(
+          color: isDark ? Colors.white : const Color(0xFF0D1117),
+        ),
         actions: [
-          // Share Image Action (Strava-style card)
+          // Share Image Action (Card Exporter)
           IconButton(
             tooltip: 'Share Card',
-            icon: const Icon(Icons.photo_camera_back_outlined, color: Color(0xFF00E5FF)),
+            icon: Icon(
+              Icons.photo_camera_back_outlined, 
+              color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+            ),
             onPressed: _showShareCardDialog,
           ),
           // GPX Export Action
           IconButton(
             tooltip: 'Export GPX',
             icon: _isExporting 
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF00E5FF)))
-                : const Icon(Icons.ios_share_outlined, color: Color(0xFF00E676)),
+                ? SizedBox(
+                    width: 20, 
+                    height: 20, 
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2, 
+                      color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                    ),
+                  )
+                : Icon(
+                    Icons.ios_share_outlined, 
+                    color: isDark ? const Color(0xFF00E676) : const Color(0xFF059669),
+                  ),
             onPressed: _isExporting ? null : _handleGpxExport,
           ),
           const SizedBox(width: 8),
@@ -139,13 +161,14 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                       TileLayer(
                         urlTemplate: _selectedMapStyle.urlTemplate,
                         subdomains: _selectedMapStyle.subdomains,
+                        userAgentPackageName: 'com.livetracker.app',
                       ),
                       PolylineLayer(
                         polylines: [
                           Polyline(
                             points: points,
                             strokeWidth: 4.5,
-                            color: const Color(0xFF00E5FF),
+                            color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
                           ),
                         ],
                       ),
@@ -174,17 +197,30 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                   right: 12,
                   child: PremiumGlass(
                     borderRadius: BorderRadius.circular(16),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<MapStyleOption>(
                         value: _selectedMapStyle,
-                        dropdownColor: const Color(0xFF12151B),
-                        icon: const Icon(Icons.layers_outlined, color: Color(0xFF00E5FF), size: 18),
-                        style: GoogleFonts.inter(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                        dropdownColor: isDark ? const Color(0xFF12151B) : Colors.white,
+                        icon: Icon(
+                          Icons.layers_outlined, 
+                          color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7), 
+                          size: 18,
+                        ),
+                        style: GoogleFonts.inter(
+                          color: isDark ? Colors.white : const Color(0xFF0D1117), 
+                          fontSize: 12, 
+                          fontWeight: FontWeight.w600,
+                        ),
                         items: availableMapStyles.map((style) {
                           return DropdownMenuItem(
                             value: style,
-                            child: Text(style.name),
+                            child: Text(
+                              style.name,
+                              style: TextStyle(
+                                color: isDark ? Colors.white : const Color(0xFF0D1117),
+                              ),
+                            ),
                           );
                         }).toList(),
                         onChanged: (newStyle) {
@@ -198,7 +234,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
             ),
           ),
 
-          // Telemetry Breakdown (Strava-grade)
+          // Telemetry Breakdown
           Expanded(
             flex: 4,
             child: SingleChildScrollView(
@@ -217,7 +253,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                           style: GoogleFonts.shareTechMono(
                             fontSize: 11,
                             letterSpacing: 2,
-                            color: Colors.grey,
+                            color: isDark ? Colors.white60 : const Color(0xFF64748B),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -225,8 +261,8 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                           trip.formattedTimeRange,
                           style: GoogleFonts.inter(
                             fontSize: 12,
-                            color: Colors.white70,
-                            fontWeight: FontWeight.w500,
+                            color: isDark ? Colors.white70 : const Color(0xFF475569),
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -234,26 +270,62 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        Expanded(child: _TelemetryTile(label: 'DISTANCE', value: trip.formattedDistance, color: const Color(0xFF00E676))),
-                        Expanded(child: _TelemetryTile(label: 'DURATION', value: trip.formattedDuration, color: const Color(0xFFFFD600))),
+                        Expanded(
+                          child: _TelemetryTile(
+                            label: 'DISTANCE', 
+                            value: trip.formattedDistance, 
+                            color: isDark ? const Color(0xFF00E676) : const Color(0xFF059669),
+                          ),
+                        ),
+                        Expanded(
+                          child: _TelemetryTile(
+                            label: 'DURATION', 
+                            value: trip.formattedDuration, 
+                            color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    const Divider(color: Colors.white10, height: 1),
+                    Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        Expanded(child: _TelemetryTile(label: 'AVG PACE', value: trip.formattedPace, color: const Color(0xFF00E5FF))),
-                        Expanded(child: _TelemetryTile(label: 'AVG SPEED', value: trip.formattedAvgSpeed, color: const Color(0xFF38BDF8))),
+                        Expanded(
+                          child: _TelemetryTile(
+                            label: 'AVG PACE', 
+                            value: trip.formattedPace, 
+                            color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                          ),
+                        ),
+                        Expanded(
+                          child: _TelemetryTile(
+                            label: 'AVG SPEED', 
+                            value: trip.formattedAvgSpeed, 
+                            color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    const Divider(color: Colors.white10, height: 1),
+                    Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        Expanded(child: _TelemetryTile(label: 'TOP SPEED', value: trip.formattedMaxSpeed, color: const Color(0xFFFF1744))),
-                        Expanded(child: _TelemetryTile(label: 'GPS BREADCRUMBS', value: '${trip.routePoints.length} pts', color: Colors.white70)),
+                        Expanded(
+                          child: _TelemetryTile(
+                            label: 'TOP SPEED', 
+                            value: trip.formattedMaxSpeed, 
+                            color: isDark ? const Color(0xFFFF1744) : const Color(0xFFDC2626),
+                          ),
+                        ),
+                        Expanded(
+                          child: _TelemetryTile(
+                            label: 'GPS BREADCRUMBS', 
+                            value: '${trip.routePoints.length} pts', 
+                            color: isDark ? Colors.white70 : const Color(0xFF475569),
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -275,14 +347,28 @@ class _TelemetryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.shareTechMono(fontSize: 10, letterSpacing: 2, color: Colors.grey)),
+        Text(
+          label, 
+          style: GoogleFonts.shareTechMono(
+            fontSize: 10, 
+            letterSpacing: 2, 
+            color: isDark ? Colors.white60 : const Color(0xFF64748B),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: GoogleFonts.jetBrainsMono(fontSize: 18, fontWeight: FontWeight.bold, color: color),
+          style: GoogleFonts.jetBrainsMono(
+            fontSize: 18, 
+            fontWeight: FontWeight.bold, 
+            color: color,
+          ),
         ),
       ],
     );

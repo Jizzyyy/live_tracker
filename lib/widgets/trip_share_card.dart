@@ -128,6 +128,7 @@ class TripShareCard extends StatelessWidget {
                     TileLayer(
                       urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
                       subdomains: const ['a', 'b', 'c'],
+                      userAgentPackageName: 'com.livetracker.app',
                     ),
                     PolylineLayer(
                       polylines: [
@@ -178,7 +179,7 @@ class TripShareCard extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  'FORGED BY KADHAFIINL',
+                  'CREATED BY KADHAFIINL',
                   style: GoogleFonts.shareTechMono(
                     fontSize: 9,
                     letterSpacing: 3,
