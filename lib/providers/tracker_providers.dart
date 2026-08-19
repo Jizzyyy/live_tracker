@@ -95,7 +95,11 @@ class RoomNotifier extends Notifier<RoomState> {
   void joinRoom(String code) => _ws.send({'type': 'join_room', 'roomCode': code});
   void leaveRoom() {
     _ws.send({'type': 'leave_room'});
-    state = state.copyWith(status: TrackingConnectionStatus.disconnected, roomCode: null, members: {});
+    state = const RoomState(
+      status: TrackingConnectionStatus.disconnected,
+      roomCode: null,
+      members: {},
+    );
   }
 
   /// Throttled WS Broadcast to max 1 Hz (1000ms) to reduce battery/bandwidth

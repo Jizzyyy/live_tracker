@@ -45,7 +45,7 @@ class MemberListSheet extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      '${members.length} Online',
+                      '${members.length + 1} Online',
                       style: GoogleFonts.inter(color: const Color(0xFF00E676), fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                   ),
@@ -71,7 +71,7 @@ class MemberListSheet extends ConsumerWidget {
                         leading: CircleAvatar(
                           backgroundColor: const Color(0xFF12151B),
                           child: Text(
-                            m.id.substring(0, 1).toUpperCase(),
+                            m.id.isNotEmpty ? m.id.substring(0, 1).toUpperCase() : '?',
                             style: GoogleFonts.jetBrainsMono(color: const Color(0xFF00E5FF), fontWeight: FontWeight.bold),
                           ),
                         ),
