@@ -12,6 +12,7 @@ class MemberListSheet extends ConsumerWidget {
     final roomState = ref.watch(roomProvider);
     final members = roomState.members.values.toList();
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return SafeArea(
       child: PremiumGlass(
@@ -69,10 +70,13 @@ class MemberListSheet extends ConsumerWidget {
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: CircleAvatar(
-                          backgroundColor: const Color(0xFF12151B),
+                          backgroundColor: isDark ? const Color(0xFF12151B) : colorScheme.primaryContainer,
                           child: Text(
                             m.id.isNotEmpty ? m.id.substring(0, 1).toUpperCase() : '?',
-                            style: GoogleFonts.jetBrainsMono(color: const Color(0xFF00E5FF), fontWeight: FontWeight.bold),
+                            style: GoogleFonts.jetBrainsMono(
+                              color: isDark ? const Color(0xFF00E5FF) : colorScheme.primary, 
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         title: Text('User ${m.id}', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),

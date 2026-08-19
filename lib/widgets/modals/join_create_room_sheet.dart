@@ -27,6 +27,8 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
   Widget build(BuildContext context) {
     final roomState = ref.watch(roomProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final accentColor = isDark ? const Color(0xFF00E5FF) : Theme.of(context).colorScheme.primary;
+    final btnForegroundColor = isDark ? Colors.black : Colors.white;
 
     ref.listen(roomProvider, (prev, next) {
       if (next.status == TrackingConnectionStatus.connected && next.roomCode != null && prev?.roomCode == null) {
@@ -65,8 +67,8 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
                   FilledButton.icon(
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: const Color(0xFF00E5FF),
-                      foregroundColor: Colors.black,
+                      backgroundColor: accentColor,
+                      foregroundColor: btnForegroundColor,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     onPressed: isLoading ? null : () => ref.read(roomProvider.notifier).createRoom(),
@@ -99,14 +101,14 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
                       fillColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
                       prefixIcon: const Icon(Icons.meeting_room_outlined),
                     ),
-                    style: GoogleFonts.jetBrainsMono(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF00E5FF)),
+                    style: GoogleFonts.jetBrainsMono(fontSize: 18, fontWeight: FontWeight.bold, color: accentColor),
                   ),
                   const SizedBox(height: 16),
                   
                   OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      side: const BorderSide(color: Color(0xFF00E5FF)),
+                      side: BorderSide(color: accentColor),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     onPressed: isLoading ? null : () {
@@ -117,8 +119,8 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
                         CustomSnackbar.show(context, message: 'Kode room harus 6 karakter', type: SnackbarType.error);
                       }
                     },
-                    icon: const Icon(Icons.login, color: Color(0xFF00E5FF)),
-                    label: Text('GABUNG ROOM', style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: const Color(0xFF00E5FF), letterSpacing: 1)),
+                    icon: Icon(Icons.login, color: accentColor),
+                    label: Text('GABUNG ROOM', style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: accentColor, letterSpacing: 1)),
                   ),
                 ],
               ),
