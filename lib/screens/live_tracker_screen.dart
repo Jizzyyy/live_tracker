@@ -225,7 +225,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
               if (isAutoFollow || !isTracking) return const SizedBox.shrink();
 
               return Positioned(
-                top: 90,
+                top: 120,
                 left: 0,
                 right: 0,
                 child: Center(
@@ -257,17 +257,24 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
           ),
           
           // 3. Floating Micro-Controls Stack
-          Positioned(
-            right: 16,
-            bottom: 240,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                MapCompassControl(mapController: _mapController),
-                const SizedBox(height: 12),
-                AutoCenterButton(mapController: _mapController),
-              ],
-            ),
+          Consumer(
+            builder: (context, ref, _) {
+              final dockExpanded = ref.watch(telemetryExpandedProvider);
+              return AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+                right: 16,
+                bottom: dockExpanded ? 380 : 240,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    MapCompassControl(mapController: _mapController),
+                    const SizedBox(height: 12),
+                    AutoCenterButton(mapController: _mapController),
+                  ],
+                ),
+              );
+            },
           ),
           
           // 4. Floating Telemetry Dock

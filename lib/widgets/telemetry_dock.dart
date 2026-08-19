@@ -44,14 +44,17 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
     HapticFeedback.selectionClick();
     if (_expandCtrl.isDismissed) {
       _expandCtrl.forward();
+      ref.read(telemetryExpandedProvider.notifier).state = true;
     } else {
       _expandCtrl.reverse();
+      ref.read(telemetryExpandedProvider.notifier).state = false;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return SafeArea(
       child: Padding(
@@ -60,8 +63,10 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
           onVerticalDragEnd: (details) {
             if (details.primaryVelocity! < -200) {
               _expandCtrl.forward();
+              ref.read(telemetryExpandedProvider.notifier).state = true;
             } else if (details.primaryVelocity! > 200) {
               _expandCtrl.reverse();
+              ref.read(telemetryExpandedProvider.notifier).state = false;
             }
           },
           child: PremiumGlass(
@@ -83,17 +88,17 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                           width: 32,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: Colors.white24,
+                            color: isDark ? Colors.white24 : Colors.black26,
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
                         const SizedBox(width: 8),
                         RotationTransition(
                           turns: _chevronAnimation,
-                          child: const Icon(
+                          child: Icon(
                             Icons.keyboard_arrow_up_rounded,
                             size: 18,
-                            color: Colors.white54,
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.54),
                           ),
                         ),
                       ],
@@ -115,7 +120,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                               fontSize: 10,
                               letterSpacing: 2,
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey,
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                           Consumer(
@@ -131,6 +136,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                       fontSize: 38,
                                       fontWeight: FontWeight.w900,
                                       fontFeatures: const [FontFeature.tabularFigures()],
+                                      color: theme.colorScheme.onSurface,
                                     ),
                                   ),
                                   const SizedBox(width: 4),
@@ -139,7 +145,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                     style: GoogleFonts.inter(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.grey,
+                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                                     ),
                                   ),
                                 ],
@@ -158,7 +164,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                             return _MiniMetric(
                               icon: Icons.route_outlined,
                               value: dist,
-                              color: const Color(0xFF00E676),
+                              color: theme.colorScheme.secondary,
                             );
                           },
                         ),
@@ -169,7 +175,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                             return _MiniMetric(
                               icon: Icons.timer_outlined,
                               value: dur,
-                              color: const Color(0xFFFFD600),
+                              color: theme.colorScheme.tertiary,
                             );
                           },
                         ),
@@ -189,7 +195,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Divider(color: Colors.white12, height: 1),
+                          Divider(color: theme.colorScheme.onSurface.withValues(alpha: 0.12), height: 1),
                           const SizedBox(height: 12),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -199,7 +205,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                 style: GoogleFonts.shareTechMono(
                                   fontSize: 11,
                                   letterSpacing: 2,
-                                  color: Colors.white60,
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                                 ),
                               ),
                               Consumer(
@@ -209,7 +215,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                     '$count Members Active',
                                     style: GoogleFonts.inter(
                                       fontSize: 11,
-                                      color: const Color(0xFF00E5FF),
+                                      color: theme.colorScheme.primary,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   );
@@ -226,7 +232,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                                   child: Text(
                                     'No group members in room. Create or join a room to sync.',
-                                    style: GoogleFonts.inter(color: Colors.grey, fontSize: 12),
+                                    style: GoogleFonts.inter(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
                                   ),
                                 );
                               }
@@ -239,18 +245,18 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                       children: [
                                         CircleAvatar(
                                           radius: 10,
-                                          backgroundColor: const Color(0xFF12151B),
+                                          backgroundColor: theme.colorScheme.surfaceContainerHighest,
                                           child: Text(
                                             m.id.substring(0, 1).toUpperCase(),
-                                            style: const TextStyle(fontSize: 9, color: Color(0xFF00E5FF)),
+                                            style: TextStyle(fontSize: 9, color: theme.colorScheme.primary),
                                           ),
                                         ),
                                         const SizedBox(width: 8),
-                                        Text('User ${m.id}', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+                                        Text('User ${m.id}', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
                                         const Spacer(),
                                         Text(
                                           '${(m.speedKmh ?? 0).toStringAsFixed(1)} km/h',
-                                          style: GoogleFonts.jetBrainsMono(fontSize: 12, color: Colors.grey),
+                                          style: GoogleFonts.jetBrainsMono(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                                         ),
                                       ],
                                     ),
@@ -280,11 +286,11 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isActive
-                                  ? Colors.redAccent.withValues(alpha: 0.2)
-                                  : const Color(0xFF00E5FF),
+                                  ? theme.colorScheme.errorContainer
+                                  : theme.colorScheme.primary,
                               foregroundColor: isActive
-                                  ? Colors.redAccent
-                                  : Colors.black,
+                                  ? theme.colorScheme.onErrorContainer
+                                  : theme.colorScheme.onPrimary,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
@@ -320,7 +326,8 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                             onPressed: () => ref.read(tripSessionProvider.notifier).toggleSession(),
                             icon: const Icon(Icons.pause),
                             style: IconButton.styleFrom(
-                              backgroundColor: isDark ? Colors.white12 : Colors.black12,
+                              backgroundColor: theme.colorScheme.surfaceContainerHigh,
+                              foregroundColor: theme.colorScheme.onSurface,
                               padding: const EdgeInsets.all(16),
                             ),
                           ),
@@ -351,6 +358,7 @@ class _MiniMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -362,6 +370,7 @@ class _MiniMetric extends StatelessWidget {
             fontSize: 14,
             fontWeight: FontWeight.bold,
             fontFeatures: const [FontFeature.tabularFigures()],
+            color: theme.colorScheme.onSurface,
           ),
         ),
       ],

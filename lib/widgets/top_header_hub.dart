@@ -134,20 +134,21 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> with SingleTickerPr
                                           fontSize: 18,
                                           fontWeight: FontWeight.w800,
                                           letterSpacing: 2,
+                                          color: theme.colorScheme.onSurface,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     )
                                   : Row(
                                       mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Image.asset(
-                                          'assets/images/app_logo.png',
-                                          height: 24,
-                                          width: 24,
-                                          errorBuilder: (context, error, stackTrace) =>
-                                              const Icon(Icons.track_changes, size: 24, color: Color(0xFF00E5FF)),
-                                        ),
+                                        children: [
+                                          Image.asset(
+                                            'assets/images/app_logo.png',
+                                            height: 24,
+                                            width: 24,
+                                            errorBuilder: (context, error, stackTrace) =>
+                                                Icon(Icons.track_changes, size: 24, color: theme.colorScheme.primary),
+                                          ),
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
@@ -182,6 +183,7 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> with SingleTickerPr
   }
 
   void _showMapStyleSheet(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -192,13 +194,13 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> with SingleTickerPr
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Map Style', style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text('Map Style', style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
               const SizedBox(height: 16),
               ...availableMapStyles.map((style) {
                 final isSelected = ref.watch(mapStyleProvider).id == style.id;
                 return ListTile(
-                  title: Text(style.name, style: GoogleFonts.inter(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
-                  trailing: isSelected ? const Icon(Icons.check_circle, color: Colors.blueAccent) : null,
+                  title: Text(style.name, style: GoogleFonts.inter(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: theme.colorScheme.onSurface)),
+                  trailing: isSelected ? Icon(Icons.check_circle, color: theme.colorScheme.primary) : null,
                   onTap: () {
                     ref.read(mapStyleProvider.notifier).state = style;
                     Navigator.pop(ctx);
@@ -256,10 +258,11 @@ class _PulseDotState extends State<_PulseDot> with SingleTickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final color = switch (widget.status) {
       TrackingConnectionStatus.connected => Colors.greenAccent,
       TrackingConnectionStatus.reconnecting => Colors.amberAccent,
-      TrackingConnectionStatus.disconnected => Colors.redAccent,
+      TrackingConnectionStatus.disconnected => theme.colorScheme.error,
     };
     
     return AnimatedBuilder(
@@ -287,27 +290,28 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 40, height: 40,
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
+          color: theme.colorScheme.surface.withValues(alpha: 0.3),
           shape: BoxShape.circle,
         ),
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Icon(icon, size: 20),
+            Icon(icon, size: 20, color: theme.colorScheme.onSurface),
             if (badgeCount != null && badgeCount! > 0)
               Positioned(
                 top: 6, right: 6,
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(color: Colors.blueAccent, shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: theme.colorScheme.primary, shape: BoxShape.circle),
                   child: Text(
                     badgeCount.toString(),
-                    style: const TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 10, color: theme.colorScheme.onPrimary, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
