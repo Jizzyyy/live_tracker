@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'dart:convert';
 
 enum TrackingConnectionStatus { disconnected, reconnecting, connected }
 enum TripSessionState { inactive, active, paused }
@@ -140,64 +139,5 @@ class TripSession {
       currentSpeedKmh: currentSpeedKmh ?? this.currentSpeedKmh,
       avgSpeedKmh: avgSpeedKmh ?? this.avgSpeedKmh,
     );
-  }
-}
-
-// --- NEW: Saved Trip Model for History ---
-@immutable
-class SavedTrip {
-  const SavedTrip({
-    required this.id,
-    required this.date,
-    required this.distanceMeters,
-    required this.durationSeconds,
-    required this.avgSpeedKmh,
-  });
-
-  final String id;
-  final DateTime date;
-  final double distanceMeters;
-  final int durationSeconds;
-  final double avgSpeedKmh;
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'date': date.toIso8601String(),
-      'distanceMeters': distanceMeters,
-      'durationSeconds': durationSeconds,
-      'avgSpeedKmh': avgSpeedKmh,
-    };
-  }
-
-  factory SavedTrip.fromMap(Map<String, dynamic> map) {
-    return SavedTrip(
-      id: map['id'] as String,
-      date: DateTime.parse(map['date'] as String),
-      distanceMeters: (map['distanceMeters'] as num).toDouble(),
-      durationSeconds: map['durationSeconds'] as int,
-      avgSpeedKmh: (map['avgSpeedKmh'] as num).toDouble(),
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory SavedTrip.fromJson(String source) => SavedTrip.fromMap(json.decode(source) as Map<String, dynamic>);
-  
-  String get formattedDate {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${date.day} ${months[date.month - 1]} ${date.year}, ${date.hour.toString().padLeft(2,'0')}:${date.minute.toString().padLeft(2,'0')}';
-  }
-
-  String get formattedDistance {
-    if (distanceMeters < 1000) return '${distanceMeters.toStringAsFixed(0)} m';
-    return '${(distanceMeters / 1000).toStringAsFixed(2)} km';
-  }
-
-  String get formattedDuration {
-    final h = durationSeconds ~/ 3600;
-    final m = ((durationSeconds % 3600) ~/ 60).toString().padLeft(2, '0');
-    final s = (durationSeconds % 60).toString().padLeft(2, '0');
-    return h > 0 ? '${h}h ${m}m' : '${m}m ${s}s';
   }
 }
