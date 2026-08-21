@@ -308,10 +308,12 @@ class TripSessionNotifier extends Notifier<TripSession> {
       return false;
     }
 
+    final now = DateTime.now();
+    final randomSuffix = (now.microsecondsSinceEpoch % 1000).toString().padLeft(3, '0');
     final trip = CompletedTrip(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      startTime: _startTime ?? DateTime.now(),
-      endTime: DateTime.now(),
+      id: '${now.millisecondsSinceEpoch}_$randomSuffix',
+      startTime: _startTime ?? now,
+      endTime: now,
       durationSeconds: state.activeDurationSeconds,
       distanceMeters: state.distanceMeters,
       avgSpeedKmh: state.avgSpeedKmh,

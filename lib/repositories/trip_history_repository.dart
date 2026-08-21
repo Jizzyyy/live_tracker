@@ -10,6 +10,7 @@ class TripHistoryRepository {
   List<CompletedTrip> loadAll() {
     final raw = _prefs.getStringList(_key) ?? [];
     try {
+      // List stored in chronological order (oldest at index 0). Return newest-first for UI.
       return raw.map((s) => CompletedTrip.fromJson(s)).toList().reversed.toList();
     } catch (_) {
       return [];
