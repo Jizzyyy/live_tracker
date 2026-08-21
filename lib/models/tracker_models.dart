@@ -9,28 +9,24 @@ class AppSettings {
     this.serverUrl = 'wss://live-tracker-backend.onrender.com',
     this.highAccuracyGps = true,
     this.backgroundService = true,
-    this.soundAlerts = true,
     this.isDarkMode = true,
   });
 
   final String serverUrl;
   final bool highAccuracyGps;
   final bool backgroundService;
-  final bool soundAlerts;
   final bool isDarkMode;
 
   AppSettings copyWith({
     String? serverUrl,
     bool? highAccuracyGps,
     bool? backgroundService,
-    bool? soundAlerts,
     bool? isDarkMode,
   }) {
     return AppSettings(
       serverUrl: serverUrl ?? this.serverUrl,
       highAccuracyGps: highAccuracyGps ?? this.highAccuracyGps,
       backgroundService: backgroundService ?? this.backgroundService,
-      soundAlerts: soundAlerts ?? this.soundAlerts,
       isDarkMode: isDarkMode ?? this.isDarkMode,
     );
   }
