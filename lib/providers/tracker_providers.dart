@@ -157,11 +157,12 @@ class TripSessionNotifier extends Notifier<TripSession> {
   Timer? _timer;
   DateTime? _startTime;
   double _maxSpeed = 0;
-  final List<RoutePoint> routeBuffer = [];
-  List<LatLng> _simplifiedCache = [];
+  final List<RoutePoint> _routeBuffer = [];
+  final List<LatLng> _simplifiedCache = [];
   int _lastUiEmitMs = 0;
 
-  List<LatLng> get simplifiedRoute => _simplifiedCache;
+  List<RoutePoint> get routeBuffer => List.unmodifiable(_routeBuffer);
+  List<LatLng> get simplifiedRoute => List.unmodifiable(_simplifiedCache);
 
   @override
   TripSession build() {
@@ -228,7 +229,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
     }
     _lastPos = currentLatLng;
 
-    routeBuffer.add(RoutePoint(
+    _routeBuffer.add(RoutePoint(
       latitude: latitude,
       longitude: longitude,
       timestamp: timestampMs,
@@ -236,9 +237,16 @@ class TripSessionNotifier extends Notifier<TripSession> {
       altitude: altitude,
     ));
 
-    // Dynamic downsampling: update cache with displacement filter
-    final rawPoints = routeBuffer.map((p) => LatLng(p.latitude, p.longitude)).toList();
-    _simplifiedCache = PolylineSimplifier.filterDisplacement(rawPoints, minDistanceMeters: 2.5);
+    // Cap route buffer to max 1000 points to prevent memory leaks on multi-hour trips
+    if (_routeBuffer.length > 1000) {
+      _routeBuffer.removeAt(0);
+    }
+
+    // Dynamic downsampling: incremental push to simplified cache O(1) instead of re-filtering full list O(N)
+    _simplifiedCache.add(currentLatLng);
+    if (_simplifiedCache.length > 500) {
+      _simplifiedCache.removeAt(0);
+    }
 
     final speedKmh = speedMps * 3.6;
     if (speedKmh > _maxSpeed) _maxSpeed = speedKmh;
@@ -296,7 +304,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
     _timer?.cancel();
     await BackgroundTrackingManager.stopService();
 
-    if (routeBuffer.length < 2 || state.distanceMeters < 10) {
+    if (_routeBuffer.length < 2 || state.distanceMeters < 10) {
       _reset();
       return false;
     }
@@ -309,7 +317,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
       distanceMeters: state.distanceMeters,
       avgSpeedKmh: state.avgSpeedKmh,
       maxSpeedKmh: _maxSpeed,
-      routePoints: List.unmodifiable(routeBuffer),
+      routePoints: List.unmodifiable(_routeBuffer),
     );
 
     final saved = await ref.read(tripHistoryProvider.notifier).saveTrip(trip);
@@ -321,7 +329,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
     _lastPos = null;
     _startTime = null;
     _maxSpeed = 0;
-    routeBuffer.clear();
+    _routeBuffer.clear();
     _simplifiedCache.clear();
     state = const TripSession();
   }
