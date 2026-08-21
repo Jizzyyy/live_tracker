@@ -11,7 +11,7 @@ class MapCompassControl extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return StreamBuilder<MapEvent>(
-      stream: mapController.mapEventStream,
+      stream: mapController.mapEventStream.where((event) => event is MapEventRotate || event is MapEventRotateEnd || event is MapEventRotateStart),
       builder: (context, snapshot) {
         final rotation = mapController.camera.rotation;
         if (rotation == 0.0) return const SizedBox.shrink();
