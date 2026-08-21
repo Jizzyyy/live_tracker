@@ -3,10 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/splash_screen.dart';
 import 'providers/tracker_providers.dart';
+import 'services/background_tracking_service.dart';
 import 'utils/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Safe initialization of foreground task manager before UI renders
+  await BackgroundTrackingManager.init();
+  
   final prefs = await SharedPreferences.getInstance();
 
   runApp(

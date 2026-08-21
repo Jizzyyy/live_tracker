@@ -94,7 +94,15 @@ class RoomNotifier extends Notifier<RoomState> {
   void createRoom() => _ws.send({'type': 'create_room'});
   void joinRoom(String code) => _ws.send({'type': 'join_room', 'roomCode': code});
   void leaveRoom() {
+    // 1. Send leave event to server
     _ws.send({'type': 'leave_room'});
+    
+    // 2. Disconnect WebSocket cleanly to prevent automated ping/pong reconnects
+    _ws.disconnect();
+    _sub?.cancel();
+    _sub = null;
+
+    // 3. Reset state permanently to disconnected
     state = const RoomState(
       status: TrackingConnectionStatus.disconnected,
       roomCode: null,

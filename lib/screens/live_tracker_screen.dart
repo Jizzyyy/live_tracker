@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
@@ -11,7 +12,6 @@ import '../widgets/custom_user_marker.dart';
 import '../widgets/auto_center_button.dart';
 import '../widgets/map_compass_control.dart';
 import '../utils/ui_helpers.dart';
-import '../services/background_tracking_service.dart';
 
 class LiveTrackerScreen extends ConsumerStatefulWidget {
   const LiveTrackerScreen({super.key});
@@ -24,12 +24,12 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   final _mapController = MapController();
   bool _initialCentered = false;
+  bool _isMapReady = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    BackgroundTrackingManager.init();
   }
 
   @override
@@ -46,6 +46,8 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
   }
 
   void _animatedMapMove(LatLng destLocation, double destZoom) {
+    if (!_isMapReady) return; // Prevent early camera movements before binding
+    
     final latTween = Tween<double>(begin: _mapController.camera.center.latitude, end: destLocation.latitude);
     final lngTween = Tween<double>(begin: _mapController.camera.center.longitude, end: destLocation.longitude);
     final zoomTween = Tween<double>(begin: _mapController.camera.zoom, end: destZoom);
@@ -113,6 +115,11 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
               initialCenter: const LatLng(-6.2, 106.8),
               initialZoom: 13,
               interactionOptions: const InteractionOptions(flags: InteractiveFlag.all),
+              onMapReady: () {
+                setState(() {
+                  _isMapReady = true;
+                });
+              },
               onPositionChanged: (pos, hasGesture) {
                 // If user manually drags/gestures on the map, disable auto-follow
                 if (hasGesture && ref.read(autoFollowProvider)) {
@@ -168,9 +175,15 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                         point: LatLng(m.latitude, m.longitude),
                         width: 56,
                         height: 56,
-                        child: CustomUserMarker(
-                          location: m,
-                          color: _getColorForId(m.id),
+                        child: GestureDetector(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            ref.read(focusedMemberProvider.notifier).state = m;
+                          },
+                          child: CustomUserMarker(
+                            location: m,
+                            color: _getColorForId(m.id),
+                          ),
                         ),
                       );
                     }).toList(),
