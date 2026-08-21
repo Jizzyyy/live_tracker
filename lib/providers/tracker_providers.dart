@@ -10,7 +10,6 @@ import '../repositories/trip_history_repository.dart';
 import '../services/background_tracking_service.dart';
 import '../src/core/services/location_service.dart';
 import '../src/core/services/websocket_service.dart';
-import '../utils/polyline_simplifier.dart';
 
 // --- Shared Prefs ---
 final sharedPrefsProvider = Provider<SharedPreferences>((ref) => throw UnimplementedError());
