@@ -16,6 +16,50 @@ class WebSocketService {
   Stream<Map<String, dynamic>> get messages => _messageController.stream;
   bool get isConnected => _channel != null;
 
+  /// Quick health check to test if a WebSocket URL is responsive.
+  static Future<bool> testConnection(String url, {Duration timeout = const Duration(seconds: 4)}) async {
+    String wsUrl = url.trim();
+    if (wsUrl.startsWith('http://')) {
+      wsUrl = wsUrl.replaceFirst('http://', 'ws://');
+    } else if (wsUrl.startsWith('https://')) {
+      wsUrl = wsUrl.replaceFirst('https://', 'wss://');
+    } else if (!wsUrl.startsWith('ws://') && !wsUrl.startsWith('wss://')) {
+      wsUrl = 'wss://$wsUrl';
+    }
+
+    try {
+      final uri = Uri.parse(wsUrl);
+      final testChannel = WebSocketChannel.connect(uri);
+      final Completer<bool> completer = Completer<bool>();
+
+      final sub = testChannel.stream.listen(
+        (data) {
+          if (!completer.isCompleted) completer.complete(true);
+        },
+        onError: (_) {
+          if (!completer.isCompleted) completer.complete(false);
+        },
+        onDone: () {
+          if (!completer.isCompleted) completer.complete(true);
+        },
+      );
+
+      // Send a dummy ping or wait for server connected message
+      testChannel.sink.add(jsonEncode({'type': 'ping'}));
+
+      final result = await completer.future.timeout(
+        timeout,
+        onTimeout: () => false,
+      );
+
+      await sub.cancel();
+      await testChannel.sink.close();
+      return result;
+    } catch (_) {
+      return false;
+    }
+  }
+
   void connect(String url) {
     // Close existing connection before starting new one
     disconnect();

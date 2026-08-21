@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/tracker_providers.dart';
+import '../../src/core/services/websocket_service.dart';
+import '../../utils/custom_snackbar.dart';
 import '../../utils/ui_helpers.dart';
 
 class SettingsSheet extends ConsumerStatefulWidget {
@@ -13,6 +15,7 @@ class SettingsSheet extends ConsumerStatefulWidget {
 
 class _SettingsSheetState extends ConsumerState<SettingsSheet> {
   late final TextEditingController _urlController;
+  bool _isTesting = false;
 
   @override
   void initState() {
@@ -64,18 +67,42 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     filled: true,
                     fillColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.check_circle_outline),
-                      onPressed: () {
-                        final url = _urlController.text.trim();
-                        if (url.isNotEmpty) {
-                           ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(serverUrl: url));
-                           ref.read(roomProvider.notifier).reconnect();
-                           FocusScope.of(context).unfocus();
-                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Server URL updated & Reconnecting...')));
-                        }
-                      },
-                    ),
+                    suffixIcon: _isTesting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: Padding(
+                              padding: EdgeInsets.all(12),
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : IconButton(
+                            icon: const Icon(Icons.sync_rounded),
+                            tooltip: 'Uji & Sambungkan',
+                            onPressed: () async {
+                              final url = _urlController.text.trim();
+                              if (url.isNotEmpty) {
+                                setState(() => _isTesting = true);
+                                CustomSnackbar.show(context, message: 'Menguji koneksi server...', type: SnackbarType.info);
+                                
+                                final isAlive = await WebSocketService.testConnection(url);
+                                if (!mounted) return;
+                                setState(() => _isTesting = false);
+
+                                ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(serverUrl: url));
+                                ref.read(roomProvider.notifier).reconnect();
+
+                              if (context.mounted) {
+                                FocusScope.of(context).unfocus();
+                                if (isAlive) {
+                                  CustomSnackbar.show(context, message: 'Server Online! Berhasil terhubung.', type: SnackbarType.success);
+                                } else {
+                                  CustomSnackbar.show(context, message: 'Server Offline/Tidak terjangkau. Masuk Mode Solo.', type: SnackbarType.warning);
+                                }
+                              }
+                              }
+                            },
+                          ),
                   ),
                   style: GoogleFonts.shareTechMono(fontSize: 14),
                 ),

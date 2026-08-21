@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/tracker_providers.dart';
+import '../src/core/services/websocket_service.dart';
 import '../utils/ui_helpers.dart';
 import '../utils/custom_snackbar.dart';
 import 'live_tracker_screen.dart';
@@ -15,6 +16,7 @@ class UrlSetupScreen extends ConsumerStatefulWidget {
 
 class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
   late final TextEditingController _urlCtrl;
+  bool _isTesting = false;
 
   @override
   void initState() {
@@ -130,37 +132,89 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                         backgroundColor: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
                         foregroundColor: isDark ? Colors.black : Colors.white,
                       ),
-                      onPressed: () {
-                        String url = _urlCtrl.text.trim();
-                        if (url.isEmpty) {
-                          CustomSnackbar.show(context, message: 'URL tidak boleh kosong', type: SnackbarType.error);
-                          return;
-                        }
+                      onPressed: _isTesting
+                          ? null
+                          : () async {
+                              String url = _urlCtrl.text.trim();
+                              if (url.isEmpty) {
+                                CustomSnackbar.show(context, message: 'URL tidak boleh kosong', type: SnackbarType.error);
+                                return;
+                              }
 
-                        // Auto sanitize protocol scheme
-                        if (url.startsWith('https://')) {
-                          url = url.replaceFirst('https://', 'wss://');
-                        } else if (url.startsWith('http://')) {
-                          url = url.replaceFirst('http://', 'ws://');
-                        } else if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
-                          url = 'wss://$url';
-                        }
+                              // Auto sanitize protocol scheme
+                              if (url.startsWith('https://')) {
+                                url = url.replaceFirst('https://', 'wss://');
+                              } else if (url.startsWith('http://')) {
+                                url = url.replaceFirst('http://', 'ws://');
+                              } else if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
+                                url = 'wss://$url';
+                              }
 
-                        final settings = ref.read(appSettingsProvider);
-                        ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(serverUrl: url));
-                        
-                        // Reconnect with new URL
-                        ref.read(roomProvider.notifier).reconnect();
+                              setState(() => _isTesting = true);
+                              CustomSnackbar.show(context, message: 'Menguji koneksi ke server...', type: SnackbarType.info);
 
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (_) => const LiveTrackerScreen()),
-                        );
-                      },
-                      child: Text(
-                        'INITIALIZE CONNECTION',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1.5),
-                      ),
+                              final isAlive = await WebSocketService.testConnection(url);
+                              if (!mounted) return;
+                              setState(() => _isTesting = false);
+
+                              final settings = ref.read(appSettingsProvider);
+                              ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(serverUrl: url));
+
+                              if (isAlive) {
+                                ref.read(roomProvider.notifier).reconnect();
+                                if (context.mounted) {
+                                  CustomSnackbar.show(context, message: 'Server terhubung! Masuk dalam Mode Grup.', type: SnackbarType.success);
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const LiveTrackerScreen()),
+                                  );
+                                }
+                              } else {
+                                if (context.mounted) {
+                                  // Show dialog to enter offline solo mode
+                                  showDialog(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      backgroundColor: isDark ? const Color(0xFF12151B) : Colors.white,
+                                      title: Text(
+                                        'Server Offline / Tidak Terjangkau',
+                                        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold),
+                                      ),
+                                      content: Text(
+                                        'Gagal terhubung ke $url. Tetap masuk dalam Mode Solo (Offline)? Fitur grup tidak akan tersedia.',
+                                        style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(ctx),
+                                          child: const Text('COBA LAGI', style: TextStyle(color: Colors.grey)),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(ctx);
+                                            Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(builder: (_) => const LiveTrackerScreen()),
+                                            );
+                                          },
+                                          child: const Text('MASUK MODE SOLO', style: TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold)),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                      child: _isTesting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                            )
+                          : Text(
+                              'INITIALIZE CONNECTION',
+                              style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                            ),
                     ),
                   ),
                 ],
