@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/tracker_providers.dart';
 import '../utils/ui_helpers.dart';
+import '../utils/custom_snackbar.dart';
 import 'live_tracker_screen.dart';
 
 class UrlSetupScreen extends ConsumerStatefulWidget {
@@ -130,15 +131,31 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                         foregroundColor: isDark ? Colors.black : Colors.white,
                       ),
                       onPressed: () {
-                        final url = _urlCtrl.text.trim();
-                        if (url.isNotEmpty) {
-                          final settings = ref.read(appSettingsProvider);
-                          ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(serverUrl: url));
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (_) => const LiveTrackerScreen()),
-                          );
+                        String url = _urlCtrl.text.trim();
+                        if (url.isEmpty) {
+                          CustomSnackbar.show(context, message: 'URL tidak boleh kosong', type: SnackbarType.error);
+                          return;
                         }
+
+                        // Auto sanitize protocol scheme
+                        if (url.startsWith('https://')) {
+                          url = url.replaceFirst('https://', 'wss://');
+                        } else if (url.startsWith('http://')) {
+                          url = url.replaceFirst('http://', 'ws://');
+                        } else if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
+                          url = 'wss://$url';
+                        }
+
+                        final settings = ref.read(appSettingsProvider);
+                        ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(serverUrl: url));
+                        
+                        // Reconnect with new URL
+                        ref.read(roomProvider.notifier).reconnect();
+
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LiveTrackerScreen()),
+                        );
                       },
                       child: Text(
                         'INITIALIZE CONNECTION',
