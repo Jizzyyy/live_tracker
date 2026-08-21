@@ -93,8 +93,8 @@ class BackgroundTrackingManager {
         channelId: 'live_tracker_location_channel',
         channelName: 'Live Tracker Location Tracking',
         channelDescription: 'Ongoing notification keeping background tracking alive.',
-        channelImportance: NotificationChannelImportance.HIGH,
-        priority: NotificationPriority.HIGH,
+        channelImportance: NotificationChannelImportance.DEFAULT,
+        priority: NotificationPriority.DEFAULT,
       ),
       iosNotificationOptions: const IOSNotificationOptions(
         showNotification: true,

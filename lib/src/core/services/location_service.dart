@@ -42,20 +42,15 @@ Future<PermissionResult> ensureLocationPermission() async {
   return const PermissionResult(granted: true);
 }
 
-/// Returns platform-optimized location settings with foreground service
-/// to keep GPS alive when user locks their phone screen.
+/// Returns platform-optimized location settings.
+/// Note: Foreground notifications are handled exclusively by BackgroundTrackingManager
+/// to avoid duplicate hardware streams and notification channel conflicts.
 LocationSettings _buildLocationSettings() {
   if (defaultTargetPlatform == TargetPlatform.android) {
     return AndroidSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 5,
       intervalDuration: const Duration(seconds: 2),
-      foregroundNotificationConfig: const ForegroundNotificationConfig(
-        notificationTitle: 'Live Tracker aktif',
-        notificationText: 'Lokasi sedang dilacak untuk grup tracking.',
-        enableWakeLock: true,
-        notificationIcon: AndroidResource(name: 'ic_launcher', defType: 'mipmap'),
-      ),
     );
   } else if (defaultTargetPlatform == TargetPlatform.iOS) {
     return AppleSettings(

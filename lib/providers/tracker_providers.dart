@@ -172,8 +172,13 @@ class TripSessionNotifier extends Notifier<TripSession> {
 
     FlutterForegroundTask.addTaskDataCallback(_onForegroundData);
 
+    // Listen to main locationStreamProvider ONLY when background task is not running
     ref.listen(locationStreamProvider, (prev, next) {
       if (state.state != TripSessionState.active || !next.hasValue) return;
+      // Skip duplicate processing if background service is actively supplying data
+      final isBgActive = ref.read(appSettingsProvider).backgroundService;
+      if (isBgActive) return;
+
       final pos = next.value!;
       _processPosition(
         latitude: pos.latitude,
