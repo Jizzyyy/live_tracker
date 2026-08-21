@@ -57,7 +57,7 @@ class MemberListSheet extends ConsumerWidget {
               if (members.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 32),
-                  child: Center(child: Text('No other members in this room yet.')),
+                  child: Center(child: Text('You are the only member in this room.')),
                 )
               else
                 Flexible(
