@@ -55,7 +55,7 @@ class AutoCenterButton extends ConsumerWidget {
             size: 20,
             color: isAutoFollow 
                 ? (isDark ? const Color(0xFF00E5FF) : Theme.of(context).colorScheme.primary) 
-                : Colors.white.withValues(alpha: 0.6),
+                : (isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black54),
           ),
         ),
       ),
