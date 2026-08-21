@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../providers/tracker_providers.dart';
+import 'live_tracker_screen.dart';
 import 'url_setup_screen.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _fadeAnimation;
 
@@ -26,9 +29,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     Future.delayed(const Duration(milliseconds: 2200), () {
       if (mounted) {
+        final serverUrl = ref.read(appSettingsProvider).serverUrl;
+        // Auto-bypass UrlSetupScreen if a valid WebSocket URL is already saved
+        final Widget nextScreen = (serverUrl.isNotEmpty && (serverUrl.startsWith('ws://') || serverUrl.startsWith('wss://')))
+            ? const LiveTrackerScreen()
+            : const UrlSetupScreen();
+
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            pageBuilder: (_, _, _) => const UrlSetupScreen(),
+            pageBuilder: (_, _, _) => nextScreen,
             transitionsBuilder: (_, anim, _, child) => FadeTransition(opacity: anim, child: child),
             transitionDuration: const Duration(milliseconds: 800),
           ),
