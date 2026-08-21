@@ -18,7 +18,7 @@ class TopHeaderHub extends ConsumerStatefulWidget {
   ConsumerState<TopHeaderHub> createState() => _TopHeaderHubState();
 }
 
-class _TopHeaderHubState extends ConsumerState<TopHeaderHub> with SingleTickerProviderStateMixin {
+class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
   bool _isExpanded = false;
 
   @override
@@ -251,10 +251,32 @@ class _PulseDotState extends State<_PulseDot> with SingleTickerProviderStateMixi
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 1))..repeat(reverse: true);
+    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 1));
+    _updateAnimation();
   }
+
   @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
+  void didUpdateWidget(_PulseDot oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.status != widget.status) {
+      _updateAnimation();
+    }
+  }
+
+  void _updateAnimation() {
+    if (widget.status == TrackingConnectionStatus.disconnected) {
+      _ctrl.stop();
+      _ctrl.value = 0.0;
+    } else {
+      _ctrl.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void dispose() { 
+    _ctrl.dispose(); 
+    super.dispose(); 
+  }
 
   @override
   Widget build(BuildContext context) {
