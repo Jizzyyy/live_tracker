@@ -21,7 +21,9 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
   @override
   void initState() {
     super.initState();
-    _urlCtrl = TextEditingController(text: ref.read(appSettingsProvider).serverUrl);
+    _urlCtrl = TextEditingController(
+      text: ref.read(appSettingsProvider).serverUrl,
+    );
   }
 
   @override
@@ -49,15 +51,17 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isDark 
+                      color: isDark
                           ? const Color(0xFF00E5FF).withValues(alpha: 0.1)
                           : const Color(0xFF0284C7).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      Icons.satellite_alt, 
-                      size: 48, 
-                      color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                      Icons.satellite_alt,
+                      size: 48,
+                      color: isDark
+                          ? const Color(0xFF00E5FF)
+                          : const Color(0xFF0284C7),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -75,7 +79,7 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                     'Masukkan URL Ngrok atau server cloud Anda untuk menginisialisasi sistem pelacakan.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
-                      color: isDark ? Colors.white60 : const Color(0xFF64748B), 
+                      color: isDark ? Colors.white60 : const Color(0xFF64748B),
                       fontSize: 14,
                     ),
                   ),
@@ -83,17 +87,23 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                   TextField(
                     controller: _urlCtrl,
                     style: GoogleFonts.jetBrainsMono(
-                      color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                      color: isDark
+                          ? const Color(0xFF00E5FF)
+                          : const Color(0xFF0284C7),
                       fontWeight: FontWeight.w600,
                     ),
                     decoration: InputDecoration(
                       labelText: 'WebSocket URL',
                       labelStyle: TextStyle(
-                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                        color: isDark
+                            ? Colors.white60
+                            : const Color(0xFF64748B),
                       ),
-                      hintText: 'wss://xxxx.ngrok.app',
+                      hintText: 'example.url',
                       hintStyle: TextStyle(
-                        color: isDark ? Colors.white30 : const Color(0xFF94A3B8),
+                        color: isDark
+                            ? Colors.white30
+                            : const Color(0xFF94A3B8),
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -110,15 +120,21 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide(
-                          color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                          color: isDark
+                              ? const Color(0xFF00E5FF)
+                              : const Color(0xFF0284C7),
                           width: 2,
                         ),
                       ),
                       filled: true,
-                      fillColor: isDark ? Colors.black38 : const Color(0xFFF1F5F9),
+                      fillColor: isDark
+                          ? Colors.black38
+                          : const Color(0xFFF1F5F9),
                       prefixIcon: Icon(
-                        Icons.link, 
-                        color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                        Icons.link,
+                        color: isDark
+                            ? const Color(0xFF00E5FF)
+                            : const Color(0xFF0284C7),
                       ),
                     ),
                   ),
@@ -128,8 +144,12 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                     child: FilledButton(
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        backgroundColor: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        backgroundColor: isDark
+                            ? const Color(0xFF00E5FF)
+                            : const Color(0xFF0284C7),
                         foregroundColor: isDark ? Colors.black : Colors.white,
                       ),
                       onPressed: _isTesting
@@ -137,7 +157,11 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                           : () async {
                               String url = _urlCtrl.text.trim();
                               if (url.isEmpty) {
-                                CustomSnackbar.show(context, message: 'URL tidak boleh kosong', type: SnackbarType.error);
+                                CustomSnackbar.show(
+                                  context,
+                                  message: 'URL tidak boleh kosong',
+                                  type: SnackbarType.error,
+                                );
                                 return;
                               }
 
@@ -146,27 +170,44 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                                 url = url.replaceFirst('https://', 'wss://');
                               } else if (url.startsWith('http://')) {
                                 url = url.replaceFirst('http://', 'ws://');
-                              } else if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
+                              } else if (!url.startsWith('ws://') &&
+                                  !url.startsWith('wss://')) {
                                 url = 'wss://$url';
                               }
 
                               setState(() => _isTesting = true);
-                              CustomSnackbar.show(context, message: 'Menguji koneksi ke server...', type: SnackbarType.info);
+                              CustomSnackbar.show(
+                                context,
+                                message: 'Menguji koneksi ke server...',
+                                type: SnackbarType.info,
+                              );
 
-                              final isAlive = await WebSocketService.testConnection(url);
+                              final isAlive =
+                                  await WebSocketService.testConnection(url);
                               if (!mounted) return;
                               setState(() => _isTesting = false);
 
                               final settings = ref.read(appSettingsProvider);
-                              ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(serverUrl: url));
+                              ref
+                                  .read(appSettingsProvider.notifier)
+                                  .updateSettings(
+                                    settings.copyWith(serverUrl: url),
+                                  );
 
                               if (isAlive) {
                                 ref.read(roomProvider.notifier).reconnect();
                                 if (context.mounted) {
-                                  CustomSnackbar.show(context, message: 'Server terhubung! Masuk dalam Mode Grup.', type: SnackbarType.success);
+                                  CustomSnackbar.show(
+                                    context,
+                                    message:
+                                        'Server terhubung! Masuk dalam Mode Grup.',
+                                    type: SnackbarType.success,
+                                  );
                                   Navigator.pushReplacement(
                                     context,
-                                    MaterialPageRoute(builder: (_) => const LiveTrackerScreen()),
+                                    MaterialPageRoute(
+                                      builder: (_) => const LiveTrackerScreen(),
+                                    ),
                                   );
                                 }
                               } else {
@@ -175,29 +216,54 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                                   showDialog(
                                     context: context,
                                     builder: (ctx) => AlertDialog(
-                                      backgroundColor: isDark ? const Color(0xFF12151B) : Colors.white,
+                                      backgroundColor: isDark
+                                          ? const Color(0xFF12151B)
+                                          : Colors.white,
                                       title: Text(
                                         'Server Offline / Tidak Terjangkau',
-                                        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold),
+                                        style: TextStyle(
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                       content: Text(
                                         'Gagal terhubung ke $url. Tetap masuk dalam Mode Solo (Offline)? Fitur grup tidak akan tersedia.',
-                                        style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
+                                        style: TextStyle(
+                                          color: isDark
+                                              ? Colors.white70
+                                              : Colors.black87,
+                                        ),
                                       ),
                                       actions: [
                                         TextButton(
                                           onPressed: () => Navigator.pop(ctx),
-                                          child: const Text('COBA LAGI', style: TextStyle(color: Colors.grey)),
+                                          child: const Text(
+                                            'COBA LAGI',
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                            ),
+                                          ),
                                         ),
                                         TextButton(
                                           onPressed: () {
                                             Navigator.pop(ctx);
                                             Navigator.pushReplacement(
                                               context,
-                                              MaterialPageRoute(builder: (_) => const LiveTrackerScreen()),
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    const LiveTrackerScreen(),
+                                              ),
                                             );
                                           },
-                                          child: const Text('MASUK MODE SOLO', style: TextStyle(color: Color(0xFF00E5FF), fontWeight: FontWeight.bold)),
+                                          child: const Text(
+                                            'MASUK MODE SOLO',
+                                            style: TextStyle(
+                                              color: Color(0xFF00E5FF),
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -209,11 +275,17 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                           ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.black,
+                              ),
                             )
                           : Text(
                               'INITIALIZE CONNECTION',
-                              style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.5,
+                              ),
                             ),
                     ),
                   ),
