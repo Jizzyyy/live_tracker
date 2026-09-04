@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import '../../models/tracker_models.dart';
@@ -10,15 +11,15 @@ import '../../utils/ui_helpers.dart';
 import '../../utils/custom_snackbar.dart';
 import '../../widgets/trip_share_card.dart';
 
-class TripDetailScreen extends StatefulWidget {
+class TripDetailScreen extends ConsumerStatefulWidget {
   final CompletedTrip trip;
   const TripDetailScreen({super.key, required this.trip});
 
   @override
-  State<TripDetailScreen> createState() => _TripDetailScreenState();
+  ConsumerState<TripDetailScreen> createState() => _TripDetailScreenState();
 }
 
-class _TripDetailScreenState extends State<TripDetailScreen> {
+class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
   final GlobalKey _shareCardKey = GlobalKey();
   MapStyleOption _selectedMapStyle = availableMapStyles.first;
   bool _isExporting = false;
@@ -273,7 +274,7 @@ class _TripDetailScreenState extends State<TripDetailScreen> {
                           fontSize: 12, 
                           fontWeight: FontWeight.w600,
                         ),
-                        items: availableMapStyles.map((style) {
+                        items: ref.watch(mapStyleListProvider).map((style) {
                           return DropdownMenuItem(
                             value: style,
                             child: Text(

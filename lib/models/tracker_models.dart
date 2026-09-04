@@ -10,24 +10,28 @@ class AppSettings {
     this.highAccuracyGps = true,
     this.backgroundService = true,
     this.isDarkMode = true,
+    this.googleMapsApiKey = '',
   });
 
   final String serverUrl;
   final bool highAccuracyGps;
   final bool backgroundService;
   final bool isDarkMode;
+  final String googleMapsApiKey;
 
   AppSettings copyWith({
     String? serverUrl,
     bool? highAccuracyGps,
     bool? backgroundService,
     bool? isDarkMode,
+    String? googleMapsApiKey,
   }) {
     return AppSettings(
       serverUrl: serverUrl ?? this.serverUrl,
       highAccuracyGps: highAccuracyGps ?? this.highAccuracyGps,
       backgroundService: backgroundService ?? this.backgroundService,
       isDarkMode: isDarkMode ?? this.isDarkMode,
+      googleMapsApiKey: googleMapsApiKey ?? this.googleMapsApiKey,
     );
   }
 }

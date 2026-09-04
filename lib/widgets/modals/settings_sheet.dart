@@ -15,17 +15,20 @@ class SettingsSheet extends ConsumerStatefulWidget {
 
 class _SettingsSheetState extends ConsumerState<SettingsSheet> {
   late final TextEditingController _urlController;
+  late final TextEditingController _googleMapsApiKeyController;
   bool _isTesting = false;
 
   @override
   void initState() {
     super.initState();
     _urlController = TextEditingController(text: ref.read(appSettingsProvider).serverUrl);
+    _googleMapsApiKeyController = TextEditingController(text: ref.read(appSettingsProvider).googleMapsApiKey);
   }
 
   @override
   void dispose() {
     _urlController.dispose();
+    _googleMapsApiKeyController.dispose();
     super.dispose();
   }
 
@@ -103,6 +106,35 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                               }
                             },
                           ),
+                  ),
+                  style: GoogleFonts.shareTechMono(fontSize: 14),
+                ),
+                const SizedBox(height: 16),
+                
+                TextField(
+                  controller: _googleMapsApiKeyController,
+                  decoration: InputDecoration(
+                    labelText: 'Google Maps API Key (Opsional)',
+                    hintText: 'AIzaSy...',
+                    helperText: 'Masukkan API Key untuk mengaktifkan Google Maps Tile (Roadmap/Satellite/Terrain)',
+                    helperMaxLines: 2,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.check_circle_outline),
+                      tooltip: 'Simpan API Key',
+                      onPressed: () {
+                        final key = _googleMapsApiKeyController.text.trim();
+                        ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(googleMapsApiKey: key));
+                        FocusScope.of(context).unfocus();
+                        CustomSnackbar.show(
+                          context,
+                          message: key.isNotEmpty ? 'Google Maps API Key tersimpan!' : 'Google Maps dinonaktifkan (default OSM/CartoDB).',
+                          type: SnackbarType.success,
+                        );
+                      },
+                    ),
                   ),
                   style: GoogleFonts.shareTechMono(fontSize: 14),
                 ),

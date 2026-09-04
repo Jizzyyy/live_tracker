@@ -24,6 +24,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
       isDarkMode: prefs.getBool('isDarkMode') ?? true,
       highAccuracyGps: prefs.getBool('highAccuracyGps') ?? true,
       backgroundService: prefs.getBool('backgroundService') ?? true,
+      googleMapsApiKey: prefs.getString('googleMapsApiKey') ?? '',
     );
   }
   void updateSettings(AppSettings s) {
@@ -33,17 +34,70 @@ class SettingsNotifier extends Notifier<AppSettings> {
     prefs.setBool('isDarkMode', s.isDarkMode);
     prefs.setBool('highAccuracyGps', s.highAccuracyGps);
     prefs.setBool('backgroundService', s.backgroundService);
+    prefs.setString('googleMapsApiKey', s.googleMapsApiKey);
   }
 }
 final appSettingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);
 
 // --- Map Styles ---
-final availableMapStyles = [
-  const MapStyleOption(id: 'dark', name: 'Midnight Dark', urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', attribution: 'CartoDB, OSM'),
-  const MapStyleOption(id: 'light', name: 'Clean Light', urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', attribution: 'CartoDB, OSM'),
-  const MapStyleOption(id: 'osm', name: 'OSM Standard', urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: 'OpenStreetMap'),
-];
-final mapStyleProvider = StateProvider<MapStyleOption>((ref) => availableMapStyles.first);
+List<MapStyleOption> getAvailableMapStyles([String googleApiKey = '']) {
+  final styles = <MapStyleOption>[
+    const MapStyleOption(
+      id: 'dark',
+      name: 'Midnight Dark (CartoDB)',
+      urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      attribution: 'CartoDB, OpenStreetMap',
+    ),
+    const MapStyleOption(
+      id: 'light',
+      name: 'Clean Light (CartoDB)',
+      urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+      attribution: 'CartoDB, OpenStreetMap',
+    ),
+    const MapStyleOption(
+      id: 'osm',
+      name: 'OSM Standard (OpenStreetMap)',
+      urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      attribution: 'OpenStreetMap',
+    ),
+  ];
+
+  if (googleApiKey.trim().isNotEmpty) {
+    styles.addAll([
+      MapStyleOption(
+        id: 'google_roadmap',
+        name: 'Google Maps (Roadmap)',
+        urlTemplate: 'https://mt0.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=$googleApiKey',
+        subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: 'Google Maps',
+      ),
+      MapStyleOption(
+        id: 'google_satellite',
+        name: 'Google Maps (Satellite Hybrid)',
+        urlTemplate: 'https://mt0.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&key=$googleApiKey',
+        subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: 'Google Maps',
+      ),
+      MapStyleOption(
+        id: 'google_terrain',
+        name: 'Google Maps (Terrain)',
+        urlTemplate: 'https://mt0.google.com/vt/lyrs=p&x={x}&y={y}&z={z}&key=$googleApiKey',
+        subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: 'Google Maps',
+      ),
+    ]);
+  }
+
+  return styles;
+}
+
+final availableMapStyles = getAvailableMapStyles();
+final mapStyleListProvider = Provider<List<MapStyleOption>>((ref) {
+  final apiKey = ref.watch(appSettingsProvider.select((s) => s.googleMapsApiKey));
+  return getAvailableMapStyles(apiKey);
+});
+
+final mapStyleProvider = StateProvider<MapStyleOption>((ref) => getAvailableMapStyles().first);
 
 // --- GPS Stream (Throttled via distanceFilter) ---
 final locationStreamProvider = StreamProvider.autoDispose<Position>((ref) async* {

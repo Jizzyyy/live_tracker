@@ -184,6 +184,7 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
 
   void _showMapStyleSheet(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final mapStyles = ref.watch(mapStyleListProvider);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -194,12 +195,13 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Map Style', style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
+              Text('Map Style & Engine', style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
               const SizedBox(height: 16),
-              ...availableMapStyles.map((style) {
+              ...mapStyles.map((style) {
                 final isSelected = ref.watch(mapStyleProvider).id == style.id;
                 return ListTile(
                   title: Text(style.name, style: GoogleFonts.inter(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: theme.colorScheme.onSurface)),
+                  subtitle: Text(style.attribution, style: GoogleFonts.inter(fontSize: 11, color: Colors.grey)),
                   trailing: isSelected ? Icon(Icons.check_circle, color: theme.colorScheme.primary) : null,
                   onTap: () {
                     ref.read(mapStyleProvider.notifier).state = style;
