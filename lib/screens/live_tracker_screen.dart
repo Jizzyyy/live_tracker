@@ -109,8 +109,9 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
       body: Stack(
         children: [
           // 1. High-Performance Map Viewport with Caching
-          FlutterMap(
-            mapController: _mapController,
+          RepaintBoundary(
+            child: FlutterMap(
+              mapController: _mapController,
             options: MapOptions(
               initialCenter: const LatLng(-6.2, 106.8),
               initialZoom: 13,
@@ -133,7 +134,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                 subdomains: mapStyle.subdomains,
                 userAgentPackageName: 'VellumLiveTracker/1.0 (contact: kadhafiinl@github)',
                 maxZoom: 19,
-                keepBuffer: 3, // Tile buffer optimization
+                keepBuffer: 1, // Tile buffer reduced from 3 to 1 to reduce RAM consumption and memory thermal pressure
               ),
 
               // Active Route Polyline (Throttled & Downsampled with RDP)
@@ -223,6 +224,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
               ),
             ],
           ),
+        ),
           
           // 2. Floating Top Header Capsule
           const Align(

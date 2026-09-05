@@ -56,23 +56,25 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        child: GestureDetector(
-          onVerticalDragEnd: (details) {
-            if (details.primaryVelocity! < -200) {
-              _expandCtrl.forward();
-              ref.read(telemetryExpandedProvider.notifier).state = true;
-            } else if (details.primaryVelocity! > 200) {
-              _expandCtrl.reverse();
-              ref.read(telemetryExpandedProvider.notifier).state = false;
-            }
-          },
-          child: PremiumGlass(
-            borderRadius: BorderRadius.circular(28),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
+    return RepaintBoundary(
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: GestureDetector(
+            onVerticalDragEnd: (details) {
+              if (details.primaryVelocity! < -200) {
+                _expandCtrl.forward();
+                ref.read(telemetryExpandedProvider.notifier).state = true;
+              } else if (details.primaryVelocity! > 200) {
+                _expandCtrl.reverse();
+                ref.read(telemetryExpandedProvider.notifier).state = false;
+              }
+            },
+            child: PremiumGlass(
+              borderRadius: BorderRadius.circular(28),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              enableBlur: false, // Solid lightweight surface for high-frequency telemetry dock
+              child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Top Grab Handle & Chevron indicator
@@ -341,8 +343,9 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _MiniMetric extends StatelessWidget {

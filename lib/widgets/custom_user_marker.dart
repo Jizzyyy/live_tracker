@@ -18,12 +18,11 @@ class CustomUserMarker extends StatefulWidget {
 }
 
 class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerProviderStateMixin {
-  late final AnimationController _haloCtrl;
+  AnimationController? _haloCtrl;
 
   @override
   void initState() {
     super.initState();
-    _haloCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
     _updateHalo();
   }
 
@@ -37,43 +36,51 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
 
   void _updateHalo() {
     final speed = widget.location.speedKmh ?? 0.0;
-    // Activate pulse glow only if moving faster than walking speed
-    if (speed > 5.0 && !_haloCtrl.isAnimating) {
-      _haloCtrl.repeat(reverse: true);
-    } else if (speed <= 5.0 && _haloCtrl.isAnimating) {
-      _haloCtrl.stop();
-      _haloCtrl.value = 0.0;
+    // Activate pulse glow animation ONLY if moving significantly faster than walking speed (> 8 km/h)
+    if (speed > 8.0) {
+      if (_haloCtrl == null) {
+        _haloCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
+        _haloCtrl!.repeat(reverse: true);
+        if (mounted) setState(() {});
+      }
+    } else {
+      _haloCtrl?.stop();
+      _haloCtrl?.dispose();
+      _haloCtrl = null;
+      if (mounted) setState(() {});
     }
   }
 
   @override
   void dispose() {
-    _haloCtrl.dispose();
+    _haloCtrl?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // RepaintBoundary ensures smooth 60fps rendering during rotation/pulsing
+    // RepaintBoundary ensures isolated repaint during marker movement
+    final markerContent = CustomPaint(
+      size: const Size(56, 56),
+      painter: _MarkerPainter(
+        color: widget.color,
+        haloIntensity: _haloCtrl?.value ?? 0.0,
+        isIdle: widget.location.isIdle,
+        isLocalUser: widget.isLocalUser,
+      ),
+    );
+
     return RepaintBoundary(
       child: AnimatedRotation(
         turns: (widget.location.heading ?? 0) / 360.0,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
-        child: AnimatedBuilder(
-          animation: _haloCtrl,
-          builder: (context, child) {
-            return CustomPaint(
-              size: const Size(56, 56),
-              painter: _MarkerPainter(
-                color: widget.color,
-                haloIntensity: _haloCtrl.value,
-                isIdle: widget.location.isIdle,
-                isLocalUser: widget.isLocalUser,
-              ),
-            );
-          },
-        ),
+        child: _haloCtrl != null
+            ? AnimatedBuilder(
+                animation: _haloCtrl!,
+                builder: (context, _) => markerContent,
+              )
+            : markerContent,
       ),
     );
   }

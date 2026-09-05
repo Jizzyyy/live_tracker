@@ -26,20 +26,22 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
     final roomState = ref.watch(roomProvider);
     final theme = Theme.of(context);
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        child: FocusScope(
-          child: Focus(
-            onFocusChange: (hasFocus) {
-              if (!hasFocus && _isExpanded) {
-                setState(() => _isExpanded = false);
-              }
-            },
-            child: PremiumGlass(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              borderRadius: BorderRadius.circular(32),
-              child: AnimatedSize(
+    return RepaintBoundary(
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: FocusScope(
+            child: Focus(
+              onFocusChange: (hasFocus) {
+                if (!hasFocus && _isExpanded) {
+                  setState(() => _isExpanded = false);
+                }
+              },
+              child: PremiumGlass(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                borderRadius: BorderRadius.circular(32),
+                enableBlur: false, // Solid lightweight surface for high performance
+                child: AnimatedSize(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeOutCubic,
                 child: AnimatedSwitcher(
@@ -179,8 +181,9 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _showMapStyleSheet(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
