@@ -16,6 +16,7 @@ class SettingsSheet extends ConsumerStatefulWidget {
 class _SettingsSheetState extends ConsumerState<SettingsSheet> {
   late final TextEditingController _urlController;
   late final TextEditingController _googleMapsApiKeyController;
+  late final TextEditingController _cartoApiKeyController;
   bool _isTesting = false;
 
   @override
@@ -23,12 +24,14 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
     super.initState();
     _urlController = TextEditingController(text: ref.read(appSettingsProvider).serverUrl);
     _googleMapsApiKeyController = TextEditingController(text: ref.read(appSettingsProvider).googleMapsApiKey);
+    _cartoApiKeyController = TextEditingController(text: ref.read(appSettingsProvider).cartoApiKey);
   }
 
   @override
   void dispose() {
     _urlController.dispose();
     _googleMapsApiKeyController.dispose();
+    _cartoApiKeyController.dispose();
     super.dispose();
   }
 
@@ -131,6 +134,35 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                         CustomSnackbar.show(
                           context,
                           message: key.isNotEmpty ? 'Google Maps API Key tersimpan!' : 'Google Maps dinonaktifkan (default OSM/CartoDB).',
+                          type: SnackbarType.success,
+                        );
+                      },
+                    ),
+                  ),
+                  style: GoogleFonts.shareTechMono(fontSize: 14),
+                ),
+                const SizedBox(height: 16),
+                
+                TextField(
+                  controller: _cartoApiKeyController,
+                  decoration: InputDecoration(
+                    labelText: 'CartoDB API Key (Opsional)',
+                    hintText: 'carto_api_key_xxx...',
+                    helperText: 'Default menggunakan Esri Dark Canvas (Bebas Watermark). Isi key jika ingin memakai CartoDB resmi.',
+                    helperMaxLines: 2,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.check_circle_outline),
+                      tooltip: 'Simpan Carto Key',
+                      onPressed: () {
+                        final key = _cartoApiKeyController.text.trim();
+                        ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(cartoApiKey: key));
+                        FocusScope.of(context).unfocus();
+                        CustomSnackbar.show(
+                          context,
+                          message: key.isNotEmpty ? 'CartoDB API Key tersimpan!' : 'CartoDB dinonaktifkan (default Esri/OSM).',
                           type: SnackbarType.success,
                         );
                       },

@@ -11,6 +11,7 @@ class AppSettings {
     this.backgroundService = true,
     this.isDarkMode = true,
     this.googleMapsApiKey = '',
+    this.cartoApiKey = '',
   });
 
   final String serverUrl;
@@ -18,6 +19,7 @@ class AppSettings {
   final bool backgroundService;
   final bool isDarkMode;
   final String googleMapsApiKey;
+  final String cartoApiKey;
 
   AppSettings copyWith({
     String? serverUrl,
@@ -25,6 +27,7 @@ class AppSettings {
     bool? backgroundService,
     bool? isDarkMode,
     String? googleMapsApiKey,
+    String? cartoApiKey,
   }) {
     return AppSettings(
       serverUrl: serverUrl ?? this.serverUrl,
@@ -32,6 +35,7 @@ class AppSettings {
       backgroundService: backgroundService ?? this.backgroundService,
       isDarkMode: isDarkMode ?? this.isDarkMode,
       googleMapsApiKey: googleMapsApiKey ?? this.googleMapsApiKey,
+      cartoApiKey: cartoApiKey ?? this.cartoApiKey,
     );
   }
 }

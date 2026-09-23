@@ -25,6 +25,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
       highAccuracyGps: prefs.getBool('highAccuracyGps') ?? true,
       backgroundService: prefs.getBool('backgroundService') ?? true,
       googleMapsApiKey: prefs.getString('googleMapsApiKey') ?? '',
+      cartoApiKey: prefs.getString('cartoApiKey') ?? '',
     );
   }
   void updateSettings(AppSettings s) {
@@ -35,33 +36,70 @@ class SettingsNotifier extends Notifier<AppSettings> {
     prefs.setBool('highAccuracyGps', s.highAccuracyGps);
     prefs.setBool('backgroundService', s.backgroundService);
     prefs.setString('googleMapsApiKey', s.googleMapsApiKey);
+    prefs.setString('cartoApiKey', s.cartoApiKey);
   }
 }
 final appSettingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);
 
 // --- Map Styles ---
-List<MapStyleOption> getAvailableMapStyles([String googleApiKey = '']) {
+List<MapStyleOption> getAvailableMapStyles([String googleApiKey = '', String cartoApiKey = '']) {
   final styles = <MapStyleOption>[
+    // 1. Default Watermark-Free Esri Dark Canvas
     const MapStyleOption(
       id: 'dark',
-      name: 'Midnight Dark (CartoDB)',
-      urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      attribution: 'CartoDB, OpenStreetMap',
+      name: 'Midnight Dark (Esri Canvas)',
+      urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      subdomains: [],
+      attribution: 'Esri, HERE, Garmin, OpenStreetMap',
     ),
-    const MapStyleOption(
-      id: 'light',
-      name: 'Clean Light (CartoDB)',
-      urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-      attribution: 'CartoDB, OpenStreetMap',
-    ),
+    // 2. OpenStreetMap Standard
     const MapStyleOption(
       id: 'osm',
       name: 'OSM Standard (OpenStreetMap)',
-      urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      attribution: 'OpenStreetMap',
+      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      subdomains: [],
+      attribution: 'OpenStreetMap contributors',
+    ),
+    // 3. Clean Light Esri Canvas
+    const MapStyleOption(
+      id: 'light',
+      name: 'Clean Light (Esri Canvas)',
+      urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      subdomains: [],
+      attribution: 'Esri, HERE, Garmin, OpenStreetMap',
+    ),
+    // 4. Free Satellite Aerial Imagery
+    const MapStyleOption(
+      id: 'satellite',
+      name: 'Satellite Aerial (Esri Imagery)',
+      urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      subdomains: [],
+      attribution: 'Esri, Maxar, Earthstar Geographics',
     ),
   ];
 
+  // Optional: CartoDB Basemaps if API key is provided or explicit request
+  if (cartoApiKey.trim().isNotEmpty) {
+    final keyParam = '?key=${cartoApiKey.trim()}';
+    styles.addAll([
+      MapStyleOption(
+        id: 'carto_dark',
+        name: 'CartoDB Dark Matter (Auth)',
+        urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png$keyParam',
+        subdomains: const ['a', 'b', 'c', 'd'],
+        attribution: 'CARTO, OpenStreetMap',
+      ),
+      MapStyleOption(
+        id: 'carto_light',
+        name: 'CartoDB Positron (Auth)',
+        urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png$keyParam',
+        subdomains: const ['a', 'b', 'c', 'd'],
+        attribution: 'CARTO, OpenStreetMap',
+      ),
+    ]);
+  }
+
+  // Optional: Google Maps if API key is provided
   if (googleApiKey.trim().isNotEmpty) {
     styles.addAll([
       MapStyleOption(
@@ -93,8 +131,9 @@ List<MapStyleOption> getAvailableMapStyles([String googleApiKey = '']) {
 
 final availableMapStyles = getAvailableMapStyles();
 final mapStyleListProvider = Provider<List<MapStyleOption>>((ref) {
-  final apiKey = ref.watch(appSettingsProvider.select((s) => s.googleMapsApiKey));
-  return getAvailableMapStyles(apiKey);
+  final googleKey = ref.watch(appSettingsProvider.select((s) => s.googleMapsApiKey));
+  final cartoKey = ref.watch(appSettingsProvider.select((s) => s.cartoApiKey));
+  return getAvailableMapStyles(googleKey, cartoKey);
 });
 
 final mapStyleProvider = StateProvider<MapStyleOption>((ref) => getAvailableMapStyles().first);

@@ -59,9 +59,10 @@ class TripShareCard extends StatelessWidget {
     final textHeader = isDark ? Colors.white : const Color(0xFF0D1117);
     final textSecondary = isDark ? Colors.white60 : const Color(0xFF64748B);
     final dividerColor = isDark ? Colors.white10 : Colors.black12;
+    // Watermark-free Esri Canvas tiles for crystal-clear exports
     final mapTileUrl = isDark 
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+        ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+        : 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}';
     final polylineColor = isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7);
     final footerBg = isDark ? const Color(0xFF12151B) : const Color(0xFFF1F5F9);
     final footerText = isDark ? Colors.white30 : const Color(0xFF94A3B8);
