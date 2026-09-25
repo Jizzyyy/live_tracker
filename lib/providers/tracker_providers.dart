@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
@@ -147,12 +148,34 @@ final locationStreamProvider = StreamProvider.autoDispose<Position>((ref) async*
 
 // --- Room Session ---
 class RoomState {
-  const RoomState({this.status = TrackingConnectionStatus.disconnected, this.roomCode, this.members = const {}});
+  const RoomState({
+    this.status = TrackingConnectionStatus.disconnected,
+    this.roomCode,
+    this.members = const {},
+    this.activeSos,
+    this.pois = const {},
+  });
+
   final TrackingConnectionStatus status;
   final String? roomCode;
   final Map<String, MemberLocation> members;
-  RoomState copyWith({TrackingConnectionStatus? status, String? roomCode, Map<String, MemberLocation>? members}) =>
-    RoomState(status: status ?? this.status, roomCode: roomCode ?? this.roomCode, members: members ?? this.members);
+  final SosAlert? activeSos;
+  final Map<String, SharedPoi> pois;
+
+  RoomState copyWith({
+    TrackingConnectionStatus? status,
+    String? roomCode,
+    Map<String, MemberLocation>? members,
+    SosAlert? Function()? activeSos,
+    Map<String, SharedPoi>? pois,
+  }) =>
+    RoomState(
+      status: status ?? this.status,
+      roomCode: roomCode ?? this.roomCode,
+      members: members ?? this.members,
+      activeSos: activeSos != null ? activeSos() : this.activeSos,
+      pois: pois ?? this.pois,
+    );
 }
 
 class RoomNotifier extends Notifier<RoomState> {
@@ -199,11 +222,63 @@ class RoomNotifier extends Notifier<RoomState> {
       status: TrackingConnectionStatus.disconnected,
       roomCode: null,
       members: {},
+      activeSos: null,
+      pois: {},
     );
   }
 
+  /// Broadcast Emergency SOS to all members in current room
+  void sendSosAlert(String note, {double? lat, double? lng}) {
+    if (state.status != TrackingConnectionStatus.connected) return;
+    final alert = SosAlert(
+      userId: 'ME',
+      note: note,
+      latitude: lat,
+      longitude: lng,
+      timestamp: DateTime.now(),
+    );
+    state = state.copyWith(activeSos: () => alert);
+    _ws.send({
+      'type': 'sos_alert',
+      'note': note,
+      'lat': lat,
+      'lng': lng,
+    });
+  }
+
+  /// Dismiss active SOS alert
+  void dismissSos() {
+    state = state.copyWith(activeSos: () => null);
+    if (state.status == TrackingConnectionStatus.connected) {
+      _ws.send({'type': 'sos_dismiss'});
+    }
+  }
+
+  /// Create and broadcast a shared tactical POI
+  void createPoi(SharedPoi poi) {
+    state = state.copyWith(pois: {...state.pois, poi.id: poi});
+    if (state.status == TrackingConnectionStatus.connected) {
+      _ws.send({
+        'type': 'poi_create',
+        'poi': poi.toJson(),
+      });
+    }
+  }
+
+  /// Delete and broadcast deletion of a shared tactical POI
+  void deletePoi(String poiId) {
+    final updated = Map<String, SharedPoi>.from(state.pois)..remove(poiId);
+    state = state.copyWith(pois: updated);
+    if (state.status == TrackingConnectionStatus.connected) {
+      _ws.send({
+        'type': 'poi_delete',
+        'poiId': poiId,
+      });
+    }
+  }
+
   /// Throttled WS Broadcast to max 1 Hz (1000ms) to reduce battery/bandwidth
-  void sendPosition(Position pos) {
+  void sendPosition(Position pos, {int? batteryPercent}) {
     if (state.status != TrackingConnectionStatus.connected) return;
     final now = DateTime.now().millisecondsSinceEpoch;
     if (now - _lastWsSendMs < 1000) return;
@@ -213,8 +288,9 @@ class RoomNotifier extends Notifier<RoomState> {
       'type': 'position_update',
       'lat': pos.latitude,
       'lng': pos.longitude,
-      'speed': pos.speed,
+      'speed': pos.speed * 3.6, // send km/h
       'heading': pos.heading,
+      'battery': batteryPercent,
       'timestamp': pos.timestamp.millisecondsSinceEpoch,
     });
   }
@@ -231,10 +307,79 @@ class RoomNotifier extends Notifier<RoomState> {
         try { final loc = MemberLocation.fromJson(msg); state = state.copyWith(members: {...state.members, loc.id: loc}); } catch (_) {} break;
       case 'member_left':
         final id = msg['userId']; if (id != null) state = state.copyWith(members: Map.from(state.members)..remove(id)); break;
+      case 'sos_alert':
+        try {
+          final alert = SosAlert.fromJson(msg);
+          state = state.copyWith(activeSos: () => alert);
+        } catch (_) {}
+        break;
+      case 'sos_dismiss':
+        state = state.copyWith(activeSos: () => null);
+        break;
+      case 'poi_created':
+        try {
+          if (msg['poi'] != null) {
+            final poi = SharedPoi.fromJson(msg['poi'] as Map<String, dynamic>);
+            state = state.copyWith(pois: {...state.pois, poi.id: poi});
+          }
+        } catch (_) {}
+        break;
+      case 'poi_deleted':
+        final pId = msg['poiId'] as String?;
+        if (pId != null) {
+          final updated = Map<String, SharedPoi>.from(state.pois)..remove(pId);
+          state = state.copyWith(pois: updated);
+        }
+        break;
     }
   }
 }
 final roomProvider = NotifierProvider<RoomNotifier, RoomState>(RoomNotifier.new);
+
+// --- Convoy Separation Watchdog (500m Safe Radius) ---
+@immutable
+class ConvoySeparationState {
+  final bool isSeparated;
+  final double distanceMeters;
+  final String? memberId;
+
+  const ConvoySeparationState({
+    this.isSeparated = false,
+    this.distanceMeters = 0.0,
+    this.memberId,
+  });
+}
+
+final convoySeparationProvider = Provider<ConvoySeparationState>((ref) {
+  final posAsync = ref.watch(locationStreamProvider);
+  final members = ref.watch(roomProvider.select((r) => r.members.values.toList()));
+  
+  if (!posAsync.hasValue || members.isEmpty) {
+    return const ConvoySeparationState();
+  }
+
+  final pos = posAsync.value!;
+  final myLatLng = LatLng(pos.latitude, pos.longitude);
+  const distCalc = Distance();
+
+  double minDistance = double.infinity;
+  String? nearestMemberId;
+
+  for (final m in members) {
+    final d = distCalc.as(LengthUnit.Meter, myLatLng, LatLng(m.latitude, m.longitude));
+    if (d < minDistance) {
+      minDistance = d;
+      nearestMemberId = m.id;
+    }
+  }
+
+  final isSeparated = minDistance.isFinite && minDistance > 500.0;
+  return ConvoySeparationState(
+    isSeparated: isSeparated,
+    distanceMeters: minDistance.isFinite ? minDistance : 0.0,
+    memberId: nearestMemberId,
+  );
+});
 
 // --- Auto-Follow Camera State ---
 final autoFollowProvider = StateProvider<bool>((ref) => true);
