@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../src/core/constants.dart';
 import '../providers/tracker_providers.dart';
 import '../models/tracker_models.dart';
@@ -12,6 +13,7 @@ import '../widgets/custom_user_marker.dart';
 import '../widgets/auto_center_button.dart';
 import '../widgets/map_compass_control.dart';
 import '../utils/ui_helpers.dart';
+import '../utils/sound_manager.dart';
 
 class LiveTrackerScreen extends ConsumerStatefulWidget {
   const LiveTrackerScreen({super.key});
@@ -101,6 +103,23 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
         Future.delayed(const Duration(milliseconds: 600), () {
           if (mounted) ref.read(focusedMemberProvider.notifier).state = null;
         });
+      }
+    });
+
+    // Sound & Haptic Trigger on Emergency SOS
+    ref.listen(roomProvider.select((r) => r.activeSos), (prev, next) {
+      if (next != null && (prev == null || prev.timestamp != next.timestamp)) {
+        SoundManager.playEmergencyAlarm();
+        if (next.latitude != null && next.longitude != null) {
+          _animatedMapMove(LatLng(next.latitude!, next.longitude!), 17.0);
+        }
+      }
+    });
+
+    // Sound & Haptic Trigger on Convoy Separation
+    ref.listen(convoySeparationProvider.select((s) => s.isSeparated), (prev, next) {
+      if (next == true && prev != true) {
+        SoundManager.playWarningBeep();
       }
     });
 
@@ -230,6 +249,119 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
           const Align(
             alignment: Alignment.topCenter,
             child: TopHeaderHub(),
+          ),
+
+          // 2a. Flashing Emergency SOS Alert Banner
+          Consumer(
+            builder: (context, ref, _) {
+              final activeSos = ref.watch(roomProvider.select((r) => r.activeSos));
+              if (activeSos == null) return const SizedBox.shrink();
+
+              return Positioned(
+                top: 86,
+                left: 16,
+                right: 16,
+                child: GestureDetector(
+                  onTap: () {
+                    if (activeSos.latitude != null && activeSos.longitude != null) {
+                      _animatedMapMove(LatLng(activeSos.latitude!, activeSos.longitude!), 17.5);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF1744).withValues(alpha: 0.95),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF1744).withValues(alpha: 0.4),
+                          blurRadius: 16,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 22),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '🚨 SOS DARURAT DARI ${activeSos.userId}',
+                                style: GoogleFonts.shareTechMono(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                              Text(
+                                activeSos.note,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white.withValues(alpha: 0.95),
+                                  fontSize: 11,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white70, size: 18),
+                          onPressed: () {
+                            ref.read(roomProvider.notifier).dismissSos();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+
+          // 2b. Convoy Separation Watchdog Warning
+          Consumer(
+            builder: (context, ref, _) {
+              final separation = ref.watch(convoySeparationProvider);
+              final inRoom = ref.watch(roomProvider.select((r) => r.roomCode != null));
+              if (!inRoom || !separation.isSeparated) return const SizedBox.shrink();
+
+              return Positioned(
+                top: 140,
+                left: 20,
+                right: 20,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD97706).withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.amberAccent.withValues(alpha: 0.6)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.fmd_bad_outlined, color: Colors.white, size: 16),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Terpisah dari konvoi (~${separation.distanceMeters.toStringAsFixed(0)} m)',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
           
           // Re-center Floating Hint Pill when user panned away
