@@ -67,6 +67,16 @@ class MemberListSheet extends ConsumerWidget {
                     separatorBuilder: (_, _) => const Divider(height: 1, color: Colors.white12),
                     itemBuilder: (context, index) {
                       final m = members[index];
+                      final secondsAgo = DateTime.now().difference(m.lastUpdated).inSeconds;
+                      final isFresh = secondsAgo < 10;
+                      final batteryIcon = m.batteryPercent != null
+                          ? (m.batteryPercent! > 75
+                              ? Icons.battery_full
+                              : m.batteryPercent! > 30
+                                  ? Icons.battery_5_bar
+                                  : Icons.battery_alert)
+                          : null;
+
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: CircleAvatar(
@@ -79,12 +89,49 @@ class MemberListSheet extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        title: Text('User ${m.id}', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                        title: Row(
+                          children: [
+                            Text('User ${m.id}', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isFresh ? const Color(0xFF00E676) : Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              isFresh ? 'LIVE' : '${secondsAgo}s',
+                              style: GoogleFonts.shareTechMono(
+                                fontSize: 10,
+                                color: isFresh ? const Color(0xFF00E676) : Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
                         subtitle: Row(
                           children: [
                             const Icon(Icons.speed, size: 12, color: Colors.grey),
                             const SizedBox(width: 4),
                             Text('${(m.speedKmh ?? 0).toStringAsFixed(1)} km/h', style: GoogleFonts.jetBrainsMono(color: Colors.grey, fontSize: 12)),
+                            if (batteryIcon != null && m.batteryPercent != null) ...[
+                              const SizedBox(width: 12),
+                              Icon(
+                                batteryIcon,
+                                size: 13,
+                                color: m.batteryPercent! < 20 ? const Color(0xFFFF1744) : Colors.grey,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                '${m.batteryPercent}%',
+                                style: GoogleFonts.jetBrainsMono(
+                                  color: m.batteryPercent! < 20 ? const Color(0xFFFF1744) : Colors.grey,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                         trailing: IconButton.filledTonal(
