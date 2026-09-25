@@ -14,6 +14,9 @@ import '../widgets/auto_center_button.dart';
 import '../widgets/map_compass_control.dart';
 import '../utils/ui_helpers.dart';
 import '../utils/sound_manager.dart';
+import '../src/core/services/battery_service.dart';
+import '../widgets/modals/add_poi_sheet.dart';
+import '../widgets/modals/poi_detail_sheet.dart';
 
 class LiveTrackerScreen extends ConsumerStatefulWidget {
   const LiveTrackerScreen({super.key});
@@ -80,7 +83,11 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
       if (!next.hasValue) return;
       final pos = next.value!;
       
-      ref.read(roomProvider.notifier).sendPosition(pos);
+      BatteryService.getBatteryLevel().then((battery) {
+        if (mounted) {
+          ref.read(roomProvider.notifier).sendPosition(pos, batteryPercent: battery);
+        }
+      });
 
       final isAutoFollow = ref.read(autoFollowProvider);
 
@@ -146,6 +153,10 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                   ref.read(autoFollowProvider.notifier).state = false;
                 }
               },
+              onLongPress: (tapPosition, point) {
+                HapticFeedback.mediumImpact();
+                _showAddPoiSheet(point);
+              },
             ),
             children: [
               TileLayer(
@@ -203,6 +214,52 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                           child: CustomUserMarker(
                             location: m,
                             color: _getColorForId(m.id),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+
+              // Shared Tactical POI Layer
+              Consumer(
+                builder: (context, ref, _) {
+                  final pois = ref.watch(roomProvider.select((r) => r.pois.values.toList()));
+                  if (pois.isEmpty) return const SizedBox.shrink();
+
+                  return MarkerLayer(
+                    markers: pois.map((poi) {
+                      final categoryConfig = switch (poi.category) {
+                        PoiCategory.rendezvous => (icon: Icons.flag_rounded, color: const Color(0xFF00E5FF)),
+                        PoiCategory.fuel => (icon: Icons.local_gas_station_rounded, color: const Color(0xFFFFD600)),
+                        PoiCategory.hazard => (icon: Icons.warning_amber_rounded, color: const Color(0xFFFF1744)),
+                        PoiCategory.rest => (icon: Icons.hotel_rounded, color: const Color(0xFF00E676)),
+                      };
+
+                      return Marker(
+                        point: LatLng(poi.latitude, poi.longitude),
+                        width: 44,
+                        height: 44,
+                        child: GestureDetector(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            _showPoiDetailSheet(poi);
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF12151B),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: categoryConfig.color, width: 2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: categoryConfig.color.withValues(alpha: 0.35),
+                                  blurRadius: 8,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                            child: Icon(categoryConfig.icon, color: categoryConfig.color, size: 20),
                           ),
                         ),
                       );
@@ -431,6 +488,23 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
           ),
         ],
       ),
+    );
+  }
+
+  void _showAddPoiSheet(LatLng point) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => AddPoiSheet(point: point),
+    );
+  }
+
+  void _showPoiDetailSheet(SharedPoi poi) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => PoiDetailSheet(poi: poi),
     );
   }
 
