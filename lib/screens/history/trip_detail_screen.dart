@@ -7,9 +7,12 @@ import '../../models/tracker_models.dart';
 import '../../models/trip_history_model.dart';
 import '../../providers/tracker_providers.dart';
 import '../../utils/gpx_exporter.dart';
+import '../../utils/geojson_exporter.dart';
+import '../../utils/kml_exporter.dart';
 import '../../utils/ui_helpers.dart';
 import '../../utils/custom_snackbar.dart';
 import '../../widgets/trip_share_card.dart';
+import '../../widgets/elevation_chart.dart';
 
 class TripDetailScreen extends ConsumerStatefulWidget {
   final CompletedTrip trip;
@@ -24,13 +27,19 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
   MapStyleOption _selectedMapStyle = availableMapStyles.first;
   bool _isExporting = false;
 
-  Future<void> _handleGpxExport() async {
+  Future<void> _handleExport(String format) async {
     setState(() => _isExporting = true);
     try {
-      await GpxExporter.exportAndShare(widget.trip);
+      if (format == 'gpx') {
+        await GpxExporter.exportAndShare(widget.trip);
+      } else if (format == 'geojson') {
+        await GeoJsonExporter.exportAndShare(widget.trip);
+      } else if (format == 'kml') {
+        await KmlExporter.exportAndShare(widget.trip);
+      }
     } catch (e) {
       if (mounted) {
-        CustomSnackbar.show(context, message: 'Gagal mengekspor GPX: $e', type: SnackbarType.error);
+        CustomSnackbar.show(context, message: 'Gagal mengekspor ${format.toUpperCase()}: $e', type: SnackbarType.error);
       }
     } finally {
       if (mounted) setState(() => _isExporting = false);
@@ -182,23 +191,79 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
             ),
             onPressed: _showShareCardDialog,
           ),
-          // GPX Export Action
-          IconButton(
-            tooltip: 'Export GPX',
-            icon: _isExporting 
+          // Multi-Format GIS Export Action
+          PopupMenuButton<String>(
+            tooltip: 'Export GIS Data',
+            enabled: !_isExporting,
+            icon: _isExporting
                 ? SizedBox(
-                    width: 20, 
-                    height: 20, 
+                    width: 20,
+                    height: 20,
                     child: CircularProgressIndicator(
-                      strokeWidth: 2, 
+                      strokeWidth: 2,
                       color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
                     ),
                   )
                 : Icon(
-                    Icons.ios_share_outlined, 
+                    Icons.ios_share_outlined,
                     color: isDark ? const Color(0xFF00E676) : const Color(0xFF059669),
                   ),
-            onPressed: _isExporting ? null : _handleGpxExport,
+            color: isDark ? const Color(0xFF1E232D) : Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            onSelected: _handleExport,
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'gpx',
+                child: Row(
+                  children: [
+                    const Icon(Icons.route_outlined, size: 18, color: Color(0xFF00E676)),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Export GPX 1.1',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'geojson',
+                child: Row(
+                  children: [
+                    const Icon(Icons.data_object_rounded, size: 18, color: Color(0xFF00E5FF)),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Export GeoJSON (RFC 7946)',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'kml',
+                child: Row(
+                  children: [
+                    const Icon(Icons.public_rounded, size: 18, color: Color(0xFFFFD600)),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Export Google Earth (KML)',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           const SizedBox(width: 8),
         ],
@@ -390,6 +455,10 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 16),
+                    Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
+                    const SizedBox(height: 16),
+                    ElevationChart(trip: trip, isDark: isDark),
                   ],
                 ),
               ),
