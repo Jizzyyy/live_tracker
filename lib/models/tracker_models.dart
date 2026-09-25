@@ -145,3 +145,86 @@ class TripSession {
     );
   }
 }
+
+@immutable
+class SosAlert {
+  final String userId;
+  final String note;
+  final double? latitude;
+  final double? longitude;
+  final DateTime timestamp;
+
+  const SosAlert({
+    required this.userId,
+    required this.note,
+    this.latitude,
+    this.longitude,
+    required this.timestamp,
+  });
+
+  factory SosAlert.fromJson(Map<String, dynamic> json) => SosAlert(
+    userId: json['userId'] as String? ?? 'unknown',
+    note: json['note'] as String? ?? 'Bantuan Darurat Diperlukan!',
+    latitude: (json['lat'] as num?)?.toDouble(),
+    longitude: (json['lng'] as num?)?.toDouble(),
+    timestamp: DateTime.fromMillisecondsSinceEpoch(
+      json['timestamp'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+    ),
+  );
+
+  Map<String, dynamic> toJson() => {
+    'userId': userId,
+    'note': note,
+    if (latitude != null) 'lat': latitude,
+    if (longitude != null) 'lng': longitude,
+    'timestamp': timestamp.millisecondsSinceEpoch,
+  };
+}
+
+enum PoiCategory { rendezvous, fuel, hazard, rest }
+
+@immutable
+class SharedPoi {
+  final String id;
+  final String title;
+  final double latitude;
+  final double longitude;
+  final PoiCategory category;
+  final String createdBy;
+  final DateTime createdAt;
+
+  const SharedPoi({
+    required this.id,
+    required this.title,
+    required this.latitude,
+    required this.longitude,
+    required this.category,
+    required this.createdBy,
+    required this.createdAt,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'lat': latitude,
+    'lng': longitude,
+    'category': category.name,
+    'createdBy': createdBy,
+    'createdAt': createdAt.millisecondsSinceEpoch,
+  };
+
+  factory SharedPoi.fromJson(Map<String, dynamic> json) => SharedPoi(
+    id: json['id'] as String,
+    title: json['title'] as String? ?? 'Tactical POI',
+    latitude: (json['lat'] as num).toDouble(),
+    longitude: (json['lng'] as num).toDouble(),
+    category: PoiCategory.values.firstWhere(
+      (c) => c.name == json['category'],
+      orElse: () => PoiCategory.rendezvous,
+    ),
+    createdBy: json['createdBy'] as String? ?? 'Member',
+    createdAt: DateTime.fromMillisecondsSinceEpoch(
+      json['createdAt'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+    ),
+  );
+}
