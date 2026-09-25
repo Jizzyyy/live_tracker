@@ -95,6 +95,69 @@ class CompletedTrip {
   String get formattedAvgSpeed => '${avgSpeedKmh.toStringAsFixed(1)} km/h';
   String get formattedMaxSpeed => '${maxSpeedKmh.toStringAsFixed(1)} km/h';
 
+  // --- Elevation Telemetry ---
+  double get elevationGainMeters {
+    double gain = 0;
+    double? lastAlt;
+    for (final pt in routePoints) {
+      if (pt.altitude == null) continue;
+      if (lastAlt != null) {
+        final diff = pt.altitude! - lastAlt;
+        if (diff > 0.5) gain += diff; // filter micro-noise
+      }
+      lastAlt = pt.altitude;
+    }
+    return gain;
+  }
+
+  double get elevationLossMeters {
+    double loss = 0;
+    double? lastAlt;
+    for (final pt in routePoints) {
+      if (pt.altitude == null) continue;
+      if (lastAlt != null) {
+        final diff = lastAlt - pt.altitude!;
+        if (diff > 0.5) loss += diff;
+      }
+      lastAlt = pt.altitude;
+    }
+    return loss;
+  }
+
+  double? get minAltitude {
+    final validAlts = routePoints.map((p) => p.altitude).whereType<double>().toList();
+    if (validAlts.isEmpty) return null;
+    return validAlts.reduce((a, b) => a < b ? a : b);
+  }
+
+  double? get maxAltitude {
+    final validAlts = routePoints.map((p) => p.altitude).whereType<double>().toList();
+    if (validAlts.isEmpty) return null;
+    return validAlts.reduce((a, b) => a > b ? a : b);
+  }
+
+  String get formattedElevationGain {
+    final gain = elevationGainMeters;
+    if (gain <= 0 && minAltitude == null) return '-- m';
+    return '+${gain.toStringAsFixed(0)} m';
+  }
+
+  String get formattedElevationLoss {
+    final loss = elevationLossMeters;
+    if (loss <= 0 && minAltitude == null) return '-- m';
+    return '-${loss.toStringAsFixed(0)} m';
+  }
+
+  String get formattedMinAltitude {
+    final minA = minAltitude;
+    return minA != null ? '${minA.toStringAsFixed(0)} m' : '-- m';
+  }
+
+  String get formattedMaxAltitude {
+    final maxA = maxAltitude;
+    return maxA != null ? '${maxA.toStringAsFixed(0)} m' : '-- m';
+  }
+
   Map<String, dynamic> toMap() => {
     'id': id,
     'startTime': startTime.toIso8601String(),
