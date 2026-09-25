@@ -9,6 +9,7 @@ import '../screens/history/trip_history_screen.dart';
 import 'modals/member_list_sheet.dart';
 import 'modals/settings_sheet.dart';
 import 'modals/join_create_room_sheet.dart';
+import 'modals/sos_modal_sheet.dart';
 import '../utils/custom_snackbar.dart';
 
 class TopHeaderHub extends ConsumerStatefulWidget {
@@ -67,6 +68,15 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                     onTap: () {
                                       setState(() => _isExpanded = false);
                                       _showMapStyleSheet(context, ref);
+                                    },
+                                  ),
+                                  _ActionButton(
+                                    icon: Icons.sos_rounded,
+                                    iconColor: const Color(0xFFFF1744),
+                                    backgroundColor: const Color(0xFFFF1744).withValues(alpha: 0.15),
+                                    onTap: () {
+                                      setState(() => _isExpanded = false);
+                                      _showSosSheet(context);
                                     },
                                   ),
                                   _ActionButton(
@@ -167,6 +177,19 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                     ),
                             ),
                             _ActionButton(
+                              icon: Icons.sos_rounded,
+                              iconColor: const Color(0xFFFF1744),
+                              backgroundColor: roomState.activeSos != null
+                                  ? const Color(0xFFFF1744).withValues(alpha: 0.35)
+                                  : null,
+                              badgeCount: roomState.activeSos != null ? 1 : null,
+                              onTap: () {
+                                HapticFeedback.heavyImpact();
+                                _showSosSheet(context);
+                              },
+                            ),
+                            const SizedBox(width: 4),
+                            _ActionButton(
                               icon: Icons.more_vert_rounded,
                               onTap: () {
                                 HapticFeedback.lightImpact();
@@ -216,6 +239,15 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showSosSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => const SosModalSheet(),
     );
   }
 
@@ -312,8 +344,16 @@ class _ActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final int? badgeCount;
+  final Color? iconColor;
+  final Color? backgroundColor;
 
-  const _ActionButton({required this.icon, required this.onTap, this.badgeCount});
+  const _ActionButton({
+    required this.icon,
+    required this.onTap,
+    this.badgeCount,
+    this.iconColor,
+    this.backgroundColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -323,13 +363,13 @@ class _ActionButton extends StatelessWidget {
       child: Container(
         width: 40, height: 40,
         decoration: BoxDecoration(
-          color: theme.colorScheme.surface.withValues(alpha: 0.3),
+          color: backgroundColor ?? theme.colorScheme.surface.withValues(alpha: 0.3),
           shape: BoxShape.circle,
         ),
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Icon(icon, size: 20, color: theme.colorScheme.onSurface),
+            Icon(icon, size: 20, color: iconColor ?? theme.colorScheme.onSurface),
             if (badgeCount != null && badgeCount! > 0)
               Positioned(
                 top: 6, right: 6,
