@@ -325,8 +325,49 @@ class RoomNotifier extends Notifier<RoomState> {
         state = state.copyWith(status: TrackingConnectionStatus.connected);
         if (state.roomCode != null) joinRoom(state.roomCode!);
         break;
-      case 'room_created': case 'room_joined':
-        state = state.copyWith(status: TrackingConnectionStatus.connected, roomCode: msg['roomCode']); break;
+      case 'room_created':
+        state = state.copyWith(status: TrackingConnectionStatus.connected, roomCode: msg['roomCode']);
+        break;
+      case 'room_joined':
+        final roomCode = msg['roomCode'] as String?;
+        final snapshot = msg['snapshot'] as Map<String, dynamic>?;
+
+        final initialMembers = Map<String, MemberLocation>.from(state.members);
+        final initialPois = Map<String, SharedPoi>.from(state.pois);
+        SosAlert? initialSos = state.activeSos;
+
+        if (snapshot != null) {
+          if (snapshot['members'] is List) {
+            for (final m in snapshot['members'] as List) {
+              try {
+                final loc = MemberLocation.fromJson(m as Map<String, dynamic>);
+                initialMembers[loc.id] = loc;
+              } catch (_) {}
+            }
+          }
+          if (snapshot['pois'] is List) {
+            for (final p in snapshot['pois'] as List) {
+              try {
+                final poi = SharedPoi.fromJson(p as Map<String, dynamic>);
+                initialPois[poi.id] = poi;
+              } catch (_) {}
+            }
+          }
+          if (snapshot['activeSos'] != null && snapshot['activeSos'] is Map<String, dynamic>) {
+            try {
+              initialSos = SosAlert.fromJson(snapshot['activeSos'] as Map<String, dynamic>);
+            } catch (_) {}
+          }
+        }
+
+        state = state.copyWith(
+          status: TrackingConnectionStatus.connected,
+          roomCode: roomCode,
+          members: initialMembers,
+          pois: initialPois,
+          activeSos: () => initialSos,
+        );
+        break;
       case 'member_position':
         try { final loc = MemberLocation.fromJson(msg); state = state.copyWith(members: {...state.members, loc.id: loc}); } catch (_) {} break;
       case 'member_left':
