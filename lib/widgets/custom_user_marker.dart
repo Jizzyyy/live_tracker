@@ -59,17 +59,19 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    // RepaintBoundary ensures isolated repaint during marker movement
-    final markerContent = CustomPaint(
-      size: const Size(56, 56),
-      painter: _MarkerPainter(
-        color: widget.color,
-        haloIntensity: _haloCtrl?.value ?? 0.0,
-        isIdle: widget.location.isIdle,
-        isLocalUser: widget.isLocalUser,
-      ),
-    );
+    Widget buildMarker(double haloIntensity) {
+      return CustomPaint(
+        size: const Size(56, 56),
+        painter: _MarkerPainter(
+          color: widget.color,
+          haloIntensity: haloIntensity,
+          isIdle: widget.location.isIdle,
+          isLocalUser: widget.isLocalUser,
+        ),
+      );
+    }
 
+    // RepaintBoundary ensures isolated repaint during marker movement
     return RepaintBoundary(
       child: AnimatedRotation(
         turns: (widget.location.heading ?? 0) / 360.0,
@@ -78,9 +80,9 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
         child: _haloCtrl != null
             ? AnimatedBuilder(
                 animation: _haloCtrl!,
-                builder: (context, _) => markerContent,
+                builder: (context, _) => buildMarker(_haloCtrl!.value),
               )
-            : markerContent,
+            : buildMarker(0.0),
       ),
     );
   }
