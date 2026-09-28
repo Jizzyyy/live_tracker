@@ -44,9 +44,14 @@ class _ElevationChartState extends State<ElevationChart> {
     // Selected point inspection
     int? selectedIndex;
     double? selectedAlt;
+    double? selectedDistKm;
     if (_selectedXFraction != null) {
       selectedIndex = (_selectedXFraction! * (altitudes.length - 1)).round().clamp(0, altitudes.length - 1);
       selectedAlt = altitudes[selectedIndex];
+
+      final totalDistM = widget.trip.distanceMeters;
+      final distFraction = (selectedIndex / (altitudes.length - 1)).clamp(0.0, 1.0);
+      selectedDistKm = (totalDistM * distFraction) / 1000;
     }
 
     return Column(
@@ -64,9 +69,9 @@ class _ElevationChartState extends State<ElevationChart> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            if (selectedAlt != null)
+            if (selectedAlt != null && selectedDistKm != null)
               Text(
-                'ALT: ${selectedAlt.toStringAsFixed(1)} m',
+                'KM ${selectedDistKm.toStringAsFixed(2)} • ${selectedAlt.toStringAsFixed(1)} m',
                 style: GoogleFonts.jetBrainsMono(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
