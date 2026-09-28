@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../providers/tracker_providers.dart';
 import '../../utils/ui_helpers.dart';
+import '../../utils/custom_snackbar.dart';
 
 class MemberListSheet extends ConsumerWidget {
   const MemberListSheet({super.key});
@@ -52,7 +55,67 @@ class MemberListSheet extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
+
+              if (roomState.roomCode != null) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E232D) : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.meeting_room_outlined, size: 18, color: isDark ? const Color(0xFF00E5FF) : colorScheme.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        'ROOM: ',
+                        style: GoogleFonts.shareTechMono(
+                          fontSize: 11,
+                          letterSpacing: 1.5,
+                          color: isDark ? Colors.white60 : Colors.black54,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        roomState.roomCode!,
+                        style: GoogleFonts.jetBrainsMono(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? const Color(0xFF00E5FF) : colorScheme.primary,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        icon: const Icon(Icons.copy_rounded, size: 16),
+                        tooltip: 'Salin Kode',
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          Clipboard.setData(ClipboardData(text: roomState.roomCode!));
+                          CustomSnackbar.show(context, message: 'Kode Room ${roomState.roomCode} disalin!', type: SnackbarType.success);
+                        },
+                      ),
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        icon: const Icon(Icons.share_rounded, size: 16),
+                        tooltip: 'Bagikan Kode',
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          SharePlus.instance.share(
+                            ShareParams(
+                              text: 'Gabung room Live Tracker saya dengan kode: ${roomState.roomCode}',
+                              subject: 'Undangan Room Live Tracker',
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               
               if (members.isEmpty)
                 const Padding(
