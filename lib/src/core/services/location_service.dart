@@ -45,7 +45,7 @@ Future<PermissionResult> ensureLocationPermission() async {
 /// Returns platform-optimized location settings.
 /// When [highAccuracy] is false, uses balanced power mode with wider distance filter.
 LocationSettings buildLocationSettings({bool highAccuracy = true}) {
-  final accuracy = highAccuracy ? LocationAccuracy.high : LocationAccuracy.balanced;
+  final accuracy = highAccuracy ? LocationAccuracy.high : LocationAccuracy.medium;
   final filter = highAccuracy ? 5 : 15;
   final interval = highAccuracy ? const Duration(seconds: 2) : const Duration(seconds: 5);
 
