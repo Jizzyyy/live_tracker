@@ -81,6 +81,7 @@ void main() {
         currentSpeedKmh: 30.0,
         avgSpeedKmh: 24.0,
       );
+      expect(active.state, TripSessionState.active);
 
       const stopped = TripSession();
       expect(stopped.state, TripSessionState.inactive);
