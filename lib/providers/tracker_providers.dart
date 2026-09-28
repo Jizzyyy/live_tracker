@@ -143,7 +143,8 @@ final mapStyleProvider = StateProvider<MapStyleOption>((ref) => getAvailableMapS
 final locationStreamProvider = StreamProvider.autoDispose<Position>((ref) async* {
   final result = await ensureLocationPermission();
   if (!result.granted) throw Exception(result.message);
-  yield* positionStream();
+  final highAccuracy = ref.watch(appSettingsProvider.select((s) => s.highAccuracyGps));
+  yield* positionStream(highAccuracy: highAccuracy);
 });
 
 // --- Room Session ---

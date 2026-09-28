@@ -43,36 +43,37 @@ Future<PermissionResult> ensureLocationPermission() async {
 }
 
 /// Returns platform-optimized location settings.
-/// Note: Foreground notifications are handled exclusively by BackgroundTrackingManager
-/// to avoid duplicate hardware streams and notification channel conflicts.
-LocationSettings _buildLocationSettings() {
+/// When [highAccuracy] is false, uses balanced power mode with wider distance filter.
+LocationSettings buildLocationSettings({bool highAccuracy = true}) {
+  final accuracy = highAccuracy ? LocationAccuracy.high : LocationAccuracy.balanced;
+  final filter = highAccuracy ? 5 : 15;
+  final interval = highAccuracy ? const Duration(seconds: 2) : const Duration(seconds: 5);
+
   if (defaultTargetPlatform == TargetPlatform.android) {
     return AndroidSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: 5,
-      intervalDuration: const Duration(seconds: 2),
+      accuracy: accuracy,
+      distanceFilter: filter,
+      intervalDuration: interval,
     );
   } else if (defaultTargetPlatform == TargetPlatform.iOS) {
     return AppleSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: 5,
+      accuracy: accuracy,
+      distanceFilter: filter,
       activityType: ActivityType.fitness,
       pauseLocationUpdatesAutomatically: false,
       showBackgroundLocationIndicator: true,
     );
   }
 
-  return const LocationSettings(
-    accuracy: LocationAccuracy.high,
-    distanceFilter: 5,
+  return LocationSettings(
+    accuracy: accuracy,
+    distanceFilter: filter,
   );
 }
 
 /// Returns a stream of GPS positions with platform-optimized settings.
-/// On Android: uses foreground service notification to prevent OS from killing GPS.
-/// On iOS: uses fitness activity type for battery-optimized continuous tracking.
-Stream<Position> positionStream() {
+Stream<Position> positionStream({bool highAccuracy = true}) {
   return Geolocator.getPositionStream(
-    locationSettings: _buildLocationSettings(),
+    locationSettings: buildLocationSettings(highAccuracy: highAccuracy),
   );
 }
