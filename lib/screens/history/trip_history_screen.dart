@@ -186,17 +186,36 @@ class TripHistoryScreen extends ConsumerWidget {
   }
 
   Future<bool> _confirmDelete(BuildContext context, String id) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF12151B),
-        title: Text('Delete this trip?', style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.white)),
-        content: const Text('This action will permanently delete this route record.', style: TextStyle(color: Colors.white70)),
+        backgroundColor: isDark ? const Color(0xFF12151B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Delete this trip?',
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white : const Color(0xFF0D1117),
+          ),
+        ),
+        content: Text(
+          'This action will permanently delete this route record.',
+          style: TextStyle(
+            color: isDark ? Colors.white70 : const Color(0xFF4A5568),
+          ),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('CANCEL', style: TextStyle(color: Colors.grey))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'CANCEL',
+              style: TextStyle(color: isDark ? Colors.white60 : Colors.black54),
+            ),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('DELETE', style: TextStyle(color: Colors.redAccent)),
+            child: const Text('DELETE', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -204,21 +223,40 @@ class TripHistoryScreen extends ConsumerWidget {
   }
 
   void _showClearDialog(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF12151B),
-        title: Text('Clear all history?', style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.white)),
-        content: const Text('All saved trips will be permanently deleted from this device.', style: TextStyle(color: Colors.white70)),
+        backgroundColor: isDark ? const Color(0xFF12151B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Clear all history?',
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white : const Color(0xFF0D1117),
+          ),
+        ),
+        content: Text(
+          'All saved trips will be permanently deleted from this device.',
+          style: TextStyle(
+            color: isDark ? Colors.white70 : const Color(0xFF4A5568),
+          ),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CANCEL', style: TextStyle(color: Colors.grey))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'CANCEL',
+              style: TextStyle(color: isDark ? Colors.white60 : Colors.black54),
+            ),
+          ),
           TextButton(
             onPressed: () {
               ref.read(tripHistoryProvider.notifier).clearAll();
               Navigator.pop(ctx);
               CustomSnackbar.show(context, message: 'All history cleared', type: SnackbarType.info);
             },
-            child: const Text('DELETE ALL', style: TextStyle(color: Colors.redAccent)),
+            child: const Text('DELETE ALL', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
