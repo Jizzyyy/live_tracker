@@ -462,6 +462,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
   final List<RoutePoint> _routeBuffer = [];
   final List<LatLng> _simplifiedCache = [];
   int _lastUiEmitMs = 0;
+  int _lastBgDataMs = 0;
 
   List<RoutePoint> get routeBuffer => List.unmodifiable(_routeBuffer);
   List<LatLng> get simplifiedRoute => List.unmodifiable(_simplifiedCache);
@@ -475,12 +476,16 @@ class TripSessionNotifier extends Notifier<TripSession> {
 
     FlutterForegroundTask.addTaskDataCallback(_onForegroundData);
 
-    // Listen to main locationStreamProvider ONLY when background task is not running
+    // Resilient dual-source GPS listener with automatic 4-second background fallback
     ref.listen(locationStreamProvider, (prev, next) {
       if (state.state != TripSessionState.active || !next.hasValue) return;
-      // Skip duplicate processing if background service is actively supplying data
-      final isBgActive = ref.read(appSettingsProvider).backgroundService;
-      if (isBgActive) return;
+      
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final isBgSupplyingData = ref.read(appSettingsProvider).backgroundService && 
+          (now - _lastBgDataMs < 4000);
+      
+      // Skip foreground stream only when background service is actively delivering data
+      if (isBgSupplyingData) return;
 
       final pos = next.value!;
       _processPosition(
@@ -502,6 +507,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
       if (data['action'] == 'stop_session') {
         stopSession();
       } else if (data.containsKey('lat') && data.containsKey('lng')) {
+        _lastBgDataMs = DateTime.now().millisecondsSinceEpoch;
         _processPosition(
           latitude: (data['lat'] as num).toDouble(),
           longitude: (data['lng'] as num).toDouble(),
@@ -638,6 +644,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
     _lastPos = null;
     _startTime = null;
     _maxSpeed = 0;
+    _lastBgDataMs = 0;
     _routeBuffer.clear();
     _simplifiedCache.clear();
     state = const TripSession();
