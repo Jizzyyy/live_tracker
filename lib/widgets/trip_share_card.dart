@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/trip_history_model.dart';
+import '../utils/map_bounds_helper.dart';
 
 class TripShareCard extends StatelessWidget {
   final CompletedTrip trip;
@@ -50,9 +51,7 @@ class TripShareCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final points = trip.routePoints.map((p) => LatLng(p.latitude, p.longitude)).toList();
-    final bounds = points.isNotEmpty 
-        ? LatLngBounds.fromPoints(points) 
-        : LatLngBounds(const LatLng(-6.2, 106.8), const LatLng(-6.2, 106.8));
+    final bounds = calculateSafeBounds(points);
 
     final bgColor = isDark ? const Color(0xFF0B0D11) : const Color(0xFFFFFFFF);
     final cardBorder = isDark ? Colors.white12 : Colors.black12;

@@ -11,6 +11,7 @@ import '../../utils/geojson_exporter.dart';
 import '../../utils/kml_exporter.dart';
 import '../../utils/ui_helpers.dart';
 import '../../utils/custom_snackbar.dart';
+import '../../utils/map_bounds_helper.dart';
 import '../../widgets/trip_share_card.dart';
 import '../../widgets/elevation_chart.dart';
 
@@ -209,9 +210,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
     final trip = widget.trip;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final points = trip.routePoints.map((p) => LatLng(p.latitude, p.longitude)).toList();
-    final bounds = points.isNotEmpty 
-        ? LatLngBounds.fromPoints(points)
-        : LatLngBounds(const LatLng(-6.2, 106.8), const LatLng(-6.2, 106.8));
+    final bounds = calculateSafeBounds(points);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
