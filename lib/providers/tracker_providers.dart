@@ -298,6 +298,14 @@ class RoomNotifier extends Notifier<RoomState> {
 
   void _handleMessage(Map<String, dynamic> msg) {
     switch (msg['type']) {
+      case '_connection_status':
+        final statusStr = msg['status'] as String?;
+        if (statusStr == 'reconnecting') {
+          state = state.copyWith(status: TrackingConnectionStatus.reconnecting);
+        } else if (statusStr == 'disconnected') {
+          state = state.copyWith(status: TrackingConnectionStatus.disconnected);
+        }
+        break;
       case 'connected':
         state = state.copyWith(status: TrackingConnectionStatus.connected);
         if (state.roomCode != null) joinRoom(state.roomCode!);

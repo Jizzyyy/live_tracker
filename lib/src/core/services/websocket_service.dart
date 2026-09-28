@@ -113,12 +113,26 @@ class WebSocketService {
       },
       onDone: () {
         _channel = null;
-        if (!_intentionalClose) _scheduleReconnect();
+        if (!_intentionalClose) {
+          if (!_messageController.isClosed) {
+            _messageController.add({'type': '_connection_status', 'status': 'reconnecting'});
+          }
+          _scheduleReconnect();
+        } else {
+          if (!_messageController.isClosed) {
+            _messageController.add({'type': '_connection_status', 'status': 'disconnected'});
+          }
+        }
       },
       onError: (error) {
         debugPrint('WS error: $error');
         _channel = null;
-        if (!_intentionalClose) _scheduleReconnect();
+        if (!_intentionalClose) {
+          if (!_messageController.isClosed) {
+            _messageController.add({'type': '_connection_status', 'status': 'reconnecting'});
+          }
+          _scheduleReconnect();
+        }
       },
     );
   }
