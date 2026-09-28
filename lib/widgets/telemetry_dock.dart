@@ -51,6 +51,18 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
     }
   }
 
+  Future<void> _handleStop(BuildContext context, WidgetRef ref) async {
+    HapticFeedback.heavyImpact();
+    final saved = await ref.read(tripSessionProvider.notifier).stopSession();
+    if (context.mounted) {
+      CustomSnackbar.show(
+        context,
+        message: saved ? 'Rute tersimpan di riwayat!' : 'Rute terlalu pendek untuk disimpan (<10m).',
+        type: saved ? SnackbarType.success : SnackbarType.warning,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -276,64 +288,128 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
 
                 const SizedBox(height: 16),
 
-                // Trip Action Buttons with Granular State Selection
+                // Trip Action Buttons with Granular 3-State Selection
                 Consumer(
                   builder: (context, ref, _) {
                     final sessionState = ref.watch(tripSessionProvider.select((s) => s.state));
-                    final isActive = sessionState == TripSessionState.active;
 
-                    return Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isActive
-                                  ? theme.colorScheme.errorContainer
-                                  : theme.colorScheme.primary,
-                              foregroundColor: isActive
-                                  ? theme.colorScheme.onErrorContainer
-                                  : theme.colorScheme.onPrimary,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                    if (sessionState == TripSessionState.inactive) {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            foregroundColor: theme.colorScheme.onPrimary,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            onPressed: () async {
-                              if (isActive) {
-                                final saved = await ref.read(tripSessionProvider.notifier).stopSession();
-                                if (context.mounted) {
-                                  CustomSnackbar.show(
-                                    context,
-                                    message: saved ? 'Trip saved to history!' : 'Trip too short to save.',
-                                    type: saved ? SnackbarType.success : SnackbarType.warning,
-                                  );
-                                }
-                              } else {
-                                ref.read(tripSessionProvider.notifier).toggleSession();
-                              }
-                            },
-                            child: Text(
-                              isActive ? 'STOP SESSION' : 'START TRACKING',
-                              style: GoogleFonts.inter(
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1,
-                              ),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            ref.read(tripSessionProvider.notifier).toggleSession();
+                          },
+                          icon: const Icon(Icons.play_arrow_rounded, size: 24),
+                          label: Text(
+                            'START TRACKING',
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.5,
                             ),
                           ),
                         ),
-                        if (isActive) ...[
+                      );
+                    }
+
+                    if (sessionState == TripSessionState.active) {
+                      return Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(color: const Color(0xFFFFD600).withValues(alpha: 0.8), width: 1.5),
+                                foregroundColor: const Color(0xFFFFD600),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                padding: const EdgeInsets.symmetric(vertical: 15),
+                              ),
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                ref.read(tripSessionProvider.notifier).toggleSession();
+                              },
+                              icon: const Icon(Icons.pause_rounded, size: 20),
+                              label: Text(
+                                'JEDA',
+                                style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1),
+                              ),
+                            ),
+                          ),
                           const SizedBox(width: 12),
-                          IconButton.filled(
-                            onPressed: () => ref.read(tripSessionProvider.notifier).toggleSession(),
-                            icon: const Icon(Icons.pause),
-                            style: IconButton.styleFrom(
-                              backgroundColor: theme.colorScheme.surfaceContainerHigh,
-                              foregroundColor: theme.colorScheme.onSurface,
-                              padding: const EdgeInsets.all(16),
+                          Expanded(
+                            flex: 3,
+                            child: FilledButton.icon(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: const Color(0xFFFF1744),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                padding: const EdgeInsets.symmetric(vertical: 15),
+                              ),
+                              onPressed: () => _handleStop(context, ref),
+                              icon: const Icon(Icons.stop_rounded, size: 20),
+                              label: Text(
+                                'SELESAI',
+                                style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1),
+                              ),
                             ),
                           ),
                         ],
+                      );
+                    }
+
+                    // Paused State
+                    return Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: FilledButton.icon(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF00E676),
+                              foregroundColor: Colors.black,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                            ),
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              ref.read(tripSessionProvider.notifier).toggleSession();
+                            },
+                            icon: const Icon(Icons.play_arrow_rounded, size: 20),
+                            label: Text(
+                              'LANJUTKAN',
+                              style: GoogleFonts.inter(fontWeight: FontWeight.w800, letterSpacing: 1),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 3,
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xFFFF1744), width: 1.5),
+                              foregroundColor: const Color(0xFFFF1744),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                            ),
+                            onPressed: () => _handleStop(context, ref),
+                            icon: const Icon(Icons.stop_rounded, size: 20),
+                            label: Text(
+                              'SELESAI',
+                              style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1),
+                            ),
+                          ),
+                        ),
                       ],
                     );
                   },
