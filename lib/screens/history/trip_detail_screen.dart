@@ -46,6 +46,51 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
     }
   }
 
+  Future<void> _confirmDeleteTrip(BuildContext context) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF12151B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Hapus rute ini?',
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white : const Color(0xFF0D1117),
+          ),
+        ),
+        content: Text(
+          'Rekaman rute ini akan dihapus secara permanen dari perangkat.',
+          style: TextStyle(
+            color: isDark ? Colors.white70 : const Color(0xFF4A5568),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'BATAL',
+              style: TextStyle(color: isDark ? Colors.white60 : Colors.black54),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('HAPUS', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await ref.read(tripHistoryProvider.notifier).deleteTrip(widget.trip.id);
+      if (mounted) {
+        CustomSnackbar.show(context, message: 'Rute berhasil dihapus', type: SnackbarType.info);
+        Navigator.pop(context);
+      }
+    }
+  }
+
   void _showShareCardDialog() {
     bool cardIsDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -265,7 +310,12 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
               ),
             ],
           ),
-          const SizedBox(width: 8),
+          IconButton(
+            tooltip: 'Hapus Rute',
+            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+            onPressed: () => _confirmDeleteTrip(context),
+          ),
+          const SizedBox(width: 4),
         ],
       ),
       body: Column(
