@@ -58,62 +58,70 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                           key: const ValueKey('expanded_hub'),
                           children: [
                             _PulseDot(status: roomState.status),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 8),
                             Expanded(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  _ActionButton(
-                                    icon: Icons.map_outlined,
-                                    onTap: () {
-                                      setState(() => _isExpanded = false);
-                                      _showMapStyleSheet(context, ref);
-                                    },
-                                  ),
-                                  _ActionButton(
-                                    icon: Icons.sos_rounded,
-                                    iconColor: const Color(0xFFFF1744),
-                                    backgroundColor: const Color(0xFFFF1744).withValues(alpha: 0.15),
-                                    onTap: () {
-                                      setState(() => _isExpanded = false);
-                                      _showSosSheet(context);
-                                    },
-                                  ),
-                                  _ActionButton(
-                                    icon: Icons.group_outlined,
-                                    badgeCount: roomState.members.length,
-                                    onTap: () {
-                                      setState(() => _isExpanded = false);
-                                      if (roomState.roomCode == null) {
-                                        showModalBottomSheet(
-                                          context: context,
-                                          backgroundColor: Colors.transparent,
-                                          isScrollControlled: true,
-                                          builder: (_) => const JoinCreateRoomSheet(),
-                                        );
-                                      } else {
-                                        _showMemberSheet(context);
-                                      }
-                                    },
-                                  ),
-                                  _ActionButton(
-                                    icon: Icons.history,
-                                    onTap: () {
-                                      setState(() => _isExpanded = false);
-                                      _showHistorySheet(context);
-                                    },
-                                  ),
-                                  _ActionButton(
-                                    icon: Icons.settings_outlined,
-                                    onTap: () {
-                                      setState(() => _isExpanded = false);
-                                      _showSettingsSheet(context);
-                                    },
-                                  ),
-                                ],
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    _ActionButton(
+                                      icon: Icons.map_outlined,
+                                      onTap: () {
+                                        setState(() => _isExpanded = false);
+                                        _showMapStyleSheet(context, ref);
+                                      },
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _ActionButton(
+                                      icon: Icons.sos_rounded,
+                                      iconColor: const Color(0xFFFF1744),
+                                      backgroundColor: const Color(0xFFFF1744).withValues(alpha: 0.15),
+                                      onTap: () {
+                                        setState(() => _isExpanded = false);
+                                        _showSosSheet(context);
+                                      },
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _ActionButton(
+                                      icon: Icons.group_outlined,
+                                      badgeCount: roomState.members.length,
+                                      onTap: () {
+                                        setState(() => _isExpanded = false);
+                                        if (roomState.roomCode == null) {
+                                          showModalBottomSheet(
+                                            context: context,
+                                            backgroundColor: Colors.transparent,
+                                            isScrollControlled: true,
+                                            builder: (_) => const JoinCreateRoomSheet(),
+                                          );
+                                        } else {
+                                          _showMemberSheet(context);
+                                        }
+                                      },
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _ActionButton(
+                                      icon: Icons.history,
+                                      onTap: () {
+                                        setState(() => _isExpanded = false);
+                                        _showHistorySheet(context);
+                                      },
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _ActionButton(
+                                      icon: Icons.settings_outlined,
+                                      onTap: () {
+                                        setState(() => _isExpanded = false);
+                                        _showSettingsSheet(context);
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 6),
                             _ActionButton(
                               icon: Icons.close_rounded,
                               onTap: () {
