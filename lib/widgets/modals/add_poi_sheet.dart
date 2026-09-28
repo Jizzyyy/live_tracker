@@ -19,6 +19,7 @@ class AddPoiSheet extends ConsumerStatefulWidget {
 class _AddPoiSheetState extends ConsumerState<AddPoiSheet> {
   final _titleController = TextEditingController();
   PoiCategory _selectedCategory = PoiCategory.rendezvous;
+  String? _errorMessage;
 
   @override
   void dispose() {
@@ -126,9 +127,15 @@ class _AddPoiSheetState extends ConsumerState<AddPoiSheet> {
               TextField(
                 controller: _titleController,
                 autofocus: true,
+                onChanged: (_) {
+                  if (_errorMessage != null) {
+                    setState(() => _errorMessage = null);
+                  }
+                },
                 style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 13),
                 decoration: InputDecoration(
                   hintText: 'Misal: Titik Kumpul SPBU KM 57...',
+                  errorText: _errorMessage,
                   hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 12),
                   filled: true,
                   fillColor: isDark ? const Color(0xFF1E232D) : const Color(0xFFF1F5F9),
@@ -153,7 +160,11 @@ class _AddPoiSheetState extends ConsumerState<AddPoiSheet> {
                   ),
                   onPressed: () {
                     final title = _titleController.text.trim();
-                    if (title.isEmpty) return;
+                    if (title.isEmpty) {
+                      setState(() => _errorMessage = 'Nama titik tidak boleh kosong');
+                      HapticFeedback.lightImpact();
+                      return;
+                    }
 
                     HapticFeedback.mediumImpact();
                     final id = 'poi_${DateTime.now().millisecondsSinceEpoch}';
