@@ -46,7 +46,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
     }
   }
 
-  Future<void> _confirmDeleteTrip(BuildContext context) async {
+  Future<void> _confirmDeleteTrip() async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final confirmed = await showDialog<bool>(
       context: context,
@@ -82,13 +82,14 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
       ),
     );
 
-    if (confirmed == true && mounted) {
-      await ref.read(tripHistoryProvider.notifier).deleteTrip(widget.trip.id);
-      if (mounted) {
-        CustomSnackbar.show(context, message: 'Rute berhasil dihapus', type: SnackbarType.info);
-        Navigator.pop(context);
-      }
-    }
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    await ref.read(tripHistoryProvider.notifier).deleteTrip(widget.trip.id);
+    if (!mounted) return;
+
+    CustomSnackbar.show(context, message: 'Rute berhasil dihapus', type: SnackbarType.info);
+    Navigator.pop(context);
   }
 
   void _showShareCardDialog() {
@@ -313,7 +314,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
           IconButton(
             tooltip: 'Hapus Rute',
             icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-            onPressed: () => _confirmDeleteTrip(context),
+            onPressed: _confirmDeleteTrip,
           ),
           const SizedBox(width: 4),
         ],
