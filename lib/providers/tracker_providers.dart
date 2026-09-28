@@ -599,7 +599,14 @@ class TripSessionNotifier extends Notifier<TripSession> {
       _timer?.cancel();
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (state.state == TripSessionState.active) {
-          state = state.copyWith(activeDurationSeconds: state.activeDurationSeconds + 1);
+          final nextSecs = state.activeDurationSeconds + 1;
+          final avgSpeed = nextSecs > 0
+              ? (state.distanceMeters / 1000) / (nextSecs / 3600)
+              : 0.0;
+          state = state.copyWith(
+            activeDurationSeconds: nextSecs,
+            avgSpeedKmh: avgSpeed,
+          );
           BackgroundTrackingManager.updateNotificationData(
             distance: state.formattedDistance,
             duration: state.formattedDuration,
@@ -610,6 +617,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
       _lastPos = null;
       state = state.copyWith(state: TripSessionState.paused, currentSpeedKmh: 0);
       _timer?.cancel();
+      _timer = null;
     }
   }
 
