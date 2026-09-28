@@ -37,6 +37,13 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
       }
     });
 
+    ref.listen(roomProvider.select((r) => r.lastError), (prev, next) {
+      if (next != null) {
+        CustomSnackbar.show(context, message: next, type: SnackbarType.error);
+        ref.read(roomProvider.notifier).clearError();
+      }
+    });
+
     final isLoading = roomState.status == TrackingConnectionStatus.reconnecting;
 
     return SafeArea(

@@ -155,6 +155,7 @@ class RoomState {
     this.members = const {},
     this.activeSos,
     this.pois = const {},
+    this.lastError,
   });
 
   final TrackingConnectionStatus status;
@@ -162,6 +163,7 @@ class RoomState {
   final Map<String, MemberLocation> members;
   final SosAlert? activeSos;
   final Map<String, SharedPoi> pois;
+  final String? lastError;
 
   RoomState copyWith({
     TrackingConnectionStatus? status,
@@ -169,6 +171,7 @@ class RoomState {
     Map<String, MemberLocation>? members,
     SosAlert? Function()? activeSos,
     Map<String, SharedPoi>? pois,
+    String? Function()? lastError,
   }) =>
     RoomState(
       status: status ?? this.status,
@@ -176,6 +179,7 @@ class RoomState {
       members: members ?? this.members,
       activeSos: activeSos != null ? activeSos() : this.activeSos,
       pois: pois ?? this.pois,
+      lastError: lastError != null ? lastError() : this.lastError,
     );
 }
 
@@ -207,8 +211,15 @@ class RoomNotifier extends Notifier<RoomState> {
   }
 
   void disconnect() { _ws.disconnect(); state = const RoomState(); }
-  void createRoom() => _ws.send({'type': 'create_room'});
-  void joinRoom(String code) => _ws.send({'type': 'join_room', 'roomCode': code});
+  void clearError() => state = state.copyWith(lastError: () => null);
+  void createRoom() {
+    clearError();
+    _ws.send({'type': 'create_room'});
+  }
+  void joinRoom(String code) {
+    clearError();
+    _ws.send({'type': 'join_room', 'roomCode': code});
+  }
   void leaveRoom() {
     // 1. Send leave event to server
     _ws.send({'type': 'leave_room'});
@@ -305,6 +316,10 @@ class RoomNotifier extends Notifier<RoomState> {
         } else if (statusStr == 'disconnected') {
           state = state.copyWith(status: TrackingConnectionStatus.disconnected);
         }
+        break;
+      case 'error':
+        final errMsg = msg['message'] as String? ?? 'Terjadi kesalahan pada server';
+        state = state.copyWith(lastError: () => errMsg);
         break;
       case 'connected':
         state = state.copyWith(status: TrackingConnectionStatus.connected);
