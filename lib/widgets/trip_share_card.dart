@@ -157,6 +157,42 @@ class TripShareCard extends StatelessWidget {
                         ),
                       ],
                     ),
+                    MarkerLayer(
+                      markers: [
+                        if (points.isNotEmpty)
+                          Marker(
+                            point: points.first,
+                            width: 24,
+                            height: 24,
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF00E676),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(color: Colors.black45, blurRadius: 4),
+                                ],
+                              ),
+                              child: const Icon(Icons.flag_rounded, color: Colors.black, size: 14),
+                            ),
+                          ),
+                        if (points.length > 1)
+                          Marker(
+                            point: points.last,
+                            width: 24,
+                            height: 24,
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFFF1744),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(color: Colors.black45, blurRadius: 4),
+                                ],
+                              ),
+                              child: const Icon(Icons.sports_score_rounded, color: Colors.white, size: 14),
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
               ),
