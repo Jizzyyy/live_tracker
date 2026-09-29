@@ -18,6 +18,7 @@ import '../src/core/services/battery_service.dart';
 import '../widgets/modals/add_poi_sheet.dart';
 import '../widgets/modals/poi_detail_sheet.dart';
 import '../widgets/sos_beacon_marker.dart';
+import '../widgets/convoy_overview_button.dart';
 
 class LiveTrackerScreen extends ConsumerStatefulWidget {
   const LiveTrackerScreen({super.key});
@@ -611,6 +612,8 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     MapCompassControl(mapController: _mapController),
+                    const SizedBox(height: 12),
+                    ConvoyOverviewButton(mapController: _mapController),
                     const SizedBox(height: 12),
                     AutoCenterButton(mapController: _mapController),
                   ],
