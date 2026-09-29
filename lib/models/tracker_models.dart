@@ -82,6 +82,9 @@ class MemberLocation {
   final DateTime lastUpdated;
   final bool isIdle;
 
+  /// True if coordinate timestamp has not been updated for more than 45 seconds
+  bool get isStale => DateTime.now().difference(lastUpdated).inSeconds > 45;
+
   factory MemberLocation.fromJson(Map<String, dynamic> json) {
     return MemberLocation(
       id: json['userId'] as String,

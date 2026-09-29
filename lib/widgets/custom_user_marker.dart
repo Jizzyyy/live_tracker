@@ -59,14 +59,19 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
+    final isStale = !widget.isLocalUser && widget.location.isStale;
+
     Widget buildMarker(double haloIntensity) {
-      return CustomPaint(
-        size: const Size(56, 56),
-        painter: _MarkerPainter(
-          color: widget.color,
-          haloIntensity: haloIntensity,
-          isIdle: widget.location.isIdle,
-          isLocalUser: widget.isLocalUser,
+      return Opacity(
+        opacity: isStale ? 0.45 : 1.0,
+        child: CustomPaint(
+          size: const Size(56, 56),
+          painter: _MarkerPainter(
+            color: isStale ? Colors.grey : widget.color,
+            haloIntensity: isStale ? 0.0 : haloIntensity,
+            isIdle: widget.location.isIdle || isStale,
+            isLocalUser: widget.isLocalUser,
+          ),
         ),
       );
     }
