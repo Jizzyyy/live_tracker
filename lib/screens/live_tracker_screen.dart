@@ -17,6 +17,7 @@ import '../utils/sound_manager.dart';
 import '../src/core/services/battery_service.dart';
 import '../widgets/modals/add_poi_sheet.dart';
 import '../widgets/modals/poi_detail_sheet.dart';
+import '../widgets/sos_beacon_marker.dart';
 
 class LiveTrackerScreen extends ConsumerStatefulWidget {
   const LiveTrackerScreen({super.key});
@@ -264,6 +265,33 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                         ),
                       );
                     }).toList(),
+                  );
+                },
+              ),
+
+              // Active SOS Distress Beacon Layer
+              Consumer(
+                builder: (context, ref, _) {
+                  final activeSos = ref.watch(roomProvider.select((r) => r.activeSos));
+                  if (activeSos == null || activeSos.latitude == null || activeSos.longitude == null) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: LatLng(activeSos.latitude!, activeSos.longitude!),
+                        width: 68,
+                        height: 68,
+                        child: SosBeaconMarker(
+                          alert: activeSos,
+                          onTap: () {
+                            HapticFeedback.heavyImpact();
+                            _animatedMapMove(LatLng(activeSos.latitude!, activeSos.longitude!), 17.5);
+                          },
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),
