@@ -172,7 +172,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
               Consumer(
                 builder: (context, ref, _) {
                   final sessionState = ref.watch(tripSessionProvider.select((s) => s.state));
-                  if (sessionState != TripSessionState.active) {
+                  if (sessionState == TripSessionState.inactive) {
                     return const SizedBox.shrink();
                   }
 
@@ -193,6 +193,49 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                         ),
                       ],
                     ),
+                  );
+                },
+              ),
+
+              // Active Trip Starting Point Flag Marker
+              Consumer(
+                builder: (context, ref, _) {
+                  final isTracking = ref.watch(tripSessionProvider.select((s) => s.state != TripSessionState.inactive));
+                  if (!isTracking) return const SizedBox.shrink();
+
+                  final startPoint = ref.watch(
+                    tripSessionProvider.notifier.select((n) => n.routeBuffer.isNotEmpty ? n.routeBuffer.first : null),
+                  );
+
+                  if (startPoint == null) return const SizedBox.shrink();
+
+                  return MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: LatLng(startPoint.latitude, startPoint.longitude),
+                        width: 38,
+                        height: 38,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF12151B),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFF00E676), width: 2.2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF00E676).withValues(alpha: 0.45),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.flag_rounded,
+                            color: Color(0xFF00E676),
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),
