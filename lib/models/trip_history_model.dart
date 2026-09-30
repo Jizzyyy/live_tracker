@@ -1,5 +1,33 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
+
+@immutable
+class TripSplit {
+  final int kilometer;
+  final int durationSeconds;
+  final double avgSpeedKmh;
+  final double elevationChangeMeters;
+
+  const TripSplit({
+    required this.kilometer,
+    required this.durationSeconds,
+    required this.avgSpeedKmh,
+    required this.elevationChangeMeters,
+  });
+
+  String get formattedPace {
+    if (durationSeconds <= 0) return "--'--\"";
+    final min = durationSeconds ~/ 60;
+    final sec = durationSeconds % 60;
+    return "${min.toString().padLeft(2, '0')}'${sec.toString().padLeft(2, '0')}\"";
+  }
+
+  String get formattedElevation {
+    final prefix = elevationChangeMeters >= 0 ? '+' : '';
+    return '$prefix${elevationChangeMeters.toStringAsFixed(0)} m';
+  }
+}
 
 @immutable
 class RoutePoint {
@@ -168,6 +196,50 @@ class CompletedTrip {
   String get formattedMaxAltitude {
     final maxA = maxAltitude;
     return maxA != null ? '${maxA.toStringAsFixed(0)} m' : '-- m';
+  }
+
+  /// Calculates 1-kilometer splits (duration, pace, elevation change)
+  List<TripSplit> get splits {
+    if (routePoints.length < 2 || distanceMeters < 1000) return const [];
+    final splitsList = <TripSplit>[];
+    double accumulatedDist = 0.0;
+    int currentKm = 1;
+    int splitStartTimestamp = routePoints.first.timestamp;
+    double? splitStartAlt = routePoints.first.altitude;
+
+    double haversineMeters(double lat1, double lon1, double lat2, double lon2) {
+      const p = 0.017453292519943295; // Math.PI / 180
+      final a = 0.5 - cos((lat2 - lat1) * p) / 2 +
+          cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
+      return 12742000 * asin(sqrt(a)); // 2 * R * 1000 meters
+    }
+
+    for (int i = 1; i < routePoints.length; i++) {
+      final prev = routePoints[i - 1];
+      final curr = routePoints[i];
+      final d = haversineMeters(prev.latitude, prev.longitude, curr.latitude, curr.longitude);
+      accumulatedDist += d;
+
+      if (accumulatedDist >= currentKm * 1000) {
+        final splitDuration = ((curr.timestamp - splitStartTimestamp) / 1000).round();
+        final eleChange = (curr.altitude != null && splitStartAlt != null)
+            ? (curr.altitude! - splitStartAlt)
+            : 0.0;
+        final splitSpeedKmh = splitDuration > 0 ? (1.0 / (splitDuration / 3600)) : 0.0;
+
+        splitsList.add(TripSplit(
+          kilometer: currentKm,
+          durationSeconds: max(1, splitDuration),
+          avgSpeedKmh: splitSpeedKmh,
+          elevationChangeMeters: eleChange,
+        ));
+
+        currentKm++;
+        splitStartTimestamp = curr.timestamp;
+        splitStartAlt = curr.altitude;
+      }
+    }
+    return splitsList;
   }
 
   Map<String, dynamic> toMap() => {
