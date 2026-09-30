@@ -233,9 +233,11 @@ class TripShareCard extends StatelessWidget {
                         isDark: isDark,
                       ),
                       _StatColumn(
-                        label: 'MAX SPEED', 
-                        value: trip.formattedMaxSpeed, 
-                        color: isDark ? const Color(0xFFFF1744) : const Color(0xFFDC2626),
+                        label: trip.elevationGainMeters > 0 ? 'ELEV GAIN' : 'MAX SPEED', 
+                        value: trip.elevationGainMeters > 0 ? trip.formattedElevationGain : trip.formattedMaxSpeed, 
+                        color: trip.elevationGainMeters > 0 
+                            ? (isDark ? const Color(0xFF00E676) : const Color(0xFF059669))
+                            : (isDark ? const Color(0xFFFF1744) : const Color(0xFFDC2626)),
                         isDark: isDark,
                       ),
                     ],
