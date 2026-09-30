@@ -95,7 +95,7 @@ class CompletedTrip {
   String get formattedAvgSpeed => '${avgSpeedKmh.toStringAsFixed(1)} km/h';
   String get formattedMaxSpeed => '${maxSpeedKmh.toStringAsFixed(1)} km/h';
 
-  // --- Elevation Telemetry ---
+  // --- Elevation Telemetry with Dynamic Noise Filtering ---
   double get elevationGainMeters {
     double gain = 0;
     double? lastAlt;
@@ -103,9 +103,15 @@ class CompletedTrip {
       if (pt.altitude == null) continue;
       if (lastAlt != null) {
         final diff = pt.altitude! - lastAlt;
-        if (diff > 0.5) gain += diff; // filter micro-noise
+        if (diff >= 1.5) { // 1.5m threshold to filter out GPS barometric/triangulation jitter
+          gain += diff;
+          lastAlt = pt.altitude;
+        } else if (diff <= -1.5) {
+          lastAlt = pt.altitude;
+        }
+      } else {
+        lastAlt = pt.altitude;
       }
-      lastAlt = pt.altitude;
     }
     return gain;
   }
@@ -117,9 +123,15 @@ class CompletedTrip {
       if (pt.altitude == null) continue;
       if (lastAlt != null) {
         final diff = lastAlt - pt.altitude!;
-        if (diff > 0.5) loss += diff;
+        if (diff >= 1.5) {
+          loss += diff;
+          lastAlt = pt.altitude;
+        } else if (diff <= -1.5) {
+          lastAlt = pt.altitude;
+        }
+      } else {
+        lastAlt = pt.altitude;
       }
-      lastAlt = pt.altitude;
     }
     return loss;
   }
