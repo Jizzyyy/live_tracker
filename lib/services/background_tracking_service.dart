@@ -124,6 +124,9 @@ class BackgroundTrackingManager {
       serviceId: 256,
       notificationTitle: 'Live Tracker Active',
       notificationText: 'Initializing background route recording...',
+      notificationButtons: const [
+        NotificationButton(id: 'stop_session', text: 'Hentikan Rute'),
+      ],
       callback: startCallback,
     );
 
