@@ -509,6 +509,12 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                     Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
                     const SizedBox(height: 16),
                     ElevationChart(trip: trip, isDark: isDark),
+                    if (trip.splits.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
+                      const SizedBox(height: 16),
+                      _SplitsTable(splits: trip.splits, isDark: isDark),
+                    ],
                   ],
                 ),
               ),
@@ -516,6 +522,108 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SplitsTable extends StatelessWidget {
+  final List<TripSplit> splits;
+  final bool isDark;
+
+  const _SplitsTable({required this.splits, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'KILOMETER SPLITS',
+              style: GoogleFonts.shareTechMono(
+                fontSize: 11,
+                letterSpacing: 2,
+                color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              '${splits.length} KM',
+              style: GoogleFonts.jetBrainsMono(
+                fontSize: 11,
+                color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: isDark ? Colors.black26 : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                child: Row(
+                  children: [
+                    Expanded(flex: 2, child: Text('KM', style: GoogleFonts.shareTechMono(fontSize: 10, color: Colors.grey))),
+                    Expanded(flex: 3, child: Text('PACE', style: GoogleFonts.shareTechMono(fontSize: 10, color: Colors.grey))),
+                    Expanded(flex: 3, child: Text('ELEVASI', style: GoogleFonts.shareTechMono(fontSize: 10, color: Colors.grey))),
+                    Expanded(flex: 3, child: Text('KECEPATAN', textAlign: TextAlign.right, style: GoogleFonts.shareTechMono(fontSize: 10, color: Colors.grey))),
+                  ],
+                ),
+              ),
+              Divider(height: 1, color: isDark ? Colors.white10 : Colors.black12),
+              ...splits.map((s) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        '${s.kilometer}',
+                        style: GoogleFonts.jetBrainsMono(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.white : Colors.black87),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        s.formattedPace,
+                        style: GoogleFonts.jetBrainsMono(fontSize: 12, color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7), fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        s.formattedElevation,
+                        style: GoogleFonts.jetBrainsMono(
+                          fontSize: 12,
+                          color: s.elevationChangeMeters >= 0 ? const Color(0xFF00E676) : const Color(0xFFFF5252),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        '${s.avgSpeedKmh.toStringAsFixed(1)} km/h',
+                        textAlign: TextAlign.right,
+                        style: GoogleFonts.jetBrainsMono(fontSize: 12, color: isDark ? Colors.white70 : Colors.black54),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
