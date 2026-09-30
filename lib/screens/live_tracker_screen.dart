@@ -446,6 +446,71 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                   },
                 ),
 
+                // Offline Convoy Reconnecting Warning Banner
+                Consumer(
+                  builder: (context, ref, _) {
+                    final inRoom = ref.watch(roomProvider.select((r) => r.roomCode != null));
+                    final status = ref.watch(roomProvider.select((r) => r.status));
+                    if (!inRoom || status == TrackingConnectionStatus.connected) return const SizedBox.shrink();
+
+                    final isReconnecting = status == TrackingConnectionStatus.reconnecting;
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD97706).withValues(alpha: 0.95),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFD97706).withValues(alpha: 0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              isReconnecting ? Icons.sync_problem_rounded : Icons.cloud_off_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                isReconnecting
+                                    ? 'Sinyal terputus • Menghubungkan ulang ke konvoi...'
+                                    : 'Mode Konvoi Terputus (Offline)',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            if (!isReconnecting)
+                              TextButton(
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.white24,
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                onPressed: () {
+                                  ref.read(roomProvider.notifier).reconnect();
+                                },
+                                child: const Text('RECONNECT', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
                 // Emergency SOS Alert Banner
                 Consumer(
                   builder: (context, ref, _) {
