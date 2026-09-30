@@ -69,9 +69,86 @@ class TripHistoryScreen extends ConsumerWidget {
             )
           : ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: trips.length,
+              itemCount: trips.length + 1,
               itemBuilder: (context, index) {
-                final trip = trips[index];
+                if (index == 0) {
+                  final totalDistM = trips.fold<double>(0.0, (acc, t) => acc + t.distanceMeters);
+                  final totalSecs = trips.fold<int>(0, (acc, t) => acc + t.durationSeconds);
+                  final distKm = totalDistM / 1000;
+                  final totalHours = (totalSecs / 3600).toStringAsFixed(1);
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    child: PremiumGlass(
+                      borderRadius: BorderRadius.circular(20),
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'LIFETIME TOTALS',
+                            style: GoogleFonts.shareTechMono(
+                              fontSize: 10,
+                              letterSpacing: 2,
+                              color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Column(
+                                children: [
+                                  Text(
+                                    distKm < 10 ? '${distKm.toStringAsFixed(2)} km' : '${distKm.toStringAsFixed(1)} km',
+                                    style: GoogleFonts.jetBrainsMono(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark ? const Color(0xFF00E676) : const Color(0xFF059669),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text('JARAK', style: GoogleFonts.shareTechMono(fontSize: 10, color: Colors.grey)),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  Text(
+                                    '${totalHours}h',
+                                    style: GoogleFonts.jetBrainsMono(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text('DURASI', style: GoogleFonts.shareTechMono(fontSize: 10, color: Colors.grey)),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  Text(
+                                    '${trips.length}',
+                                    style: GoogleFonts.jetBrainsMono(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text('SESI', style: GoogleFonts.shareTechMono(fontSize: 10, color: Colors.grey)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                final trip = trips[index - 1];
                 return Dismissible(
                   key: Key(trip.id),
                   direction: DismissDirection.endToStart,
