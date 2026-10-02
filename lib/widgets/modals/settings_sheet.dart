@@ -229,6 +229,22 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                   value: settings.backgroundService,
                   onChanged: (val) => ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(backgroundService: val)),
                 ),
+                const SizedBox(height: 12),
+                _SettingsTile(
+                  title: 'Acoustic Sound Alerts',
+                  subtitle: 'Play siren on SOS and separation warning',
+                  icon: Icons.volume_up_outlined,
+                  value: settings.soundAlertsEnabled,
+                  onChanged: (val) => ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(soundAlertsEnabled: val)),
+                ),
+                const SizedBox(height: 12),
+                _SettingsTile(
+                  title: 'Haptic Tactical Vibration',
+                  subtitle: 'Vibrate device on emergency alerts',
+                  icon: Icons.vibration_rounded,
+                  value: settings.hapticAlertsEnabled,
+                  onChanged: (val) => ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(hapticAlertsEnabled: val)),
+                ),
                 const SizedBox(height: 32),
                 
                 FilledButton(
