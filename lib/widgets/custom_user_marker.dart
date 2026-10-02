@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/tracker_models.dart';
 
 class CustomUserMarker extends StatefulWidget {
@@ -60,6 +61,9 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     final isStale = !widget.isLocalUser && widget.location.isStale;
+    final displayName = (widget.location.name != null && widget.location.name!.trim().isNotEmpty)
+        ? widget.location.name!.trim()
+        : (widget.isLocalUser ? 'YOU' : 'User ${widget.location.id}');
 
     Widget buildMarker(double haloIntensity) {
       return Opacity(
@@ -78,16 +82,50 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
 
     // RepaintBoundary ensures isolated repaint during marker movement
     return RepaintBoundary(
-      child: AnimatedRotation(
-        turns: (widget.location.heading ?? 0) / 360.0,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-        child: _haloCtrl != null
-            ? AnimatedBuilder(
-                animation: _haloCtrl!,
-                builder: (context, _) => buildMarker(_haloCtrl!.value),
-              )
-            : buildMarker(0.0),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          AnimatedRotation(
+            turns: (widget.location.heading ?? 0) / 360.0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+            child: _haloCtrl != null
+                ? AnimatedBuilder(
+                    animation: _haloCtrl!,
+                    builder: (context, _) => buildMarker(_haloCtrl!.value),
+                  )
+                : buildMarker(0.0),
+          ),
+          Positioned(
+            top: -6,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF12151B).withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: isStale ? Colors.grey : widget.color.withValues(alpha: 0.6),
+                  width: 1,
+                ),
+                boxShadow: const [
+                  BoxShadow(color: Colors.black45, blurRadius: 4),
+                ],
+              ),
+              child: Text(
+                displayName,
+                style: GoogleFonts.shareTechMono(
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.bold,
+                  color: isStale ? Colors.grey : Colors.white,
+                  letterSpacing: 0.5,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
