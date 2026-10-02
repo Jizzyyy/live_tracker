@@ -557,7 +557,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      '🚨 SOS DARURAT DARI ${activeSos.userId}',
+                                      '🚨 SOS DARURAT DARI ${activeSos.userId.toUpperCase()}',
                                       style: GoogleFonts.shareTechMono(
                                         color: Colors.white,
                                         fontSize: 12,
