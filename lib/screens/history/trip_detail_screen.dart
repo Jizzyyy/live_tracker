@@ -27,6 +27,60 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
   final GlobalKey _shareCardKey = GlobalKey();
   MapStyleOption _selectedMapStyle = availableMapStyles.first;
   bool _isExporting = false;
+  late CompletedTrip _currentTrip;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentTrip = widget.trip;
+  }
+
+  Future<void> _handleRenameTrip() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final controller = TextEditingController(text: _currentTrip.customTitle ?? '');
+
+    final newTitle = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF12151B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Ubah Nama Rute',
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0D1117)),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+          decoration: InputDecoration(
+            hintText: 'Misal: Touring Puncak, Morning Ride...',
+            hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('BATAL', style: TextStyle(color: isDark ? Colors.white60 : Colors.black54)),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            child: const Text('SIMPAN'),
+          ),
+        ],
+      ),
+    );
+
+    if (newTitle == null || !mounted) return;
+
+    final updated = _currentTrip.copyWith(customTitle: newTitle.isNotEmpty ? newTitle : null);
+    await ref.read(tripHistoryProvider.notifier).saveTrip(updated);
+    setState(() => _currentTrip = updated);
+
+    if (mounted) {
+      CustomSnackbar.show(context, message: 'Nama rute diperbarui!', type: SnackbarType.success);
+    }
+  }
 
   Future<void> _handleExport(String format) async {
     setState(() => _isExporting = true);
@@ -207,7 +261,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final trip = widget.trip;
+    final trip = _currentTrip;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final points = trip.routePoints.map((p) => LatLng(p.latitude, p.longitude)).toList();
     final bounds = calculateSafeBounds(points);
@@ -217,16 +271,27 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text(
-          trip.formattedDate, 
+          trip.displayTitle, 
           style: GoogleFonts.inter(
             fontWeight: FontWeight.bold, 
             color: isDark ? Colors.white : const Color(0xFF0D1117),
           ),
+          overflow: TextOverflow.ellipsis,
         ),
         iconTheme: IconThemeData(
           color: isDark ? Colors.white : const Color(0xFF0D1117),
         ),
         actions: [
+          // Rename Trip Action
+          IconButton(
+            tooltip: 'Ubah Nama',
+            icon: Icon(
+              Icons.edit_outlined,
+              color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
+              size: 20,
+            ),
+            onPressed: _handleRenameTrip,
+          ),
           // Share Image Action (Card Exporter)
           IconButton(
             tooltip: 'Share Card',
