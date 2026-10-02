@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../providers/tracker_providers.dart';
 import '../../utils/ui_helpers.dart';
@@ -140,12 +141,26 @@ class MemberListSheet extends ConsumerWidget {
                                   : Icons.battery_alert)
                           : null;
 
+                      final myPos = ref.watch(locationStreamProvider).valueOrNull;
+                      String? distStr;
+                      if (myPos != null) {
+                        final d = const Distance().as(
+                          LengthUnit.Meter,
+                          LatLng(myPos.latitude, myPos.longitude),
+                          LatLng(m.latitude, m.longitude),
+                        );
+                        distStr = d < 1000 ? '${d.toStringAsFixed(0)} m' : '${(d / 1000).toStringAsFixed(1)} km';
+                      }
+
+                      final displayName = (m.name != null && m.name!.trim().isNotEmpty) ? m.name!.trim() : 'User ${m.id}';
+                      final initialLetter = displayName.isNotEmpty ? displayName.substring(0, 1).toUpperCase() : '?';
+
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: CircleAvatar(
                           backgroundColor: isDark ? const Color(0xFF12151B) : colorScheme.primaryContainer,
                           child: Text(
-                            m.id.isNotEmpty ? m.id.substring(0, 1).toUpperCase() : '?',
+                            initialLetter,
                             style: GoogleFonts.jetBrainsMono(
                               color: isDark ? const Color(0xFF00E5FF) : colorScheme.primary, 
                               fontWeight: FontWeight.bold,
@@ -154,7 +169,13 @@ class MemberListSheet extends ConsumerWidget {
                         ),
                         title: Row(
                           children: [
-                            Text('User ${m.id}', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                            Expanded(
+                              child: Text(
+                                displayName,
+                                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                             const SizedBox(width: 8),
                             Container(
                               width: 7,
@@ -179,8 +200,14 @@ class MemberListSheet extends ConsumerWidget {
                             const Icon(Icons.speed, size: 12, color: Colors.grey),
                             const SizedBox(width: 4),
                             Text('${(m.speedKmh ?? 0).toStringAsFixed(1)} km/h', style: GoogleFonts.jetBrainsMono(color: Colors.grey, fontSize: 12)),
+                            if (distStr != null) ...[
+                              const SizedBox(width: 8),
+                              const Icon(Icons.near_me_outlined, size: 12, color: Colors.grey),
+                              const SizedBox(width: 2),
+                              Text(distStr, style: GoogleFonts.jetBrainsMono(color: isDark ? const Color(0xFF00E5FF) : colorScheme.primary, fontSize: 11, fontWeight: FontWeight.bold)),
+                            ],
                             if (batteryIcon != null && m.batteryPercent != null) ...[
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 8),
                               Icon(
                                 batteryIcon,
                                 size: 13,
