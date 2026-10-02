@@ -66,6 +66,7 @@ class RoutePoint {
 class CompletedTrip {
   const CompletedTrip({
     required this.id,
+    this.customTitle,
     required this.startTime,
     required this.endTime,
     required this.durationSeconds,
@@ -76,6 +77,7 @@ class CompletedTrip {
   });
 
   final String id;
+  final String? customTitle;
   final DateTime startTime;
   final DateTime endTime;
   final int durationSeconds;
@@ -83,6 +85,11 @@ class CompletedTrip {
   final double avgSpeedKmh;
   final double maxSpeedKmh;
   final List<RoutePoint> routePoints;
+
+  /// Returns user-defined custom title if present, otherwise falls back to formatted date
+  String get displayTitle => (customTitle != null && customTitle!.trim().isNotEmpty)
+      ? customTitle!.trim()
+      : 'Trip $formattedDate';
 
   // --- Strava-Grade Formatted Telemetry ---
   String get formattedDate {
@@ -244,6 +251,7 @@ class CompletedTrip {
 
   Map<String, dynamic> toMap() => {
     'id': id,
+    if (customTitle != null) 'title': customTitle,
     'startTime': startTime.toIso8601String(),
     'endTime': endTime.toIso8601String(),
     'durationSeconds': durationSeconds,
@@ -255,6 +263,7 @@ class CompletedTrip {
 
   factory CompletedTrip.fromMap(Map<String, dynamic> m) => CompletedTrip(
     id: m['id'] as String,
+    customTitle: m['title'] as String?,
     startTime: DateTime.parse(m['startTime'] as String),
     endTime: DateTime.parse(m['endTime'] as String),
     durationSeconds: m['durationSeconds'] as int,
@@ -263,6 +272,30 @@ class CompletedTrip {
     maxSpeedKmh: (m['maxSpeedKmh'] as num).toDouble(),
     routePoints: (m['routePoints'] as List).map((p) => RoutePoint.fromMap(p as Map<String, dynamic>)).toList(),
   );
+
+  CompletedTrip copyWith({
+    String? id,
+    String? customTitle,
+    DateTime? startTime,
+    DateTime? endTime,
+    int? durationSeconds,
+    double? distanceMeters,
+    double? avgSpeedKmh,
+    double? maxSpeedKmh,
+    List<RoutePoint>? routePoints,
+  }) {
+    return CompletedTrip(
+      id: id ?? this.id,
+      customTitle: customTitle ?? this.customTitle,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      durationSeconds: durationSeconds ?? this.durationSeconds,
+      distanceMeters: distanceMeters ?? this.distanceMeters,
+      avgSpeedKmh: avgSpeedKmh ?? this.avgSpeedKmh,
+      maxSpeedKmh: maxSpeedKmh ?? this.maxSpeedKmh,
+      routePoints: routePoints ?? this.routePoints,
+    );
+  }
 
   String toJson() => json.encode(toMap());
   factory CompletedTrip.fromJson(String source) => CompletedTrip.fromMap(json.decode(source) as Map<String, dynamic>);
