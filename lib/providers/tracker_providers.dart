@@ -248,8 +248,11 @@ class RoomNotifier extends Notifier<RoomState> {
   /// Broadcast Emergency SOS to all members in current room
   void sendSosAlert(String note, {double? lat, double? lng}) {
     if (state.status != TrackingConnectionStatus.connected) return;
+    final userName = ref.read(appSettingsProvider).userName.trim();
+    final displayName = userName.isNotEmpty ? userName : 'ME';
+
     final alert = SosAlert(
-      userId: 'ME',
+      userId: displayName,
       note: note,
       latitude: lat,
       longitude: lng,
@@ -259,6 +262,7 @@ class RoomNotifier extends Notifier<RoomState> {
     _ws.send({
       'type': 'sos_alert',
       'note': note,
+      'name': userName.isNotEmpty ? userName : null,
       'lat': lat,
       'lng': lng,
     });
@@ -302,6 +306,8 @@ class RoomNotifier extends Notifier<RoomState> {
     if (now - _lastWsSendMs < 1000) return;
     _lastWsSendMs = now;
 
+    final userName = ref.read(appSettingsProvider).userName.trim();
+
     _ws.send({
       'type': 'position_update',
       'lat': pos.latitude,
@@ -309,6 +315,7 @@ class RoomNotifier extends Notifier<RoomState> {
       'speed': pos.speed * 3.6, // send km/h
       'heading': pos.heading,
       'battery': batteryPercent,
+      'name': userName.isNotEmpty ? userName : null,
       'timestamp': pos.timestamp.millisecondsSinceEpoch,
     });
   }
