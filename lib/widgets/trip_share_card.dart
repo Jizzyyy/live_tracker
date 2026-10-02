@@ -106,13 +106,16 @@ class TripShareCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'LIVE TRACKER',
+                        trip.customTitle != null && trip.customTitle!.trim().isNotEmpty
+                            ? trip.customTitle!.trim().toUpperCase()
+                            : 'LIVE TRACKER',
                         style: GoogleFonts.shareTechMono(
                           color: textHeader,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 2,
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
