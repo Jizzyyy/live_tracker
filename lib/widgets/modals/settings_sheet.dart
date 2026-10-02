@@ -14,6 +14,7 @@ class SettingsSheet extends ConsumerStatefulWidget {
 }
 
 class _SettingsSheetState extends ConsumerState<SettingsSheet> {
+  late final TextEditingController _userNameController;
   late final TextEditingController _urlController;
   late final TextEditingController _googleMapsApiKeyController;
   late final TextEditingController _cartoApiKeyController;
@@ -22,6 +23,7 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
   @override
   void initState() {
     super.initState();
+    _userNameController = TextEditingController(text: ref.read(appSettingsProvider).userName);
     _urlController = TextEditingController(text: ref.read(appSettingsProvider).serverUrl);
     _googleMapsApiKeyController = TextEditingController(text: ref.read(appSettingsProvider).googleMapsApiKey);
     _cartoApiKeyController = TextEditingController(text: ref.read(appSettingsProvider).cartoApiKey);
@@ -29,6 +31,7 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
 
   @override
   void dispose() {
+    _userNameController.dispose();
     _urlController.dispose();
     _googleMapsApiKeyController.dispose();
     _cartoApiKeyController.dispose();
@@ -64,6 +67,34 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                 const SizedBox(height: 24),
                 Text('Preferences', style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 24),
+
+                TextField(
+                  controller: _userNameController,
+                  decoration: InputDecoration(
+                    labelText: 'Nama / Callsign Anda',
+                    hintText: 'Misal: Eagle 1, Alpha...',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
+                    prefixIcon: const Icon(Icons.badge_outlined),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.check_circle_outline),
+                      tooltip: 'Simpan Callsign',
+                      onPressed: () {
+                        final name = _userNameController.text.trim();
+                        ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(userName: name));
+                        FocusScope.of(context).unfocus();
+                        CustomSnackbar.show(
+                          context,
+                          message: name.isNotEmpty ? 'Callsign tersimpan: $name' : 'Callsign dinonaktifkan (default ID)',
+                          type: SnackbarType.success,
+                        );
+                      },
+                    ),
+                  ),
+                  style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 16),
                 
                 TextField(
                   controller: _urlController,

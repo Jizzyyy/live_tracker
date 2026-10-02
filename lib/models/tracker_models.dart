@@ -7,35 +7,47 @@ enum TripSessionState { inactive, active, paused }
 class AppSettings {
   const AppSettings({
     this.serverUrl = 'wss://live-tracker-backend.onrender.com',
+    this.userName = '',
     this.highAccuracyGps = true,
     this.backgroundService = true,
     this.isDarkMode = true,
     this.googleMapsApiKey = '',
     this.cartoApiKey = '',
+    this.soundAlertsEnabled = true,
+    this.hapticAlertsEnabled = true,
   });
 
   final String serverUrl;
+  final String userName;
   final bool highAccuracyGps;
   final bool backgroundService;
   final bool isDarkMode;
   final String googleMapsApiKey;
   final String cartoApiKey;
+  final bool soundAlertsEnabled;
+  final bool hapticAlertsEnabled;
 
   AppSettings copyWith({
     String? serverUrl,
+    String? userName,
     bool? highAccuracyGps,
     bool? backgroundService,
     bool? isDarkMode,
     String? googleMapsApiKey,
     String? cartoApiKey,
+    bool? soundAlertsEnabled,
+    bool? hapticAlertsEnabled,
   }) {
     return AppSettings(
       serverUrl: serverUrl ?? this.serverUrl,
+      userName: userName ?? this.userName,
       highAccuracyGps: highAccuracyGps ?? this.highAccuracyGps,
       backgroundService: backgroundService ?? this.backgroundService,
       isDarkMode: isDarkMode ?? this.isDarkMode,
       googleMapsApiKey: googleMapsApiKey ?? this.googleMapsApiKey,
       cartoApiKey: cartoApiKey ?? this.cartoApiKey,
+      soundAlertsEnabled: soundAlertsEnabled ?? this.soundAlertsEnabled,
+      hapticAlertsEnabled: hapticAlertsEnabled ?? this.hapticAlertsEnabled,
     );
   }
 }

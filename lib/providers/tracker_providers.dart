@@ -22,22 +22,28 @@ class SettingsNotifier extends Notifier<AppSettings> {
     final prefs = ref.watch(sharedPrefsProvider);
     return AppSettings(
       serverUrl: prefs.getString('serverUrl') ?? 'wss://live-tracker-backend.onrender.com',
+      userName: prefs.getString('userName') ?? '',
       isDarkMode: prefs.getBool('isDarkMode') ?? true,
       highAccuracyGps: prefs.getBool('highAccuracyGps') ?? true,
       backgroundService: prefs.getBool('backgroundService') ?? true,
       googleMapsApiKey: prefs.getString('googleMapsApiKey') ?? '',
       cartoApiKey: prefs.getString('cartoApiKey') ?? '',
+      soundAlertsEnabled: prefs.getBool('soundAlertsEnabled') ?? true,
+      hapticAlertsEnabled: prefs.getBool('hapticAlertsEnabled') ?? true,
     );
   }
   void updateSettings(AppSettings s) {
     state = s;
     final prefs = ref.read(sharedPrefsProvider);
     prefs.setString('serverUrl', s.serverUrl);
+    prefs.setString('userName', s.userName);
     prefs.setBool('isDarkMode', s.isDarkMode);
     prefs.setBool('highAccuracyGps', s.highAccuracyGps);
     prefs.setBool('backgroundService', s.backgroundService);
     prefs.setString('googleMapsApiKey', s.googleMapsApiKey);
     prefs.setString('cartoApiKey', s.cartoApiKey);
+    prefs.setBool('soundAlertsEnabled', s.soundAlertsEnabled);
+    prefs.setBool('hapticAlertsEnabled', s.hapticAlertsEnabled);
   }
 }
 final appSettingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);
