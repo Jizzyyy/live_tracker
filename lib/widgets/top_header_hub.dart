@@ -184,6 +184,17 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                       ],
                                     ),
                             ),
+                            if (roomState.roomCode != null) ...[
+                              _ActionButton(
+                                icon: Icons.logout_rounded,
+                                iconColor: Colors.redAccent,
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  _confirmLeaveRoom(context);
+                                },
+                              ),
+                              const SizedBox(width: 4),
+                            ],
                             _ActionButton(
                               icon: Icons.sos_rounded,
                               iconColor: const Color(0xFFFF1744),
@@ -246,6 +257,40 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _confirmLeaveRoom(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF12151B) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Keluar dari Room?',
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0D1117)),
+        ),
+        content: Text(
+          'Anda akan berhenti berbagi lokasi real-time dengan anggota room ini.',
+          style: TextStyle(color: isDark ? Colors.white70 : const Color(0xFF4A5568)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('BATAL', style: TextStyle(color: isDark ? Colors.white60 : Colors.black54)),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFFF1744)),
+            onPressed: () {
+              Navigator.pop(ctx);
+              ref.read(roomProvider.notifier).leaveRoom();
+              CustomSnackbar.show(context, message: 'Berhasil keluar dari room', type: SnackbarType.info);
+            },
+            child: const Text('KELUAR ROOM', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }
