@@ -17,6 +17,7 @@ import '../utils/sound_manager.dart';
 import '../src/core/services/battery_service.dart';
 import '../widgets/modals/add_poi_sheet.dart';
 import '../widgets/modals/poi_detail_sheet.dart';
+import '../widgets/modals/member_inspection_sheet.dart';
 import '../widgets/sos_beacon_marker.dart';
 import '../widgets/convoy_overview_button.dart';
 
@@ -254,7 +255,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                         child: GestureDetector(
                           onTap: () {
                             HapticFeedback.selectionClick();
-                            ref.read(focusedMemberProvider.notifier).state = m;
+                            _showMemberInspectionSheet(m);
                           },
                           child: CustomUserMarker(
                             location: m,
@@ -711,6 +712,15 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => PoiDetailSheet(poi: poi),
+    );
+  }
+
+  void _showMemberInspectionSheet(MemberLocation member) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => MemberInspectionSheet(member: member),
     );
   }
 
