@@ -119,7 +119,11 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
     // Sound & Haptic Trigger on Emergency SOS
     ref.listen(roomProvider.select((r) => r.activeSos), (prev, next) {
       if (next != null && (prev == null || prev.timestamp != next.timestamp)) {
-        SoundManager.playEmergencyAlarm();
+        final settings = ref.read(appSettingsProvider);
+        SoundManager.playEmergencyAlarm(
+          soundEnabled: settings.soundAlertsEnabled,
+          hapticEnabled: settings.hapticAlertsEnabled,
+        );
         if (next.latitude != null && next.longitude != null) {
           _animatedMapMove(LatLng(next.latitude!, next.longitude!), 17.0);
         }
@@ -129,7 +133,11 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
     // Sound & Haptic Trigger on Convoy Separation
     ref.listen(convoySeparationProvider.select((s) => s.isSeparated), (prev, next) {
       if (next == true && prev != true) {
-        SoundManager.playWarningBeep();
+        final settings = ref.read(appSettingsProvider);
+        SoundManager.playWarningBeep(
+          soundEnabled: settings.soundAlertsEnabled,
+          hapticEnabled: settings.hapticAlertsEnabled,
+        );
       }
     });
 
