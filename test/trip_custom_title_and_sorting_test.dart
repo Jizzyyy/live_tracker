@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:live_tracker/models/trip_history_model.dart';
-import 'package:live_tracker/screens/history/trip_history_screen.dart';
 
 void main() {
   group('TripCustomTitleAndSortingTest', () {
