@@ -1,17 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../models/trip_history_model.dart';
 import '../../providers/tracker_providers.dart';
 import '../../utils/ui_helpers.dart';
 import '../../utils/custom_snackbar.dart';
 import 'trip_detail_screen.dart';
 
-class TripHistoryScreen extends ConsumerWidget {
+enum TripSortOption { newest, longestDistance, longestDuration }
+
+class TripHistoryScreen extends ConsumerStatefulWidget {
   const TripHistoryScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final trips = ref.watch(tripHistoryProvider);
+  ConsumerState<TripHistoryScreen> createState() => _TripHistoryScreenState();
+}
+
+class _TripHistoryScreenState extends ConsumerState<TripHistoryScreen> {
+  TripSortOption _sortOption = TripSortOption.newest;
+
+  List<CompletedTrip> _sortTrips(List<CompletedTrip> original) {
+    final list = List<CompletedTrip>.from(original);
+    switch (_sortOption) {
+      case TripSortOption.newest:
+        list.sort((a, b) => b.startTime.compareTo(a.startTime));
+        break;
+      case TripSortOption.longestDistance:
+        list.sort((a, b) => b.distanceMeters.compareTo(a.distanceMeters));
+        break;
+      case TripSortOption.longestDuration:
+        list.sort((a, b) => b.durationSeconds.compareTo(a.durationSeconds));
+        break;
+    }
+    return list;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rawTrips = ref.watch(tripHistoryProvider);
+    final trips = _sortTrips(rawTrips);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -30,7 +57,7 @@ class TripHistoryScreen extends ConsumerWidget {
           color: isDark ? Colors.white : const Color(0xFF0D1117),
         ),
         actions: [
-          if (trips.isNotEmpty)
+          if (rawTrips.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_sweep_outlined, color: Colors.redAccent),
               tooltip: 'Clear All',
@@ -129,7 +156,7 @@ class TripHistoryScreen extends ConsumerWidget {
                               Column(
                                 children: [
                                   Text(
-                                    '${trips.length}',
+                                    '${rawTrips.length}',
                                     style: GoogleFonts.jetBrainsMono(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -141,6 +168,46 @@ class TripHistoryScreen extends ConsumerWidget {
                                 ],
                               ),
                             ],
+                          ),
+                          const SizedBox(height: 14),
+                          Divider(height: 1, color: isDark ? Colors.white12 : Colors.black12),
+                          const SizedBox(height: 10),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                Text(
+                                  'URUTKAN: ',
+                                  style: GoogleFonts.shareTechMono(
+                                    fontSize: 9,
+                                    letterSpacing: 1.5,
+                                    color: isDark ? Colors.white54 : Colors.black45,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                ChoiceChip(
+                                  label: const Text('TERBARU'),
+                                  selected: _sortOption == TripSortOption.newest,
+                                  labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                  onSelected: (_) => setState(() => _sortOption = TripSortOption.newest),
+                                ),
+                                const SizedBox(width: 6),
+                                ChoiceChip(
+                                  label: const Text('JARAK'),
+                                  selected: _sortOption == TripSortOption.longestDistance,
+                                  labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                  onSelected: (_) => setState(() => _sortOption = TripSortOption.longestDistance),
+                                ),
+                                const SizedBox(width: 6),
+                                ChoiceChip(
+                                  label: const Text('DURASI'),
+                                  selected: _sortOption == TripSortOption.longestDuration,
+                                  labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                                  onSelected: (_) => setState(() => _sortOption = TripSortOption.longestDuration),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -183,14 +250,18 @@ class TripHistoryScreen extends ConsumerWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  trip.formattedDate,
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.bold, 
-                                    fontSize: 16, 
-                                    color: isDark ? Colors.white : const Color(0xFF0D1117),
+                                Expanded(
+                                  child: Text(
+                                    trip.displayTitle,
+                                    style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.bold, 
+                                      fontSize: 16, 
+                                      color: isDark ? Colors.white : const Color(0xFF0D1117),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
+                                const SizedBox(width: 8),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
