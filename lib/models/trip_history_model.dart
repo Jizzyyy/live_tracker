@@ -275,7 +275,7 @@ class CompletedTrip {
 
   CompletedTrip copyWith({
     String? id,
-    String? customTitle,
+    String? Function()? customTitle,
     DateTime? startTime,
     DateTime? endTime,
     int? durationSeconds,
@@ -286,7 +286,7 @@ class CompletedTrip {
   }) {
     return CompletedTrip(
       id: id ?? this.id,
-      customTitle: customTitle ?? this.customTitle,
+      customTitle: customTitle != null ? customTitle() : this.customTitle,
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
       durationSeconds: durationSeconds ?? this.durationSeconds,

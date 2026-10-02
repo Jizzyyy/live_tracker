@@ -73,7 +73,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
 
     if (newTitle == null || !mounted) return;
 
-    final updated = _currentTrip.copyWith(customTitle: newTitle.isNotEmpty ? newTitle : null);
+    final updated = _currentTrip.copyWith(customTitle: () => newTitle.isNotEmpty ? newTitle : null);
     await ref.read(tripHistoryProvider.notifier).saveTrip(updated);
     setState(() => _currentTrip = updated);
 
