@@ -560,6 +560,46 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                   },
                 ),
 
+                // Offline Queue Buffer Sync Progress Indicator
+                Consumer(
+                  builder: (context, ref, _) {
+                    final queueCount = ref.watch(roomProvider.select((r) => r.offlineQueueCount));
+                    if (queueCount <= 0) return const SizedBox.shrink();
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      alignment: Alignment.center,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E232D).withValues(alpha: 0.95),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.6), width: 1),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(
+                              width: 10,
+                              height: 10,
+                              child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFF00E5FF)),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Menyimpan $queueCount koordinat offline • Siap auto-sync',
+                              style: GoogleFonts.shareTechMono(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF00E5FF),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
                 // Emergency SOS Alert Banner
                 Consumer(
                   builder: (context, ref, _) {
