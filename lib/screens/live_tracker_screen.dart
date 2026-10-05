@@ -224,6 +224,29 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                 },
               ),
 
+              // Target Vector Line to Selected POI or Member
+              Consumer(
+                builder: (context, ref, _) {
+                  final target = ref.watch(navigationTargetProvider);
+                  final posAsync = ref.watch(locationStreamProvider);
+                  if (target == null || !posAsync.hasValue) return const SizedBox.shrink();
+
+                  final myPos = posAsync.value!;
+                  return RepaintBoundary(
+                    child: PolylineLayer(
+                      polylines: [
+                        Polyline(
+                          points: [LatLng(myPos.latitude, myPos.longitude), target],
+                          strokeWidth: 2.8,
+                          color: const Color(0xFFFFD600).withValues(alpha: 0.85),
+                          pattern: StrokePattern.dashed(segments: const [10, 6]),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+
               // Active Trip Starting Point Flag Marker
               Consumer(
                 builder: (context, ref, _) {
@@ -805,6 +828,69 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                                 ),
                               ),
                             ],
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                // Active Target Vector HUD Pill
+                Consumer(
+                  builder: (context, ref, _) {
+                    final target = ref.watch(navigationTargetProvider);
+                    final label = ref.watch(navigationTargetLabelProvider);
+                    if (target == null) return const SizedBox.shrink();
+
+                    final myPos = ref.watch(locationStreamProvider).valueOrNull;
+                    String distStr = '';
+                    if (myPos != null) {
+                      final d = const Distance().as(
+                        LengthUnit.Meter,
+                        LatLng(myPos.latitude, myPos.longitude),
+                        target,
+                      );
+                      distStr = d < 1000 ? '${d.toStringAsFixed(0)} m' : '${(d / 1000).toStringAsFixed(2)} km';
+                    }
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      alignment: Alignment.center,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF12151B).withValues(alpha: 0.95),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFFFD600), width: 1.2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD600).withValues(alpha: 0.25),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.navigation_rounded, color: Color(0xFFFFD600), size: 16),
+                            const SizedBox(width: 8),
+                            Text(
+                              'TARGET: ${label ?? "POI"} • $distStr',
+                              style: GoogleFonts.shareTechMono(
+                                color: const Color(0xFFFFD600),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            InkWell(
+                              onTap: () {
+                                ref.read(navigationTargetProvider.notifier).state = null;
+                                ref.read(navigationTargetLabelProvider.notifier).state = null;
+                              },
+                              child: const Icon(Icons.close_rounded, color: Colors.white70, size: 16),
+                            ),
                           ],
                         ),
                       ),

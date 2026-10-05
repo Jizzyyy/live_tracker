@@ -249,6 +249,26 @@ class PoiDetailSheet extends ConsumerWidget {
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  backgroundColor: categoryConfig.color,
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                icon: const Icon(Icons.navigation_rounded, size: 18),
+                label: const Text('KUNCI TARGET VEKTOR PETA', style: TextStyle(fontWeight: FontWeight.bold)),
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  ref.read(navigationTargetProvider.notifier).state = LatLng(poi.latitude, poi.longitude);
+                  ref.read(navigationTargetLabelProvider.notifier).state = poi.title;
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
               child: OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFFFF1744),

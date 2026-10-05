@@ -853,3 +853,7 @@ final tripHistoryProvider = NotifierProvider<TripHistoryNotifier, List<Completed
 
 // --- Focus State ---
 final focusedMemberProvider = StateProvider<MemberLocation?>((ref) => null);
+
+// --- Target Vector Navigation ---
+final navigationTargetProvider = StateProvider<LatLng?>((ref) => null);
+final navigationTargetLabelProvider = StateProvider<String?>((ref) => null);
