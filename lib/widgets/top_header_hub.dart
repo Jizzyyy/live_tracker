@@ -10,6 +10,7 @@ import 'modals/member_list_sheet.dart';
 import 'modals/settings_sheet.dart';
 import 'modals/join_create_room_sheet.dart';
 import 'modals/sos_modal_sheet.dart';
+import 'modals/quick_ping_sheet.dart';
 import '../utils/custom_snackbar.dart';
 
 class TopHeaderHub extends ConsumerStatefulWidget {
@@ -71,6 +72,16 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                       onTap: () {
                                         setState(() => _isExpanded = false);
                                         _showMapStyleSheet(context, ref);
+                                      },
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _ActionButton(
+                                      icon: Icons.campaign_rounded,
+                                      iconColor: const Color(0xFF00E5FF),
+                                      backgroundColor: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                                      onTap: () {
+                                        setState(() => _isExpanded = false);
+                                        _showQuickPingSheet(context);
                                       },
                                     ),
                                     const SizedBox(width: 8),
@@ -194,6 +205,15 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                 },
                               ),
                               const SizedBox(width: 4),
+                              _ActionButton(
+                                icon: Icons.campaign_rounded,
+                                iconColor: const Color(0xFF00E5FF),
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  _showQuickPingSheet(context);
+                                },
+                              ),
+                              const SizedBox(width: 4),
                             ],
                             _ActionButton(
                               icon: Icons.sos_rounded,
@@ -301,6 +321,15 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) => const SosModalSheet(),
+    );
+  }
+
+  void _showQuickPingSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => const QuickPingSelectorSheet(),
     );
   }
 
