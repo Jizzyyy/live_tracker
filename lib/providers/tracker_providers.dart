@@ -161,6 +161,7 @@ class RoomState {
     this.members = const {},
     this.activeSos,
     this.pois = const {},
+    this.activePing,
     this.lastError,
   });
 
@@ -169,6 +170,7 @@ class RoomState {
   final Map<String, MemberLocation> members;
   final SosAlert? activeSos;
   final Map<String, SharedPoi> pois;
+  final TacticalPing? activePing;
   final String? lastError;
 
   RoomState copyWith({
@@ -177,6 +179,7 @@ class RoomState {
     Map<String, MemberLocation>? members,
     SosAlert? Function()? activeSos,
     Map<String, SharedPoi>? pois,
+    TacticalPing? Function()? activePing,
     String? Function()? lastError,
   }) =>
     RoomState(
@@ -185,6 +188,7 @@ class RoomState {
       members: members ?? this.members,
       activeSos: activeSos != null ? activeSos() : this.activeSos,
       pois: pois ?? this.pois,
+      activePing: activePing != null ? activePing() : this.activePing,
       lastError: lastError != null ? lastError() : this.lastError,
     );
 }
@@ -242,7 +246,39 @@ class RoomNotifier extends Notifier<RoomState> {
       members: {},
       activeSos: null,
       pois: {},
+      activePing: null,
     );
+  }
+
+  /// Broadcast a quick tactical cue to all members in current room
+  void sendTacticalPing(TacticalCueType cue, {double? lat, double? lng, String? note}) {
+    if (state.status != TrackingConnectionStatus.connected) return;
+    final userName = ref.read(appSettingsProvider).userName.trim();
+    final pingId = '${DateTime.now().millisecondsSinceEpoch}_${cue.name}';
+    final ping = TacticalPing(
+      id: pingId,
+      userId: userName.isNotEmpty ? userName : 'ME',
+      senderName: userName.isNotEmpty ? userName : null,
+      cue: cue,
+      latitude: lat,
+      longitude: lng,
+      timestamp: DateTime.now(),
+      note: note,
+    );
+    state = state.copyWith(activePing: () => ping);
+    _ws.send({
+      'type': 'tactical_ping',
+      'id': pingId,
+      'cue': cue.name,
+      'senderName': userName.isNotEmpty ? userName : null,
+      'lat': lat,
+      'lng': lng,
+      'note': note,
+    });
+  }
+
+  void clearActivePing() {
+    state = state.copyWith(activePing: () => null);
   }
 
   /// Broadcast Emergency SOS to all members in current room
@@ -393,6 +429,12 @@ class RoomNotifier extends Notifier<RoomState> {
         break;
       case 'sos_dismiss':
         state = state.copyWith(activeSos: () => null);
+        break;
+      case 'tactical_ping':
+        try {
+          final ping = TacticalPing.fromJson(msg);
+          state = state.copyWith(activePing: () => ping);
+        } catch (_) {}
         break;
       case 'poi_created':
         try {
