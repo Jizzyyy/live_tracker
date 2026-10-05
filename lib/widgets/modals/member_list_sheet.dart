@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../models/tracker_models.dart';
 import '../../providers/tracker_providers.dart';
 import '../../utils/ui_helpers.dart';
 import '../../utils/custom_snackbar.dart';
@@ -169,6 +170,43 @@ class MemberListSheet extends ConsumerWidget {
                         ),
                         title: Row(
                           children: [
+                            if (m.role != ConvoyRole.member) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                margin: const EdgeInsets.only(right: 6),
+                                decoration: BoxDecoration(
+                                  color: (switch (m.role) {
+                                    ConvoyRole.leader => const Color(0xFFFFD700),
+                                    ConvoyRole.sweeper => const Color(0xFF00E5FF),
+                                    ConvoyRole.scout => const Color(0xFF76FF03),
+                                    ConvoyRole.member => Colors.grey,
+                                  }).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: (switch (m.role) {
+                                      ConvoyRole.leader => const Color(0xFFFFD700),
+                                      ConvoyRole.sweeper => const Color(0xFF00E5FF),
+                                      ConvoyRole.scout => const Color(0xFF76FF03),
+                                      ConvoyRole.member => Colors.grey,
+                                    }).withValues(alpha: 0.6),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  m.role.badgeText,
+                                  style: GoogleFonts.shareTechMono(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: switch (m.role) {
+                                      ConvoyRole.leader => const Color(0xFFFFD700),
+                                      ConvoyRole.sweeper => const Color(0xFF00E5FF),
+                                      ConvoyRole.scout => const Color(0xFF76FF03),
+                                      ConvoyRole.member => Colors.grey,
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
                             Expanded(
                               child: Text(
                                 displayName,

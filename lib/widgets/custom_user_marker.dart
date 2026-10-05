@@ -65,6 +65,18 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
         ? widget.location.name!.trim()
         : (widget.isLocalUser ? 'YOU' : 'User ${widget.location.id}');
 
+    final rolePrefix = widget.location.role != ConvoyRole.member
+        ? '[${widget.location.role.badgeText}] '
+        : '';
+    final fullLabel = '$rolePrefix$displayName';
+
+    final roleBorderColor = switch (widget.location.role) {
+      ConvoyRole.leader => const Color(0xFFFFD700),
+      ConvoyRole.sweeper => const Color(0xFF00E5FF),
+      ConvoyRole.scout => const Color(0xFF76FF03),
+      ConvoyRole.member => widget.color,
+    };
+
     Widget buildMarker(double haloIntensity) {
       return Opacity(
         opacity: isStale ? 0.45 : 1.0,
@@ -105,7 +117,7 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
                 color: const Color(0xFF12151B).withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: isStale ? Colors.grey : widget.color.withValues(alpha: 0.6),
+                  color: isStale ? Colors.grey : roleBorderColor.withValues(alpha: 0.75),
                   width: 1,
                 ),
                 boxShadow: const [
@@ -113,7 +125,7 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
                 ],
               ),
               child: Text(
-                displayName,
+                fullLabel,
                 style: GoogleFonts.shareTechMono(
                   fontSize: 8.5,
                   fontWeight: FontWeight.bold,
