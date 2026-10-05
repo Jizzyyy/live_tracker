@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:latlong2/latlong.dart';
 import '../providers/tracker_providers.dart';
 import '../models/tracker_models.dart';
 import '../utils/ui_helpers.dart';
@@ -294,31 +295,79 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                   ),
                                 );
                               }
+
+                              final myPos = ref.watch(locationStreamProvider).valueOrNull;
+                              const distCalc = Distance();
+
                               return Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: members.take(3).map(
-                                  (m) => Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                    child: Row(
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 10,
-                                          backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                                          child: Text(
-                                            m.id.substring(0, 1).toUpperCase(),
-                                            style: TextStyle(fontSize: 9, color: theme.colorScheme.primary),
+                                children: members.take(4).map(
+                                  (m) {
+                                    final displayName = (m.name != null && m.name!.trim().isNotEmpty)
+                                        ? m.name!.trim()
+                                        : 'User ${m.id}';
+
+                                    String distStr = '';
+                                    if (myPos != null) {
+                                      final d = distCalc.as(
+                                        LengthUnit.Meter,
+                                        LatLng(myPos.latitude, myPos.longitude),
+                                        LatLng(m.latitude, m.longitude),
+                                      );
+                                      distStr = d < 1000 ? '${d.toStringAsFixed(0)} m' : '${(d / 1000).toStringAsFixed(1)} km';
+                                    }
+
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                      child: Row(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 11,
+                                            backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                                            child: Text(
+                                              displayName.substring(0, 1).toUpperCase(),
+                                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text('User ${m.id}', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface)),
-                                        const Spacer(),
-                                        Text(
-                                          '${(m.speedKmh ?? 0).toStringAsFixed(1)} km/h',
-                                          style: GoogleFonts.jetBrainsMono(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  displayName,
+                                                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                                if (distStr.isNotEmpty)
+                                                  Text(
+                                                    distStr,
+                                                    style: GoogleFonts.shareTechMono(fontSize: 10, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                          if (m.batteryPercent != null) ...[
+                                            Icon(
+                                              m.batteryPercent! <= 20 ? Icons.battery_alert_rounded : Icons.battery_charging_full_rounded,
+                                              size: 13,
+                                              color: m.batteryPercent! <= 20 ? const Color(0xFFFF1744) : const Color(0xFF00E676),
+                                            ),
+                                            const SizedBox(width: 3),
+                                            Text(
+                                              '${m.batteryPercent}%',
+                                              style: GoogleFonts.shareTechMono(fontSize: 10, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                                            ),
+                                            const SizedBox(width: 8),
+                                          ],
+                                          Text(
+                                            '${(m.speedKmh ?? 0).toStringAsFixed(1)} km/h',
+                                            style: GoogleFonts.jetBrainsMono(fontSize: 12, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withValues(alpha: 0.8)),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
                                 ).toList(),
                               );
                             },
