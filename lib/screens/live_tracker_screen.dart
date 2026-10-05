@@ -192,7 +192,9 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                 subdomains: mapStyle.subdomains,
                 userAgentPackageName: 'VellumLiveTracker/1.0 (contact: kadhafiinl@github)',
                 maxZoom: 19,
-                keepBuffer: 1, // Tile buffer reduced from 3 to 1 to reduce RAM consumption and memory thermal pressure
+                keepBuffer: 2,
+                panBuffer: 1,
+                tileUpdateTransformer: TileUpdateTransformers.throttle(const Duration(milliseconds: 250)),
               ),
 
               // Active Route Polyline (Throttled & Downsampled with RDP)

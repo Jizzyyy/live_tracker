@@ -404,6 +404,9 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                         urlTemplate: _selectedMapStyle.urlTemplate,
                         subdomains: _selectedMapStyle.subdomains,
                         userAgentPackageName: 'VellumLiveTracker/1.0 (contact: kadhafiinl@github)',
+                        keepBuffer: 2,
+                        panBuffer: 1,
+                        tileUpdateTransformer: TileUpdateTransformers.throttle(const Duration(milliseconds: 250)),
                       ),
                       PolylineLayer(
                         polylines: [
