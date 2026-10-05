@@ -245,6 +245,14 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                   value: settings.hapticAlertsEnabled,
                   onChanged: (val) => ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(hapticAlertsEnabled: val)),
                 ),
+                const SizedBox(height: 12),
+                _SettingsTile(
+                  title: 'Smart Auto-Pause (Touring)',
+                  subtitle: 'Pause duration timer automatically when stopped',
+                  icon: Icons.pause_circle_outline_rounded,
+                  value: settings.smartAutoPause,
+                  onChanged: (val) => ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(smartAutoPause: val)),
+                ),
                 const SizedBox(height: 32),
                 
                 FilledButton(

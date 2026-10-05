@@ -30,6 +30,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
       cartoApiKey: prefs.getString('cartoApiKey') ?? '',
       soundAlertsEnabled: prefs.getBool('soundAlertsEnabled') ?? true,
       hapticAlertsEnabled: prefs.getBool('hapticAlertsEnabled') ?? true,
+      smartAutoPause: prefs.getBool('smartAutoPause') ?? true,
     );
   }
   void updateSettings(AppSettings s) {
@@ -44,6 +45,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
     prefs.setString('cartoApiKey', s.cartoApiKey);
     prefs.setBool('soundAlertsEnabled', s.soundAlertsEnabled);
     prefs.setBool('hapticAlertsEnabled', s.hapticAlertsEnabled);
+    prefs.setBool('smartAutoPause', s.smartAutoPause);
   }
 }
 final appSettingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);

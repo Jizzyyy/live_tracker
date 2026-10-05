@@ -15,6 +15,7 @@ class AppSettings {
     this.cartoApiKey = '',
     this.soundAlertsEnabled = true,
     this.hapticAlertsEnabled = true,
+    this.smartAutoPause = true,
   });
 
   final String serverUrl;
@@ -26,6 +27,7 @@ class AppSettings {
   final String cartoApiKey;
   final bool soundAlertsEnabled;
   final bool hapticAlertsEnabled;
+  final bool smartAutoPause;
 
   AppSettings copyWith({
     String? serverUrl,
@@ -37,6 +39,7 @@ class AppSettings {
     String? cartoApiKey,
     bool? soundAlertsEnabled,
     bool? hapticAlertsEnabled,
+    bool? smartAutoPause,
   }) {
     return AppSettings(
       serverUrl: serverUrl ?? this.serverUrl,
@@ -48,6 +51,7 @@ class AppSettings {
       cartoApiKey: cartoApiKey ?? this.cartoApiKey,
       soundAlertsEnabled: soundAlertsEnabled ?? this.soundAlertsEnabled,
       hapticAlertsEnabled: hapticAlertsEnabled ?? this.hapticAlertsEnabled,
+      smartAutoPause: smartAutoPause ?? this.smartAutoPause,
     );
   }
 }
