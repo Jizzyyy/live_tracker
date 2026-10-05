@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +13,24 @@ class PoiDetailSheet extends ConsumerWidget {
 
   const PoiDetailSheet({super.key, required this.poi});
 
+  double _calculateBearing(LatLng start, LatLng dest) {
+    final startLat = start.latitudeInRad;
+    final startLng = start.longitudeInRad;
+    final destLat = dest.latitudeInRad;
+    final destLng = dest.longitudeInRad;
+
+    final dLng = destLng - startLng;
+    final y = sin(dLng) * cos(destLat);
+    final x = cos(startLat) * sin(destLat) - sin(startLat) * cos(destLat) * cos(dLng);
+    final initialBearing = atan2(y, x);
+    return (initialBearing * 180 / pi + 360) % 360;
+  }
+
+  String _bearingToCardinal(double bearing) {
+    const cardinals = ['U', 'TL', 'T', 'TG', 'S', 'BD', 'B', 'BL', 'U'];
+    return cardinals[((bearing + 22.5) % 360 ~/ 45)];
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -19,9 +38,32 @@ class PoiDetailSheet extends ConsumerWidget {
 
     final posAsync = ref.watch(locationStreamProvider);
     double? distMeters;
+    double? bearingDeg;
+    String? cardinal;
+    String? etaStr;
+
     if (posAsync.hasValue) {
-      final myPos = LatLng(posAsync.value!.latitude, posAsync.value!.longitude);
-      distMeters = const Distance().as(LengthUnit.Meter, myPos, LatLng(poi.latitude, poi.longitude));
+      final pos = posAsync.value!;
+      final myPos = LatLng(pos.latitude, pos.longitude);
+      final poiPos = LatLng(poi.latitude, poi.longitude);
+
+      distMeters = const Distance().as(LengthUnit.Meter, myPos, poiPos);
+      bearingDeg = _calculateBearing(myPos, poiPos);
+      cardinal = _bearingToCardinal(bearingDeg);
+
+      final speedKmh = pos.speed * 3.6;
+      final effectiveSpeedMps = speedKmh > 5.0 ? pos.speed : (30.0 / 3.6); // default to 30km/h cruising pace
+      if (effectiveSpeedMps > 0 && distMeters > 0) {
+        final etaSeconds = (distMeters / effectiveSpeedMps).round();
+        if (etaSeconds < 60) {
+          etaStr = '< 1 mnt';
+        } else {
+          final m = etaSeconds ~/ 60;
+          final h = m ~/ 60;
+          final remM = m % 60;
+          etaStr = h > 0 ? '$h jam $remM mnt' : '$m mnt';
+        }
+      }
     }
 
     final categoryConfig = switch (poi.category) {
@@ -89,50 +131,118 @@ class PoiDetailSheet extends ConsumerWidget {
                 color: isDark ? const Color(0xFF1E232D) : const Color(0xFFF1F5F9),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'KOORDINAT',
-                        style: GoogleFonts.shareTechMono(
-                          fontSize: 10,
-                          letterSpacing: 1.5,
-                          color: isDark ? Colors.white54 : Colors.black45,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'KOORDINAT',
+                            style: GoogleFonts.shareTechMono(
+                              fontSize: 10,
+                              letterSpacing: 1.5,
+                              color: isDark ? Colors.white54 : Colors.black45,
+                            ),
+                          ),
+                          Text(
+                            '${poi.latitude.toStringAsFixed(5)}, ${poi.longitude.toStringAsFixed(5)}',
+                            style: GoogleFonts.jetBrainsMono(fontSize: 12, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                      if (distMeters != null)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              'JARAK',
+                              style: GoogleFonts.shareTechMono(
+                                fontSize: 10,
+                                letterSpacing: 1.5,
+                                color: isDark ? Colors.white54 : Colors.black45,
+                              ),
+                            ),
+                            Text(
+                              distMeters < 1000
+                                  ? '${distMeters.toStringAsFixed(0)} m'
+                                  : '${(distMeters / 1000).toStringAsFixed(2)} km',
+                              style: GoogleFonts.jetBrainsMono(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: categoryConfig.color,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      Text(
-                        '${poi.latitude.toStringAsFixed(5)}, ${poi.longitude.toStringAsFixed(5)}',
-                        style: GoogleFonts.jetBrainsMono(fontSize: 12, fontWeight: FontWeight.w600),
-                      ),
                     ],
                   ),
-                  if (distMeters != null)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                  if (distMeters != null) ...[
+                    const Divider(height: 16, color: Colors.white12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'JARAK',
-                          style: GoogleFonts.shareTechMono(
-                            fontSize: 10,
-                            letterSpacing: 1.5,
-                            color: isDark ? Colors.white54 : Colors.black45,
+                        if (bearingDeg != null && cardinal != null)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'BEARING / ARAH',
+                                style: GoogleFonts.shareTechMono(
+                                  fontSize: 10,
+                                  letterSpacing: 1.5,
+                                  color: isDark ? Colors.white54 : Colors.black45,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Icon(Icons.explore_outlined, size: 14, color: categoryConfig.color),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${bearingDeg.toStringAsFixed(0)}° $cardinal',
+                                    style: GoogleFonts.jetBrainsMono(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark ? Colors.white : Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ),
-                        Text(
-                          distMeters < 1000
-                              ? '${distMeters.toStringAsFixed(0)} m'
-                              : '${(distMeters / 1000).toStringAsFixed(2)} km',
-                          style: GoogleFonts.jetBrainsMono(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: categoryConfig.color,
+                        if (etaStr != null)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                'ESTIMASI TIBA (ETA)',
+                                style: GoogleFonts.shareTechMono(
+                                  fontSize: 10,
+                                  letterSpacing: 1.5,
+                                  color: isDark ? Colors.white54 : Colors.black45,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  const Icon(Icons.access_time_rounded, size: 14, color: Color(0xFF00E676)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    etaStr,
+                                    style: GoogleFonts.jetBrainsMono(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF00E676),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ),
                       ],
                     ),
+                  ],
                 ],
               ),
             ),
