@@ -239,6 +239,49 @@ class CompletedTrip {
     return maxA != null ? '${maxA.toStringAsFixed(0)} m' : '-- m';
   }
 
+  /// Calculates maximum climb incline gradient percentage (%)
+  double get maxClimbGradientPercent {
+    if (routePoints.length < 2) return 0.0;
+    double maxGrade = 0.0;
+    double haversine(double lat1, double lon1, double lat2, double lon2) {
+      const p = 0.017453292519943295;
+      final a = 0.5 - cos((lat2 - lat1) * p) / 2 +
+          cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
+      return 12742000 * asin(sqrt(a));
+    }
+
+    double windowDist = 0.0;
+    int windowStartIndex = 0;
+
+    for (int i = 1; i < routePoints.length; i++) {
+      final p1 = routePoints[i - 1];
+      final p2 = routePoints[i];
+      windowDist += haversine(p1.latitude, p1.longitude, p2.latitude, p2.longitude);
+
+      if (windowDist >= 25.0) {
+        final startAlt = routePoints[windowStartIndex].altitude;
+        final endAlt = p2.altitude;
+        if (startAlt != null && endAlt != null) {
+          final altDiff = endAlt - startAlt;
+          if (altDiff > 0) {
+            final grade = (altDiff / windowDist) * 100;
+            if (grade > maxGrade && grade <= 45.0) {
+              maxGrade = grade;
+            }
+          }
+        }
+        windowStartIndex = i;
+        windowDist = 0.0;
+      }
+    }
+    return maxGrade;
+  }
+
+  String get formattedMaxGradient {
+    final grade = maxClimbGradientPercent;
+    return grade > 0 ? '${grade.toStringAsFixed(1)}%' : '--%';
+  }
+
   /// Calculates 1-kilometer splits (duration, pace, elevation change)
   List<TripSplit> get splits {
     if (routePoints.length < 2 || distanceMeters < 1000) return const [];
