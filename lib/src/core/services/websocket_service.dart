@@ -12,9 +12,12 @@ class WebSocketService {
   String? _url;
   int _reconnectAttempts = 0;
   bool _intentionalClose = false;
+  final List<Map<String, dynamic>> _offlineQueue = [];
+  static const int maxQueueSize = 50;
 
   Stream<Map<String, dynamic>> get messages => _messageController.stream;
   bool get isConnected => _channel != null;
+  int get queuedCount => _offlineQueue.length;
 
   /// Quick health check to test if a WebSocket URL is responsive.
   static Future<bool> testConnection(String url, {Duration timeout = const Duration(seconds: 4)}) async {
@@ -101,6 +104,9 @@ class WebSocketService {
 
     _reconnectAttempts = 0;
 
+    // Flush any offline packets buffered while connection was severed
+    _flushQueue();
+
     _subscription = _channel!.stream.listen(
       (data) {
         if (_messageController.isClosed) return;
@@ -137,9 +143,42 @@ class WebSocketService {
     );
   }
 
+  void _flushQueue() {
+    if (_offlineQueue.isEmpty || _channel == null) return;
+    debugPrint('Flushing ${_offlineQueue.length} offline queued packets to WebSocket');
+    while (_offlineQueue.isNotEmpty && _channel != null) {
+      final packet = _offlineQueue.removeAt(0);
+      try {
+        _channel!.sink.add(jsonEncode(packet));
+      } catch (e) {
+        debugPrint('Error flushing packet: $e');
+        break;
+      }
+    }
+    if (!_messageController.isClosed) {
+      _messageController.add({'type': '_queue_update', 'count': _offlineQueue.length});
+    }
+  }
+
   void send(Map<String, dynamic> data) {
-    if (_channel == null) return;
-    _channel!.sink.add(jsonEncode(data));
+    if (_channel != null) {
+      _channel!.sink.add(jsonEncode(data));
+      return;
+    }
+
+    // Buffer position and tactical messages if disconnected during active session
+    if (!_intentionalClose) {
+      final type = data['type'] as String?;
+      if (type == 'position_update' || type == 'tactical_ping') {
+        if (_offlineQueue.length >= maxQueueSize) {
+          _offlineQueue.removeAt(0); // Evict oldest packet
+        }
+        _offlineQueue.add(data);
+        if (!_messageController.isClosed) {
+          _messageController.add({'type': '_queue_update', 'count': _offlineQueue.length});
+        }
+      }
+    }
   }
 
   void disconnect() {
@@ -149,6 +188,10 @@ class WebSocketService {
     _subscription = null;
     _channel?.sink.close();
     _channel = null;
+    _offlineQueue.clear();
+    if (!_messageController.isClosed) {
+      _messageController.add({'type': '_queue_update', 'count': 0});
+    }
   }
 
   void _scheduleReconnect() {

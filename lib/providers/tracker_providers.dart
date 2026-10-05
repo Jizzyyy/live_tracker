@@ -171,6 +171,7 @@ class RoomState {
     this.activeSos,
     this.pois = const {},
     this.activePing,
+    this.offlineQueueCount = 0,
     this.lastError,
   });
 
@@ -180,6 +181,7 @@ class RoomState {
   final SosAlert? activeSos;
   final Map<String, SharedPoi> pois;
   final TacticalPing? activePing;
+  final int offlineQueueCount;
   final String? lastError;
 
   RoomState copyWith({
@@ -189,6 +191,7 @@ class RoomState {
     SosAlert? Function()? activeSos,
     Map<String, SharedPoi>? pois,
     TacticalPing? Function()? activePing,
+    int? offlineQueueCount,
     String? Function()? lastError,
   }) =>
     RoomState(
@@ -198,6 +201,7 @@ class RoomState {
       activeSos: activeSos != null ? activeSos() : this.activeSos,
       pois: pois ?? this.pois,
       activePing: activePing != null ? activePing() : this.activePing,
+      offlineQueueCount: offlineQueueCount ?? this.offlineQueueCount,
       lastError: lastError != null ? lastError() : this.lastError,
     );
 }
@@ -377,6 +381,10 @@ class RoomNotifier extends Notifier<RoomState> {
         } else if (statusStr == 'disconnected') {
           state = state.copyWith(status: TrackingConnectionStatus.disconnected);
         }
+        break;
+      case '_queue_update':
+        final count = msg['count'] as int? ?? 0;
+        state = state.copyWith(offlineQueueCount: count);
         break;
       case 'error':
         final errMsg = msg['message'] as String? ?? 'Terjadi kesalahan pada server';
