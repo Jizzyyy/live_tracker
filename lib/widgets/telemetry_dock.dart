@@ -128,14 +128,58 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'SPEED',
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              letterSpacing: 2,
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                'SPEED',
+                                style: GoogleFonts.inter(
+                                  fontSize: 10,
+                                  letterSpacing: 2,
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                ),
+                              ),
+                              Consumer(
+                                builder: (context, ref, _) {
+                                  final isAutoPaused = ref.watch(tripSessionProvider.select((s) => s.isAutoPaused));
+                                  final sessionActive = ref.watch(tripSessionProvider.select((s) => s.state == TripSessionState.active));
+                                  if (!sessionActive || !isAutoPaused) return const SizedBox.shrink();
+
+                                  return Container(
+                                    margin: const EdgeInsets.only(left: 8),
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFB300).withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: const Color(0xFFFFB300), width: 1),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          width: 6,
+                                          height: 6,
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFFFFB300),
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'AUTO PAUSED',
+                                          style: GoogleFonts.shareTechMono(
+                                            color: const Color(0xFFFFB300),
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.8,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                           Consumer(
                             builder: (context, ref, _) {
