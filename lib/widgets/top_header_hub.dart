@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/tracker_models.dart';
 import '../providers/tracker_providers.dart';
 import '../utils/ui_helpers.dart';
@@ -196,6 +197,27 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                     ),
                             ),
                             if (roomState.roomCode != null) ...[
+                              _ActionButton(
+                                icon: Icons.share_rounded,
+                                iconColor: const Color(0xFF69F0AE),
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  final code = roomState.roomCode!;
+                                  Clipboard.setData(ClipboardData(text: code));
+                                  SharePlus.instance.share(
+                                    ShareParams(
+                                      text: 'Gabung room konvoi Live Tracker saya! Kode: $code',
+                                      subject: 'Undangan Room Konvoi Live Tracker',
+                                    ),
+                                  );
+                                  CustomSnackbar.show(
+                                    context,
+                                    message: 'Kode Room $code disalin ke clipboard!',
+                                    type: SnackbarType.success,
+                                  );
+                                },
+                              ),
+                              const SizedBox(width: 4),
                               _ActionButton(
                                 icon: Icons.logout_rounded,
                                 iconColor: Colors.redAccent,
