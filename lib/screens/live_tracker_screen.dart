@@ -130,6 +130,23 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
       }
     });
 
+    // Sound & Haptic Trigger on Tactical Cue Ping
+    ref.listen(roomProvider.select((r) => r.activePing), (prev, next) {
+      if (next != null && (prev == null || prev.id != next.id)) {
+        final settings = ref.read(appSettingsProvider);
+        SoundManager.playTacticalCue(
+          next.cue,
+          soundEnabled: settings.soundAlertsEnabled,
+          hapticEnabled: settings.hapticAlertsEnabled,
+        );
+        Future.delayed(const Duration(seconds: 8), () {
+          if (mounted && ref.read(roomProvider).activePing?.id == next.id) {
+            ref.read(roomProvider.notifier).clearActivePing();
+          }
+        });
+      }
+    });
+
     // Sound & Haptic Trigger on Convoy Separation
     ref.listen(convoySeparationProvider.select((s) => s.isSeparated), (prev, next) {
       if (next == true && prev != true) {
@@ -581,6 +598,107 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                                 icon: const Icon(Icons.close, color: Colors.white70, size: 18),
                                 onPressed: () {
                                   ref.read(roomProvider.notifier).dismissSos();
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                // Tactical Quick Ping Banner Overlay
+                Consumer(
+                  builder: (context, ref, _) {
+                    final activePing = ref.watch(roomProvider.select((r) => r.activePing));
+                    if (activePing == null || activePing.isExpired) return const SizedBox.shrink();
+
+                    final cueColor = switch (activePing.cue) {
+                      TacticalCueType.hazard => const Color(0xFFFF1744),
+                      TacticalCueType.regroup => const Color(0xFF00E5FF),
+                      TacticalCueType.fuel => const Color(0xFFFFD600),
+                      TacticalCueType.turnLeft || TacticalCueType.turnRight => const Color(0xFF69F0AE),
+                      TacticalCueType.rest => const Color(0xFFFF9100),
+                    };
+
+                    final cueIcon = switch (activePing.cue) {
+                      TacticalCueType.hazard => Icons.warning_amber_rounded,
+                      TacticalCueType.regroup => Icons.groups_rounded,
+                      TacticalCueType.fuel => Icons.local_gas_station_rounded,
+                      TacticalCueType.turnLeft => Icons.turn_left_rounded,
+                      TacticalCueType.turnRight => Icons.turn_right_rounded,
+                      TacticalCueType.rest => Icons.coffee_rounded,
+                    };
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: GestureDetector(
+                        onTap: () {
+                          if (activePing.latitude != null && activePing.longitude != null) {
+                            _animatedMapMove(LatLng(activePing.latitude!, activePing.longitude!), 17.0);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF12151B).withValues(alpha: 0.95),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: cueColor, width: 1.5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: cueColor.withValues(alpha: 0.35),
+                                blurRadius: 14,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: cueColor.withValues(alpha: 0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(cueIcon, color: cueColor, size: 20),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'TACTICAL PING: ${activePing.callerDisplayName.toUpperCase()}',
+                                          style: GoogleFonts.shareTechMono(
+                                            color: cueColor,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 1,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Text(
+                                      activePing.cue.label,
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.close, color: Colors.white60, size: 18),
+                                onPressed: () {
+                                  ref.read(roomProvider.notifier).clearActivePing();
                                 },
                               ),
                             ],
