@@ -31,6 +31,10 @@ class SettingsNotifier extends Notifier<AppSettings> {
       soundAlertsEnabled: prefs.getBool('soundAlertsEnabled') ?? true,
       hapticAlertsEnabled: prefs.getBool('hapticAlertsEnabled') ?? true,
       smartAutoPause: prefs.getBool('smartAutoPause') ?? true,
+      convoyRole: ConvoyRole.values.firstWhere(
+        (r) => r.name == prefs.getString('convoyRole'),
+        orElse: () => ConvoyRole.member,
+      ),
     );
   }
   void updateSettings(AppSettings s) {
@@ -46,6 +50,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
     prefs.setBool('soundAlertsEnabled', s.soundAlertsEnabled);
     prefs.setBool('hapticAlertsEnabled', s.hapticAlertsEnabled);
     prefs.setBool('smartAutoPause', s.smartAutoPause);
+    prefs.setString('convoyRole', s.convoyRole.name);
   }
 }
 final appSettingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);
@@ -344,7 +349,8 @@ class RoomNotifier extends Notifier<RoomState> {
     if (now - _lastWsSendMs < 1000) return;
     _lastWsSendMs = now;
 
-    final userName = ref.read(appSettingsProvider).userName.trim();
+    final settings = ref.read(appSettingsProvider);
+    final userName = settings.userName.trim();
 
     _ws.send({
       'type': 'position_update',
@@ -354,6 +360,7 @@ class RoomNotifier extends Notifier<RoomState> {
       'heading': pos.heading,
       'battery': batteryPercent,
       'name': userName.isNotEmpty ? userName : null,
+      'role': settings.convoyRole.name,
       'timestamp': pos.timestamp.millisecondsSinceEpoch,
     });
   }

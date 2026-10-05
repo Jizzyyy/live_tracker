@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../models/tracker_models.dart';
 import '../../providers/tracker_providers.dart';
 import '../../src/core/services/websocket_service.dart';
 import '../../utils/custom_snackbar.dart';
@@ -93,6 +94,32 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                     ),
                   ),
                   style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Peran dalam Konvoi (Convoy Role)',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white70 : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: ConvoyRole.values.map((role) {
+                    final isSelected = settings.convoyRole == role;
+                    return ChoiceChip(
+                      label: Text('[${role.badgeText}] ${role.label}'),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        if (selected) {
+                          ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(convoyRole: role));
+                        }
+                      },
+                    );
+                  }).toList(),
                 ),
                 const SizedBox(height: 16),
                 
