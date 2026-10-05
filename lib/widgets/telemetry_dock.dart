@@ -318,53 +318,71 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                     }
 
                                     return Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                      child: Row(
-                                        children: [
-                                          CircleAvatar(
-                                            radius: 11,
-                                            backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                                            child: Text(
-                                              displayName.substring(0, 1).toUpperCase(),
-                                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  displayName,
-                                                  style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface),
-                                                  overflow: TextOverflow.ellipsis,
+                                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(10),
+                                        onTap: () {
+                                          HapticFeedback.selectionClick();
+                                          ref.read(focusedMemberProvider.notifier).state = m;
+                                          _expandCtrl.reverse();
+                                          ref.read(telemetryExpandedProvider.notifier).state = false;
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                          child: Row(
+                                            children: [
+                                              CircleAvatar(
+                                                radius: 11,
+                                                backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                                                child: Text(
+                                                  displayName.substring(0, 1).toUpperCase(),
+                                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
                                                 ),
-                                                if (distStr.isNotEmpty)
-                                                  Text(
-                                                    distStr,
-                                                    style: GoogleFonts.shareTechMono(fontSize: 10, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
-                                                  ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      displayName,
+                                                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: theme.colorScheme.onSurface),
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                    if (distStr.isNotEmpty)
+                                                      Text(
+                                                        distStr,
+                                                        style: GoogleFonts.shareTechMono(fontSize: 10, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                                                      ),
+                                                  ],
+                                                ),
+                                              ),
+                                              if (m.batteryPercent != null) ...[
+                                                Icon(
+                                                  m.batteryPercent! <= 20 ? Icons.battery_alert_rounded : Icons.battery_charging_full_rounded,
+                                                  size: 13,
+                                                  color: m.batteryPercent! <= 20 ? const Color(0xFFFF1744) : const Color(0xFF00E676),
+                                                ),
+                                                const SizedBox(width: 3),
+                                                Text(
+                                                  '${m.batteryPercent}%',
+                                                  style: GoogleFonts.shareTechMono(fontSize: 10, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                                                ),
+                                                const SizedBox(width: 8),
                                               ],
-                                            ),
+                                              Text(
+                                                '${(m.speedKmh ?? 0).toStringAsFixed(1)} km/h',
+                                                style: GoogleFonts.jetBrainsMono(fontSize: 12, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withValues(alpha: 0.8)),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Icon(
+                                                Icons.my_location_rounded,
+                                                size: 14,
+                                                color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                                              ),
+                                            ],
                                           ),
-                                          if (m.batteryPercent != null) ...[
-                                            Icon(
-                                              m.batteryPercent! <= 20 ? Icons.battery_alert_rounded : Icons.battery_charging_full_rounded,
-                                              size: 13,
-                                              color: m.batteryPercent! <= 20 ? const Color(0xFFFF1744) : const Color(0xFF00E676),
-                                            ),
-                                            const SizedBox(width: 3),
-                                            Text(
-                                              '${m.batteryPercent}%',
-                                              style: GoogleFonts.shareTechMono(fontSize: 10, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-                                            ),
-                                            const SizedBox(width: 8),
-                                          ],
-                                          Text(
-                                            '${(m.speedKmh ?? 0).toStringAsFixed(1)} km/h',
-                                            style: GoogleFonts.jetBrainsMono(fontSize: 12, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withValues(alpha: 0.8)),
-                                          ),
-                                        ],
+                                        ),
                                       ),
                                     );
                                   },
