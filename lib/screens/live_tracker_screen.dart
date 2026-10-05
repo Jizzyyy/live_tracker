@@ -753,6 +753,65 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                   },
                 ),
 
+                // Convoy Formation Span Indicator
+                Consumer(
+                  builder: (context, ref, _) {
+                    final span = ref.watch(convoySpanProvider);
+                    if (!span.hasFormation) return const SizedBox.shrink();
+
+                    final spanColor = span.isSpanExcessive ? const Color(0xFFFF9100) : const Color(0xFF00E5FF);
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      alignment: Alignment.center,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF12151B).withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: spanColor.withValues(alpha: 0.6), width: 1.2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: spanColor.withValues(alpha: 0.2),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.social_distance_rounded, size: 14, color: spanColor),
+                            const SizedBox(width: 6),
+                            Text(
+                              '[LEAD] ${span.leaderName} ↔ [SWEEP] ${span.sweeperName} • SPAN: ${span.formattedSpan}',
+                              style: GoogleFonts.shareTechMono(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: spanColor,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            if (span.isSpanExcessive) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFF9100),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  'GAP BESAR',
+                                  style: TextStyle(color: Colors.black, fontSize: 8, fontWeight: FontWeight.w900),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
                 // Re-center Floating Hint Pill when user panned away
                 Consumer(
                   builder: (context, ref, _) {

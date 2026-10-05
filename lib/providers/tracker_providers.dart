@@ -510,6 +510,82 @@ final convoySeparationProvider = Provider<ConvoySeparationState>((ref) {
   );
 });
 
+// --- Dynamic Convoy Span (Leader to Sweeper Formation Distance) ---
+@immutable
+class ConvoySpanState {
+  final bool hasFormation;
+  final double spanDistanceMeters;
+  final String? leaderName;
+  final String? sweeperName;
+  final bool isSpanExcessive;
+
+  const ConvoySpanState({
+    this.hasFormation = false,
+    this.spanDistanceMeters = 0.0,
+    this.leaderName,
+    this.sweeperName,
+    this.isSpanExcessive = false,
+  });
+
+  String get formattedSpan {
+    if (spanDistanceMeters < 1000) return '${spanDistanceMeters.toStringAsFixed(0)} m';
+    return '${(spanDistanceMeters / 1000).toStringAsFixed(2)} km';
+  }
+}
+
+final convoySpanProvider = Provider<ConvoySpanState>((ref) {
+  final posAsync = ref.watch(locationStreamProvider);
+  final myRole = ref.watch(appSettingsProvider.select((s) => s.convoyRole));
+  final myName = ref.watch(appSettingsProvider.select((s) => s.userName.trim()));
+  final members = ref.watch(roomProvider.select((r) => r.members.values.toList()));
+  final inRoom = ref.watch(roomProvider.select((r) => r.roomCode != null));
+
+  if (!inRoom) return const ConvoySpanState();
+
+  LatLng? leaderPos;
+  String? leaderName;
+  LatLng? sweeperPos;
+  String? sweeperName;
+
+  if (posAsync.hasValue) {
+    final myPos = LatLng(posAsync.value!.latitude, posAsync.value!.longitude);
+    final effectiveMyName = myName.isNotEmpty ? myName : 'YOU';
+    if (myRole == ConvoyRole.leader) {
+      leaderPos = myPos;
+      leaderName = effectiveMyName;
+    } else if (myRole == ConvoyRole.sweeper) {
+      sweeperPos = myPos;
+      sweeperName = effectiveMyName;
+    }
+  }
+
+  for (final m in members) {
+    final mPos = LatLng(m.latitude, m.longitude);
+    final mName = (m.name != null && m.name!.trim().isNotEmpty) ? m.name!.trim() : 'User ${m.id}';
+    if (m.role == ConvoyRole.leader && leaderPos == null) {
+      leaderPos = mPos;
+      leaderName = mName;
+    } else if (m.role == ConvoyRole.sweeper && sweeperPos == null) {
+      sweeperPos = mPos;
+      sweeperName = mName;
+    }
+  }
+
+  if (leaderPos != null && sweeperPos != null) {
+    const distCalc = Distance();
+    final spanMeters = distCalc.as(LengthUnit.Meter, leaderPos, sweeperPos);
+    return ConvoySpanState(
+      hasFormation: true,
+      spanDistanceMeters: spanMeters,
+      leaderName: leaderName,
+      sweeperName: sweeperName,
+      isSpanExcessive: spanMeters > 1500.0,
+    );
+  }
+
+  return const ConvoySpanState();
+});
+
 // --- Auto-Follow Camera State ---
 final autoFollowProvider = StateProvider<bool>((ref) => true);
 
