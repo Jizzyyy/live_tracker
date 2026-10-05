@@ -245,6 +245,26 @@ class TripShareCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 16),
+                  Divider(color: dividerColor, height: 1),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _StatColumn(
+                        label: 'MOVING TIME', 
+                        value: trip.formattedMovingDuration, 
+                        color: isDark ? const Color(0xFF00E676) : const Color(0xFF059669),
+                        isDark: isDark,
+                      ),
+                      _StatColumn(
+                        label: trip.maxClimbGradientPercent > 0 ? 'MAX GRADE' : 'TOP SPEED', 
+                        value: trip.maxClimbGradientPercent > 0 ? trip.formattedMaxGradient : trip.formattedMaxSpeed, 
+                        color: isDark ? const Color(0xFFFF5252) : const Color(0xFFE11D48),
+                        isDark: isDark,
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
