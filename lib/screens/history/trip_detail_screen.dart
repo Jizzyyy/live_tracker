@@ -9,6 +9,7 @@ import '../../providers/tracker_providers.dart';
 import '../../utils/gpx_exporter.dart';
 import '../../utils/geojson_exporter.dart';
 import '../../utils/kml_exporter.dart';
+import '../../utils/csv_exporter.dart';
 import '../../utils/ui_helpers.dart';
 import '../../utils/custom_snackbar.dart';
 import '../../utils/map_bounds_helper.dart';
@@ -91,6 +92,8 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
         await GeoJsonExporter.exportAndShare(widget.trip);
       } else if (format == 'kml') {
         await KmlExporter.exportAndShare(widget.trip);
+      } else if (format == 'csv') {
+        await CsvExporter.exportAndShare(widget.trip);
       }
     } catch (e) {
       if (mounted) {
@@ -373,6 +376,23 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                   ],
                 ),
               ),
+              PopupMenuItem(
+                value: 'csv',
+                child: Row(
+                  children: [
+                    const Icon(Icons.table_chart_rounded, size: 18, color: Color(0xFFFF9100)),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Export Telemetri (CSV)',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
           IconButton(
@@ -524,9 +544,30 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                         ),
                         Expanded(
                           child: _TelemetryTile(
-                            label: 'DURATION', 
+                            label: 'TOTAL DURATION', 
                             value: trip.formattedDuration, 
                             color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _TelemetryTile(
+                            label: 'MOVING TIME', 
+                            value: trip.formattedMovingDuration, 
+                            color: isDark ? const Color(0xFF00E676) : const Color(0xFF059669),
+                          ),
+                        ),
+                        Expanded(
+                          child: _TelemetryTile(
+                            label: 'STOPPED TIME', 
+                            value: trip.formattedStoppedDuration, 
+                            color: isDark ? const Color(0xFFFF9100) : const Color(0xFFD97706),
                           ),
                         ),
                       ],
@@ -566,9 +607,9 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                         ),
                         Expanded(
                           child: _TelemetryTile(
-                            label: 'GPS BREADCRUMBS', 
-                            value: '${trip.routePoints.length} pts', 
-                            color: isDark ? Colors.white70 : const Color(0xFF475569),
+                            label: 'MAX GRADIENT', 
+                            value: trip.formattedMaxGradient, 
+                            color: isDark ? const Color(0xFFFF5252) : const Color(0xFFE11D48),
                           ),
                         ),
                       ],
