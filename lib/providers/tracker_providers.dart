@@ -35,6 +35,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
         (r) => r.name == prefs.getString('convoyRole'),
         orElse: () => ConvoyRole.member,
       ),
+      lowBandwidthMode: prefs.getBool('lowBandwidthMode') ?? false,
     );
   }
   void updateSettings(AppSettings s) {
@@ -51,6 +52,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
     prefs.setBool('hapticAlertsEnabled', s.hapticAlertsEnabled);
     prefs.setBool('smartAutoPause', s.smartAutoPause);
     prefs.setString('convoyRole', s.convoyRole.name);
+    prefs.setBool('lowBandwidthMode', s.lowBandwidthMode);
   }
 }
 final appSettingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);
@@ -342,14 +344,15 @@ class RoomNotifier extends Notifier<RoomState> {
     }
   }
 
-  /// Throttled WS Broadcast to max 1 Hz (1000ms) to reduce battery/bandwidth
+  /// Throttled WS Broadcast (1s normal, 5s in low-bandwidth mode) to reduce battery/bandwidth
   void sendPosition(Position pos, {int? batteryPercent}) {
     if (state.status != TrackingConnectionStatus.connected) return;
     final now = DateTime.now().millisecondsSinceEpoch;
-    if (now - _lastWsSendMs < 1000) return;
+    final settings = ref.read(appSettingsProvider);
+    final throttleIntervalMs = settings.lowBandwidthMode ? 5000 : 1000;
+    if (now - _lastWsSendMs < throttleIntervalMs) return;
     _lastWsSendMs = now;
 
-    final settings = ref.read(appSettingsProvider);
     final userName = settings.userName.trim();
 
     _ws.send({

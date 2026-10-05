@@ -280,6 +280,14 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                   value: settings.smartAutoPause,
                   onChanged: (val) => ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(smartAutoPause: val)),
                 ),
+                const SizedBox(height: 12),
+                _SettingsTile(
+                  title: 'Low-Bandwidth Mode (Hemat Data)',
+                  subtitle: 'Throttle broadcast to 5s interval to save battery in remote areas',
+                  icon: Icons.cell_tower_rounded,
+                  value: settings.lowBandwidthMode,
+                  onChanged: (val) => ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(lowBandwidthMode: val)),
+                ),
                 const SizedBox(height: 32),
                 
                 FilledButton(

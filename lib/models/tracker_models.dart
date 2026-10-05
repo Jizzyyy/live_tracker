@@ -34,6 +34,7 @@ class AppSettings {
     this.hapticAlertsEnabled = true,
     this.smartAutoPause = true,
     this.convoyRole = ConvoyRole.member,
+    this.lowBandwidthMode = false,
   });
 
   final String serverUrl;
@@ -47,6 +48,7 @@ class AppSettings {
   final bool hapticAlertsEnabled;
   final bool smartAutoPause;
   final ConvoyRole convoyRole;
+  final bool lowBandwidthMode;
 
   AppSettings copyWith({
     String? serverUrl,
@@ -60,6 +62,7 @@ class AppSettings {
     bool? hapticAlertsEnabled,
     bool? smartAutoPause,
     ConvoyRole? convoyRole,
+    bool? lowBandwidthMode,
   }) {
     return AppSettings(
       serverUrl: serverUrl ?? this.serverUrl,
@@ -73,6 +76,7 @@ class AppSettings {
       hapticAlertsEnabled: hapticAlertsEnabled ?? this.hapticAlertsEnabled,
       smartAutoPause: smartAutoPause ?? this.smartAutoPause,
       convoyRole: convoyRole ?? this.convoyRole,
+      lowBandwidthMode: lowBandwidthMode ?? this.lowBandwidthMode,
     );
   }
 }
