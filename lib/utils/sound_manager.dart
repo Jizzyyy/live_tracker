@@ -1,9 +1,11 @@
 import 'package:flutter/services.dart';
+import '../models/tracker_models.dart';
 
 /// Sound and Haptic Manager for Emergency SOS and Convoy alerts.
 /// Respects user preferences for acoustic sound and tactile haptics.
 class SoundManager {
   static DateTime _lastAlarmTime = DateTime.fromMillisecondsSinceEpoch(0);
+  static DateTime _lastCueTime = DateTime.fromMillisecondsSinceEpoch(0);
 
   /// Triggers an acoustic emergency alarm and heavy haptic feedback
   static Future<void> playEmergencyAlarm({bool soundEnabled = true, bool hapticEnabled = true}) async {
@@ -41,4 +43,68 @@ class SoundManager {
       }
     } catch (_) {}
   }
+
+  /// Triggers distinctive acoustic pulses tailored to specific tactical cues
+  static Future<void> playTacticalCue(
+    TacticalCueType cue, {
+    bool soundEnabled = true,
+    bool hapticEnabled = true,
+  }) async {
+    final now = DateTime.now();
+    if (now.difference(_lastCueTime).inMilliseconds < 1000) return;
+    _lastCueTime = now;
+
+    try {
+      switch (cue) {
+        case TacticalCueType.hazard:
+          if (soundEnabled) {
+            await SystemSound.play(SystemSoundType.alert);
+            await Future.delayed(const Duration(milliseconds: 120));
+            await SystemSound.play(SystemSoundType.alert);
+          }
+          if (hapticEnabled) {
+            await HapticFeedback.heavyImpact();
+            await Future.delayed(const Duration(milliseconds: 100));
+            await HapticFeedback.heavyImpact();
+          }
+          break;
+
+        case TacticalCueType.regroup:
+          if (soundEnabled) {
+            await SystemSound.play(SystemSoundType.alert);
+            await Future.delayed(const Duration(milliseconds: 200));
+            await SystemSound.play(SystemSoundType.click);
+          }
+          if (hapticEnabled) {
+            await HapticFeedback.mediumImpact();
+          }
+          break;
+
+        case TacticalCueType.turnLeft:
+        case TacticalCueType.turnRight:
+          if (soundEnabled) {
+            await SystemSound.play(SystemSoundType.click);
+            await Future.delayed(const Duration(milliseconds: 150));
+            await SystemSound.play(SystemSoundType.click);
+          }
+          if (hapticEnabled) {
+            await HapticFeedback.selectionClick();
+            await Future.delayed(const Duration(milliseconds: 150));
+            await HapticFeedback.selectionClick();
+          }
+          break;
+
+        case TacticalCueType.fuel:
+        case TacticalCueType.rest:
+          if (soundEnabled) {
+            await SystemSound.play(SystemSoundType.click);
+          }
+          if (hapticEnabled) {
+            await HapticFeedback.lightImpact();
+          }
+          break;
+      }
+    } catch (_) {}
+  }
 }
+
