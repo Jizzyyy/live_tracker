@@ -116,6 +116,40 @@ class CompletedTrip {
     return h > 0 ? '${h}h ${m}m ${s}s' : '${m}m ${s}s';
   }
 
+  /// Calculates Moving Time vs Stopped Time
+  int get movingDurationSeconds {
+    if (routePoints.length < 2) return durationSeconds;
+    int movingSecs = 0;
+    for (int i = 1; i < routePoints.length; i++) {
+      final prev = routePoints[i - 1];
+      final curr = routePoints[i];
+      final spd = curr.speed ?? 0.0;
+      if (spd > 1.5) {
+        final delta = ((curr.timestamp - prev.timestamp) / 1000).round();
+        if (delta > 0 && delta <= 10) {
+          movingSecs += delta;
+        }
+      }
+    }
+    return movingSecs > 0 ? min(durationSeconds, movingSecs) : durationSeconds;
+  }
+
+  int get stoppedDurationSeconds => max(0, durationSeconds - movingDurationSeconds);
+
+  String get formattedMovingDuration {
+    final h = movingDurationSeconds ~/ 3600;
+    final m = ((movingDurationSeconds % 3600) ~/ 60).toString().padLeft(2, '0');
+    final s = (movingDurationSeconds % 60).toString().padLeft(2, '0');
+    return h > 0 ? '${h}h ${m}m ${s}s' : '${m}m ${s}s';
+  }
+
+  String get formattedStoppedDuration {
+    final h = stoppedDurationSeconds ~/ 3600;
+    final m = ((stoppedDurationSeconds % 3600) ~/ 60).toString().padLeft(2, '0');
+    final s = (stoppedDurationSeconds % 60).toString().padLeft(2, '0');
+    return h > 0 ? '${h}h ${m}m ${s}s' : '${m}m ${s}s';
+  }
+
   /// Calculates Pace in MM'SS" /km
   String get formattedPace {
     final distKm = distanceMeters / 1000;
