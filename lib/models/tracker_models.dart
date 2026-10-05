@@ -126,6 +126,7 @@ class TripSession {
     this.activeDurationSeconds = 0,
     this.currentSpeedKmh = 0.0,
     this.avgSpeedKmh = 0.0,
+    this.isAutoPaused = false,
   });
 
   final TripSessionState state;
@@ -133,6 +134,7 @@ class TripSession {
   final int activeDurationSeconds;
   final double currentSpeedKmh;
   final double avgSpeedKmh;
+  final bool isAutoPaused;
 
   String get formattedDistance {
     if (distanceMeters < 1000) return '${distanceMeters.toStringAsFixed(0)} m';
@@ -154,6 +156,7 @@ class TripSession {
     int? activeDurationSeconds,
     double? currentSpeedKmh,
     double? avgSpeedKmh,
+    bool? isAutoPaused,
   }) {
     return TripSession(
       state: state ?? this.state,
@@ -161,6 +164,7 @@ class TripSession {
       activeDurationSeconds: activeDurationSeconds ?? this.activeDurationSeconds,
       currentSpeedKmh: currentSpeedKmh ?? this.currentSpeedKmh,
       avgSpeedKmh: avgSpeedKmh ?? this.avgSpeedKmh,
+      isAutoPaused: isAutoPaused ?? this.isAutoPaused,
     );
   }
 }

@@ -516,6 +516,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
   Timer? _timer;
   DateTime? _startTime;
   double _maxSpeed = 0;
+  int _stationaryTicks = 0;
   final List<RoutePoint> _routeBuffer = [];
   final List<LatLng> _simplifiedCache = [];
   int _lastUiEmitMs = 0;
@@ -621,6 +622,23 @@ class TripSessionNotifier extends Notifier<TripSession> {
     final speedKmh = speedMps * 3.6;
     if (speedKmh > _maxSpeed) _maxSpeed = speedKmh;
 
+    final isSmartAutoPauseEnabled = ref.read(appSettingsProvider).smartAutoPause;
+    bool isPausedNow = state.isAutoPaused;
+    if (isSmartAutoPauseEnabled) {
+      if (speedKmh < 1.0) {
+        _stationaryTicks++;
+        if (_stationaryTicks >= 8) {
+          isPausedNow = true;
+        }
+      } else if (speedKmh >= 2.5) {
+        _stationaryTicks = 0;
+        isPausedNow = false;
+      }
+    } else {
+      _stationaryTicks = 0;
+      isPausedNow = false;
+    }
+
     final totalDist = state.distanceMeters + addedDist;
     final avgSpeed = state.activeDurationSeconds > 0
         ? (totalDist / 1000) / (state.activeDurationSeconds / 3600)
@@ -628,12 +646,13 @@ class TripSessionNotifier extends Notifier<TripSession> {
 
     // Throttle state update to at most once per 500ms to preserve 60/120 FPS
     final now = DateTime.now().millisecondsSinceEpoch;
-    if (now - _lastUiEmitMs >= 500 || state.distanceMeters == 0) {
+    if (now - _lastUiEmitMs >= 500 || state.distanceMeters == 0 || isPausedNow != state.isAutoPaused) {
       _lastUiEmitMs = now;
       state = state.copyWith(
         distanceMeters: totalDist,
         currentSpeedKmh: speedKmh,
         avgSpeedKmh: avgSpeed,
+        isAutoPaused: isPausedNow,
       );
 
       BackgroundTrackingManager.updateNotificationData(
@@ -646,7 +665,8 @@ class TripSessionNotifier extends Notifier<TripSession> {
   void toggleSession() async {
     if (state.state == TripSessionState.inactive || state.state == TripSessionState.paused) {
       _startTime ??= DateTime.now();
-      state = state.copyWith(state: TripSessionState.active);
+      _stationaryTicks = 0;
+      state = state.copyWith(state: TripSessionState.active, isAutoPaused: false);
 
       final backgroundEnabled = ref.read(appSettingsProvider).backgroundService;
       if (backgroundEnabled) {
@@ -656,6 +676,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
       _timer?.cancel();
       _timer = Timer.periodic(const Duration(seconds: 1), (_) {
         if (state.state == TripSessionState.active) {
+          if (state.isAutoPaused) return; // Freeze elapsed time during auto-pause
           final nextSecs = state.activeDurationSeconds + 1;
           final avgSpeed = nextSecs > 0
               ? (state.distanceMeters / 1000) / (nextSecs / 3600)
@@ -672,7 +693,8 @@ class TripSessionNotifier extends Notifier<TripSession> {
       });
     } else {
       _lastPos = null;
-      state = state.copyWith(state: TripSessionState.paused, currentSpeedKmh: 0);
+      _stationaryTicks = 0;
+      state = state.copyWith(state: TripSessionState.paused, currentSpeedKmh: 0, isAutoPaused: false);
       _timer?.cancel();
       _timer = null;
     }
@@ -709,6 +731,7 @@ class TripSessionNotifier extends Notifier<TripSession> {
     _lastPos = null;
     _startTime = null;
     _maxSpeed = 0;
+    _stationaryTicks = 0;
     _lastBgDataMs = 0;
     _routeBuffer.clear();
     _simplifiedCache.clear();
