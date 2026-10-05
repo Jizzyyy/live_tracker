@@ -243,3 +243,88 @@ class SharedPoi {
     ),
   );
 }
+
+enum TacticalCueType {
+  regroup,
+  hazard,
+  fuel,
+  turnLeft,
+  turnRight,
+  rest,
+}
+
+extension TacticalCueTypeExt on TacticalCueType {
+  String get label => switch (this) {
+    TacticalCueType.regroup => 'Regroup / Kumpul',
+    TacticalCueType.hazard => 'Bahaya di Depan',
+    TacticalCueType.fuel => 'Isi Bensin',
+    TacticalCueType.turnLeft => 'Siap Belok Kiri',
+    TacticalCueType.turnRight => 'Siap Belok Kanan',
+    TacticalCueType.rest => 'Istirahat / Coffee Stop',
+  };
+
+  String get shortCode => switch (this) {
+    TacticalCueType.regroup => 'REGROUP',
+    TacticalCueType.hazard => 'HAZARD',
+    TacticalCueType.fuel => 'FUEL',
+    TacticalCueType.turnLeft => 'TURN L',
+    TacticalCueType.turnRight => 'TURN R',
+    TacticalCueType.rest => 'REST',
+  };
+}
+
+@immutable
+class TacticalPing {
+  final String id;
+  final String userId;
+  final String? senderName;
+  final TacticalCueType cue;
+  final double? latitude;
+  final double? longitude;
+  final DateTime timestamp;
+  final String? note;
+
+  const TacticalPing({
+    required this.id,
+    required this.userId,
+    this.senderName,
+    required this.cue,
+    this.latitude,
+    this.longitude,
+    required this.timestamp,
+    this.note,
+  });
+
+  bool get isExpired => DateTime.now().difference(timestamp).inSeconds > 8;
+
+  String get callerDisplayName =>
+      (senderName != null && senderName!.trim().isNotEmpty) ? senderName!.trim() : 'User $userId';
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'userId': userId,
+    if (senderName != null) 'senderName': senderName,
+    'cue': cue.name,
+    if (latitude != null) 'lat': latitude,
+    if (longitude != null) 'lng': longitude,
+    'timestamp': timestamp.millisecondsSinceEpoch,
+    if (note != null) 'note': note,
+  };
+
+  factory TacticalPing.fromJson(Map<String, dynamic> json) => TacticalPing(
+    id: json['id'] as String? ?? '${DateTime.now().millisecondsSinceEpoch}',
+    userId: json['userId'] as String? ?? 'unknown',
+    senderName: json['senderName'] as String?,
+    cue: TacticalCueType.values.firstWhere(
+      (c) => c.name == json['cue'],
+      orElse: () => TacticalCueType.regroup,
+    ),
+    latitude: (json['lat'] as num?)?.toDouble(),
+    longitude: (json['lng'] as num?)?.toDouble(),
+    timestamp: DateTime.fromMillisecondsSinceEpoch(
+      json['timestamp'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+    ),
+    note: json['note'] as String?,
+  );
+}
+
