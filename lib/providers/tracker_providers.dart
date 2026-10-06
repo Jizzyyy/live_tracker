@@ -36,6 +36,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
         orElse: () => ConvoyRole.member,
       ),
       lowBandwidthMode: prefs.getBool('lowBandwidthMode') ?? false,
+      hazardProximityAlert: prefs.getBool('hazardProximityAlert') ?? true,
     );
   }
   void updateSettings(AppSettings s) {
@@ -53,6 +54,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
     prefs.setBool('smartAutoPause', s.smartAutoPause);
     prefs.setString('convoyRole', s.convoyRole.name);
     prefs.setBool('lowBandwidthMode', s.lowBandwidthMode);
+    prefs.setBool('hazardProximityAlert', s.hazardProximityAlert);
   }
 }
 final appSettingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);

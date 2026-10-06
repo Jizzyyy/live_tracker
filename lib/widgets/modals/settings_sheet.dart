@@ -288,6 +288,14 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                   value: settings.lowBandwidthMode,
                   onChanged: (val) => ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(lowBandwidthMode: val)),
                 ),
+                const SizedBox(height: 12),
+                _SettingsTile(
+                  title: 'Hazard Proximity Watchdog (150m)',
+                  subtitle: 'Play siren and flash alert when approaching marked road hazards',
+                  icon: Icons.warning_amber_rounded,
+                  value: settings.hazardProximityAlert,
+                  onChanged: (val) => ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(hazardProximityAlert: val)),
+                ),
                 const SizedBox(height: 32),
                 
                 FilledButton(

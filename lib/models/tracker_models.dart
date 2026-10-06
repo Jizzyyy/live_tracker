@@ -35,6 +35,7 @@ class AppSettings {
     this.smartAutoPause = true,
     this.convoyRole = ConvoyRole.member,
     this.lowBandwidthMode = false,
+    this.hazardProximityAlert = true,
   });
 
   final String serverUrl;
@@ -49,6 +50,7 @@ class AppSettings {
   final bool smartAutoPause;
   final ConvoyRole convoyRole;
   final bool lowBandwidthMode;
+  final bool hazardProximityAlert;
 
   AppSettings copyWith({
     String? serverUrl,
@@ -63,6 +65,7 @@ class AppSettings {
     bool? smartAutoPause,
     ConvoyRole? convoyRole,
     bool? lowBandwidthMode,
+    bool? hazardProximityAlert,
   }) {
     return AppSettings(
       serverUrl: serverUrl ?? this.serverUrl,
@@ -77,6 +80,7 @@ class AppSettings {
       smartAutoPause: smartAutoPause ?? this.smartAutoPause,
       convoyRole: convoyRole ?? this.convoyRole,
       lowBandwidthMode: lowBandwidthMode ?? this.lowBandwidthMode,
+      hazardProximityAlert: hazardProximityAlert ?? this.hazardProximityAlert,
     );
   }
 }
