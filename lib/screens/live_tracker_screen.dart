@@ -158,6 +158,19 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
       }
     });
 
+    // Sound & Haptic Trigger on Hazard Proximity Geofence (150m)
+    ref.listen(hazardProximityProvider.select((h) => h.isApproaching), (prev, next) {
+      if (next == true && prev != true) {
+        final settings = ref.read(appSettingsProvider);
+        if (settings.hazardProximityAlert) {
+          SoundManager.playHazardProximityAlert(
+            soundEnabled: settings.soundAlertsEnabled,
+            hapticEnabled: settings.hapticAlertsEnabled,
+          );
+        }
+      }
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFF0B0D11),
       body: Stack(
@@ -766,6 +779,75 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                                   ref.read(roomProvider.notifier).clearActivePing();
                                 },
                               ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                // Hazard Proximity Approaching Warning Banner
+                Consumer(
+                  builder: (context, ref, _) {
+                    final hazard = ref.watch(hazardProximityProvider);
+                    final isAlertEnabled = ref.watch(appSettingsProvider.select((s) => s.hazardProximityAlert));
+                    if (!isAlertEnabled || !hazard.isApproaching || hazard.hazardPoi == null) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: GestureDetector(
+                        onTap: () {
+                          _animatedMapMove(LatLng(hazard.hazardPoi!.latitude, hazard.hazardPoi!.longitude), 17.5);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDC2626).withValues(alpha: 0.95),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white70, width: 1.2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFDC2626).withValues(alpha: 0.4),
+                                blurRadius: 12,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'PERINGATAN BAHAYA DI DEPAN (${hazard.formattedDistance})',
+                                      style: GoogleFonts.shareTechMono(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.8,
+                                      ),
+                                    ),
+                                    Text(
+                                      hazard.hazardPoi!.title,
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.my_location_rounded, color: Colors.white70, size: 16),
                             ],
                           ),
                         ),
