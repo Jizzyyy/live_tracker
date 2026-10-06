@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/trip_history_model.dart';
 import '../utils/map_bounds_helper.dart';
+import '../utils/speed_heatmap_segmenter.dart';
 
 class TripShareCard extends StatelessWidget {
   final CompletedTrip trip;
@@ -152,13 +153,21 @@ class TripShareCard extends StatelessWidget {
                       userAgentPackageName: 'VellumLiveTracker/1.0 (contact: kadhafiinl@github)',
                     ),
                     PolylineLayer(
-                      polylines: [
-                        Polyline(
-                          points: points,
-                          strokeWidth: 4.0,
-                          color: polylineColor,
-                        ),
-                      ],
+                      polylines: trip.routePoints.length >= 2
+                          ? SpeedHeatmapSegmenter.segmentRoute(trip.routePoints).map((seg) {
+                              return Polyline(
+                                points: seg.points,
+                                strokeWidth: 4.2,
+                                color: seg.color.withValues(alpha: 0.95),
+                              );
+                            }).toList()
+                          : [
+                              Polyline(
+                                points: points,
+                                strokeWidth: 4.0,
+                                color: polylineColor,
+                              ),
+                            ],
                     ),
                     MarkerLayer(
                       markers: [
