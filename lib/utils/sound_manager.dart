@@ -6,6 +6,7 @@ import '../models/tracker_models.dart';
 class SoundManager {
   static DateTime _lastAlarmTime = DateTime.fromMillisecondsSinceEpoch(0);
   static DateTime _lastCueTime = DateTime.fromMillisecondsSinceEpoch(0);
+  static DateTime _lastHazardTime = DateTime.fromMillisecondsSinceEpoch(0);
 
   /// Triggers an acoustic emergency alarm and heavy haptic feedback
   static Future<void> playEmergencyAlarm({bool soundEnabled = true, bool hapticEnabled = true}) async {
@@ -40,6 +41,29 @@ class SoundManager {
       }
       if (hapticEnabled) {
         await HapticFeedback.mediumImpact();
+      }
+    } catch (_) {}
+  }
+
+  /// Triggers sharp acoustic hazard warning and tactile pulse when within 150m geofence
+  static Future<void> playHazardProximityAlert({
+    bool soundEnabled = true,
+    bool hapticEnabled = true,
+  }) async {
+    final now = DateTime.now();
+    if (now.difference(_lastHazardTime).inMilliseconds < 4000) return;
+    _lastHazardTime = now;
+
+    try {
+      if (soundEnabled) {
+        await SystemSound.play(SystemSoundType.alert);
+        await Future.delayed(const Duration(milliseconds: 140));
+        await SystemSound.play(SystemSoundType.alert);
+      }
+      if (hapticEnabled) {
+        await HapticFeedback.heavyImpact();
+        await Future.delayed(const Duration(milliseconds: 100));
+        await HapticFeedback.heavyImpact();
       }
     } catch (_) {}
   }
