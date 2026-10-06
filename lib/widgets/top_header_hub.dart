@@ -123,6 +123,24 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                     ),
                                     const SizedBox(width: 8),
                                     _ActionButton(
+                                      icon: Icons.undo_rounded,
+                                      iconColor: const Color(0xFFFF9100),
+                                      backgroundColor: ref.watch(backtrackActiveProvider)
+                                          ? const Color(0xFFFF9100).withValues(alpha: 0.25)
+                                          : null,
+                                      onTap: () {
+                                        setState(() => _isExpanded = false);
+                                        final isAct = ref.read(backtrackActiveProvider);
+                                        ref.read(backtrackActiveProvider.notifier).state = !isAct;
+                                        CustomSnackbar.show(
+                                          context,
+                                          message: !isAct ? 'Navigasi Backtrack Aktif!' : 'Navigasi Backtrack Dinonaktifkan',
+                                          type: SnackbarType.info,
+                                        );
+                                      },
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _ActionButton(
                                       icon: Icons.settings_outlined,
                                       onTap: () {
                                         setState(() => _isExpanded = false);
@@ -233,6 +251,24 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                 onTap: () {
                                   HapticFeedback.lightImpact();
                                   _showQuickPingSheet(context);
+                                },
+                              ),
+                              const SizedBox(width: 4),
+                              _ActionButton(
+                                icon: Icons.undo_rounded,
+                                iconColor: const Color(0xFFFF9100),
+                                backgroundColor: ref.watch(backtrackActiveProvider)
+                                    ? const Color(0xFFFF9100).withValues(alpha: 0.25)
+                                    : null,
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  final isAct = ref.read(backtrackActiveProvider);
+                                  ref.read(backtrackActiveProvider.notifier).state = !isAct;
+                                  CustomSnackbar.show(
+                                    context,
+                                    message: !isAct ? 'Navigasi Backtrack Aktif!' : 'Navigasi Backtrack Dinonaktifkan',
+                                    type: SnackbarType.info,
+                                  );
                                 },
                               ),
                               const SizedBox(width: 4),
