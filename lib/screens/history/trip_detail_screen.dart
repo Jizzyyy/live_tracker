@@ -749,7 +749,16 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                     const SizedBox(height: 16),
                     Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
                     const SizedBox(height: 16),
-                    ElevationChart(trip: trip, isDark: isDark),
+                    ListenableBuilder(
+                      listenable: _playbackController,
+                      builder: (context, _) {
+                        return ElevationChart(
+                          trip: trip,
+                          isDark: isDark,
+                          externalCursorFraction: _playbackController.progress,
+                        );
+                      },
+                    ),
                     if (trip.splits.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),

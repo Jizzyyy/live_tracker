@@ -5,11 +5,13 @@ import '../models/trip_history_model.dart';
 class ElevationChart extends StatefulWidget {
   final CompletedTrip trip;
   final bool isDark;
+  final double? externalCursorFraction;
 
   const ElevationChart({
     super.key,
     required this.trip,
     required this.isDark,
+    this.externalCursorFraction,
   });
 
   @override
@@ -41,12 +43,14 @@ class _ElevationChartState extends State<ElevationChart> {
     final minAlt = altitudes.reduce((a, b) => a < b ? a : b);
     final maxAlt = altitudes.reduce((a, b) => a > b ? a : b);
 
+    final effectiveFraction = _selectedXFraction ?? widget.externalCursorFraction;
+
     // Selected point inspection
     int? selectedIndex;
     double? selectedAlt;
     double? selectedDistKm;
-    if (_selectedXFraction != null) {
-      selectedIndex = (_selectedXFraction! * (altitudes.length - 1)).round().clamp(0, altitudes.length - 1);
+    if (effectiveFraction != null) {
+      selectedIndex = (effectiveFraction * (altitudes.length - 1)).round().clamp(0, altitudes.length - 1);
       selectedAlt = altitudes[selectedIndex];
 
       final totalDistM = widget.trip.distanceMeters;
@@ -124,7 +128,7 @@ class _ElevationChartState extends State<ElevationChart> {
                 minAlt: minAlt,
                 maxAlt: maxAlt,
                 isDark: widget.isDark,
-                selectedFraction: _selectedXFraction,
+                selectedFraction: effectiveFraction,
               ),
             ),
           ),
