@@ -262,6 +262,29 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                 },
               ),
 
+              // Inverted Trail Backtrack Guide Polyline Layer
+              Consumer(
+                builder: (context, ref, _) {
+                  final backtrack = ref.watch(backtrackProvider);
+                  if (!backtrack.isBacktrackActive || backtrack.reversePath.length < 2) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return RepaintBoundary(
+                    child: PolylineLayer(
+                      polylines: [
+                        Polyline(
+                          points: backtrack.reversePath,
+                          strokeWidth: 4.2,
+                          color: const Color(0xFFFF9100).withValues(alpha: 0.9),
+                          pattern: StrokePattern.dashed(segments: const [12, 6]),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+
               // Active Trip Starting Point Flag Marker
               Consumer(
                 builder: (context, ref, _) {
@@ -952,6 +975,62 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                                 ),
                               ),
                             ],
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                // Backtrack Navigation HUD Pill
+                Consumer(
+                  builder: (context, ref, _) {
+                    final backtrack = ref.watch(backtrackProvider);
+                    if (!backtrack.isBacktrackActive) return const SizedBox.shrink();
+
+                    final isOffTrail = backtrack.isOffTrail;
+                    final pillColor = isOffTrail ? const Color(0xFFFF1744) : const Color(0xFFFF9100);
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      alignment: Alignment.center,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF12151B).withValues(alpha: 0.95),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: pillColor, width: 1.2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: pillColor.withValues(alpha: 0.3),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.undo_rounded, color: pillColor, size: 16),
+                            const SizedBox(width: 8),
+                            Text(
+                              isOffTrail
+                                  ? 'OFF-TRAIL (${backtrack.crossTrackDeviationMeters.toStringAsFixed(0)}m) • SISA: ${backtrack.formattedDistanceToOrigin}'
+                                  : 'BACKTRACK KE AWAL • SISA: ${backtrack.formattedDistanceToOrigin}',
+                              style: GoogleFonts.shareTechMono(
+                                color: pillColor,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            InkWell(
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                ref.read(backtrackActiveProvider.notifier).state = false;
+                              },
+                              child: const Icon(Icons.close_rounded, color: Colors.white70, size: 16),
+                            ),
                           ],
                         ),
                       ),
