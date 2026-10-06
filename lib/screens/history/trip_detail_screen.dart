@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -542,6 +543,88 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                         },
                       ),
                     ),
+                  ),
+                ),
+
+                // Interactive Route Playback Dock
+                Positioned(
+                  bottom: 12,
+                  left: 12,
+                  right: 12,
+                  child: ListenableBuilder(
+                    listenable: _playbackController,
+                    builder: (context, _) {
+                      final isPlaying = _playbackController.isPlaying;
+                      final progress = _playbackController.progress;
+                      final speedLabel = '${_playbackController.playbackSpeed.toStringAsFixed(0)}x';
+
+                      return PremiumGlass(
+                        borderRadius: BorderRadius.circular(20),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_fill_rounded,
+                                color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                                size: 32,
+                              ),
+                              visualDensity: VisualDensity.compact,
+                              padding: EdgeInsets.zero,
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                _playbackController.togglePlay();
+                              },
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  trackHeight: 3.5,
+                                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                                  activeTrackColor: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                                  inactiveTrackColor: isDark ? Colors.white12 : Colors.black12,
+                                  thumbColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
+                                ),
+                                child: Slider(
+                                  value: progress.clamp(0.0, 1.0),
+                                  onChanged: (val) {
+                                    _playbackController.seekToFraction(val);
+                                  },
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            InkWell(
+                              borderRadius: BorderRadius.circular(10),
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                _playbackController.cycleSpeed();
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isDark ? const Color(0xFF1E232D) : const Color(0xFFE2E8F0),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: isDark ? Colors.white12 : Colors.black12,
+                                  ),
+                                ),
+                                child: Text(
+                                  speedLabel,
+                                  style: GoogleFonts.shareTechMono(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
