@@ -11,6 +11,7 @@ import '../../utils/gpx_exporter.dart';
 import '../../utils/geojson_exporter.dart';
 import '../../utils/kml_exporter.dart';
 import '../../utils/csv_exporter.dart';
+import '../../utils/speed_heatmap_segmenter.dart';
 import '../../controllers/route_playback_controller.dart';
 import '../../utils/ui_helpers.dart';
 import '../../utils/custom_snackbar.dart';
@@ -30,6 +31,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
   final GlobalKey _shareCardKey = GlobalKey();
   MapStyleOption _selectedMapStyle = availableMapStyles.first;
   bool _isExporting = false;
+  bool _showSpeedHeatmap = true;
   late CompletedTrip _currentTrip;
   late final RoutePlaybackController _playbackController;
 
@@ -439,13 +441,21 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                         tileUpdateTransformer: TileUpdateTransformers.throttle(const Duration(milliseconds: 250)),
                       ),
                       PolylineLayer(
-                        polylines: [
-                          Polyline(
-                            points: points,
-                            strokeWidth: 4.5,
-                            color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
-                          ),
-                        ],
+                        polylines: _showSpeedHeatmap && _currentTrip.routePoints.length >= 2
+                            ? SpeedHeatmapSegmenter.segmentRoute(_currentTrip.routePoints).map((seg) {
+                                return Polyline(
+                                  points: seg.points,
+                                  strokeWidth: 4.8,
+                                  color: seg.color.withValues(alpha: 0.9),
+                                );
+                              }).toList()
+                            : [
+                                Polyline(
+                                  points: points,
+                                  strokeWidth: 4.5,
+                                  color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                                ),
+                              ],
                       ),
                       MarkerLayer(
                         markers: [
