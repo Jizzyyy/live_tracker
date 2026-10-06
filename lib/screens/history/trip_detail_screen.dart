@@ -546,6 +546,65 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                   ),
                 ),
 
+                // Live Replay Telemetry HUD Pill
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: ListenableBuilder(
+                    listenable: _playbackController,
+                    builder: (context, _) {
+                      final pt = _playbackController.currentPoint;
+                      if (pt == null) return const SizedBox.shrink();
+
+                      final spd = pt.speed != null ? '${pt.speed!.toStringAsFixed(1)} km/h' : '-- km/h';
+                      final alt = pt.altitude != null ? '${pt.altitude!.toStringAsFixed(0)} m' : '-- m';
+                      final firstTs = widget.trip.routePoints.isNotEmpty ? widget.trip.routePoints.first.timestamp : pt.timestamp;
+                      final elapsedSecs = ((pt.timestamp - firstTs) / 1000).round();
+                      final m = (elapsedSecs ~/ 60).toString().padLeft(2, '0');
+                      final s = (elapsedSecs % 60).toString().padLeft(2, '0');
+
+                      return PremiumGlass(
+                        borderRadius: BorderRadius.circular(16),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.speed_rounded, size: 14, color: Color(0xFF00E5FF)),
+                            const SizedBox(width: 4),
+                            Text(
+                              spd,
+                              style: GoogleFonts.jetBrainsMono(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.terrain_rounded, size: 14, color: Color(0xFF00E676)),
+                            const SizedBox(width: 4),
+                            Text(
+                              alt,
+                              style: GoogleFonts.jetBrainsMono(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '$m:$s',
+                              style: GoogleFonts.shareTechMono(
+                                fontSize: 11,
+                                color: isDark ? Colors.white60 : Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
                 // Interactive Route Playback Dock
                 Positioned(
                   bottom: 12,
