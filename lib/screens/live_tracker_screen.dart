@@ -14,6 +14,7 @@ import '../widgets/auto_center_button.dart';
 import '../widgets/map_compass_control.dart';
 import '../utils/ui_helpers.dart';
 import '../utils/sound_manager.dart';
+import '../utils/custom_snackbar.dart';
 import '../src/core/services/battery_service.dart';
 import '../widgets/modals/add_poi_sheet.dart';
 import '../widgets/modals/poi_detail_sheet.dart';
@@ -89,6 +90,23 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
       BatteryService.getBatteryLevel().then((battery) {
         if (mounted) {
           ref.read(roomProvider.notifier).sendPosition(pos, batteryPercent: battery);
+
+          // Smart Battery Guard: auto-activate low-bandwidth mode below 20%
+          if (battery != null && battery <= 20) {
+            final currentSettings = ref.read(appSettingsProvider);
+            if (!currentSettings.lowBandwidthMode) {
+              ref.read(appSettingsProvider.notifier).updateSettings(
+                currentSettings.copyWith(lowBandwidthMode: true),
+              );
+              if (context.mounted) {
+                CustomSnackbar.show(
+                  context,
+                  message: '⚡ Smart Battery Guard: Baterai <= 20%, mode hemat data aktif otomatis!',
+                  type: SnackbarType.warning,
+                );
+              }
+            }
+          }
         }
       });
 
