@@ -608,6 +608,56 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                   ),
                 ),
 
+                // Speed Heatmap Legend Card Overlay
+                if (_showSpeedHeatmap && _currentTrip.routePoints.length >= 2)
+                  Positioned(
+                    top: 60,
+                    right: 12,
+                    child: PremiumGlass(
+                      borderRadius: BorderRadius.circular(14),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'SPEED SPECTRUM',
+                            style: GoogleFonts.shareTechMono(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                              color: isDark ? Colors.white60 : Colors.black54,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          _HeatmapLegendRow(
+                            color: SpeedHeatmapSegmenter.tierSlowColor,
+                            label: '< 20 km/h',
+                            isDark: isDark,
+                          ),
+                          const SizedBox(height: 2),
+                          _HeatmapLegendRow(
+                            color: SpeedHeatmapSegmenter.tierCruiseColor,
+                            label: '20-45 km/h',
+                            isDark: isDark,
+                          ),
+                          const SizedBox(height: 2),
+                          _HeatmapLegendRow(
+                            color: SpeedHeatmapSegmenter.tierFastColor,
+                            label: '45-75 km/h',
+                            isDark: isDark,
+                          ),
+                          const SizedBox(height: 2),
+                          _HeatmapLegendRow(
+                            color: SpeedHeatmapSegmenter.tierSprintColor,
+                            label: '> 75 km/h',
+                            isDark: isDark,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
                 // Live Replay Telemetry HUD Pill
                 Positioned(
                   top: 12,
@@ -1034,3 +1084,42 @@ class _TelemetryTile extends StatelessWidget {
     );
   }
 }
+
+class _HeatmapLegendRow extends StatelessWidget {
+  final Color color;
+  final String label;
+  final bool isDark;
+
+  const _HeatmapLegendRow({
+    required this.color,
+    required this.label,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: GoogleFonts.shareTechMono(
+            fontSize: 8.5,
+            fontWeight: FontWeight.bold,
+            color: isDark ? Colors.white70 : Colors.black87,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
