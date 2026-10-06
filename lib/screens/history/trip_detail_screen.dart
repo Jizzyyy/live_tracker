@@ -10,6 +10,7 @@ import '../../utils/gpx_exporter.dart';
 import '../../utils/geojson_exporter.dart';
 import '../../utils/kml_exporter.dart';
 import '../../utils/csv_exporter.dart';
+import '../../controllers/route_playback_controller.dart';
 import '../../utils/ui_helpers.dart';
 import '../../utils/custom_snackbar.dart';
 import '../../utils/map_bounds_helper.dart';
@@ -29,11 +30,19 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
   MapStyleOption _selectedMapStyle = availableMapStyles.first;
   bool _isExporting = false;
   late CompletedTrip _currentTrip;
+  late final RoutePlaybackController _playbackController;
 
   @override
   void initState() {
     super.initState();
     _currentTrip = widget.trip;
+    _playbackController = RoutePlaybackController(trip: widget.trip);
+  }
+
+  @override
+  void dispose() {
+    _playbackController.dispose();
+    super.dispose();
   }
 
   Future<void> _handleRenameTrip() async {
@@ -452,6 +461,46 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                               child: const Icon(Icons.sports_score_rounded, color: Color(0xFFFF1744), size: 28),
                             ),
                         ],
+                      ),
+                      // Replay Vehicle Marker with Animated Rotation
+                      ListenableBuilder(
+                        listenable: _playbackController,
+                        builder: (context, _) {
+                          final pt = _playbackController.currentPoint;
+                          if (pt == null) return const SizedBox.shrink();
+                          final heading = _playbackController.currentHeading ?? 0.0;
+                          return MarkerLayer(
+                            markers: [
+                              Marker(
+                                point: LatLng(pt.latitude, pt.longitude),
+                                width: 44,
+                                height: 44,
+                                child: Transform.rotate(
+                                  angle: heading * 3.1415926535 / 180.0,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF12151B),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: const Color(0xFFFFD600), width: 2.5),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFFFFD600).withValues(alpha: 0.5),
+                                          blurRadius: 10,
+                                          spreadRadius: 2,
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Icon(
+                                      Icons.navigation_rounded,
+                                      color: Color(0xFFFFD600),
+                                      size: 22,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ],
                   ),
