@@ -11,6 +11,7 @@ import '../repositories/trip_history_repository.dart';
 import '../services/background_tracking_service.dart';
 import '../src/core/services/location_service.dart';
 import '../src/core/services/websocket_service.dart';
+import '../utils/trail_backtracker.dart';
 
 // --- Shared Prefs ---
 final sharedPrefsProvider = Provider<SharedPreferences>((ref) => throw UnimplementedError());
@@ -922,3 +923,23 @@ final focusedMemberProvider = StateProvider<MemberLocation?>((ref) => null);
 // --- Target Vector Navigation ---
 final navigationTargetProvider = StateProvider<LatLng?>((ref) => null);
 final navigationTargetLabelProvider = StateProvider<String?>((ref) => null);
+
+// --- Breadcrumb Backtrack Navigation State ---
+final backtrackActiveProvider = StateProvider<bool>((ref) => false);
+
+final backtrackProvider = Provider<BacktrackState>((ref) {
+  final active = ref.watch(backtrackActiveProvider);
+  final posAsync = ref.watch(locationStreamProvider);
+  final routePoints = ref.watch(tripSessionProvider.notifier.select((n) => n.routeBuffer));
+
+  LatLng? currentPos;
+  if (posAsync.hasValue) {
+    currentPos = LatLng(posAsync.value!.latitude, posAsync.value!.longitude);
+  }
+
+  return TrailBacktracker.computeBacktrack(
+    active: active,
+    currentPos: currentPos,
+    outboundPoints: routePoints,
+  );
+});
