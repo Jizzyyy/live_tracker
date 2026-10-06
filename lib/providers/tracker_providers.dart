@@ -597,6 +597,58 @@ final convoySpanProvider = Provider<ConvoySpanState>((ref) {
   return const ConvoySpanState();
 });
 
+// --- Hazard Proximity Watchdog (150m Alert Geofence) ---
+@immutable
+class HazardProximityState {
+  final bool isApproaching;
+  final double distanceMeters;
+  final SharedPoi? hazardPoi;
+
+  const HazardProximityState({
+    this.isApproaching = false,
+    this.distanceMeters = double.infinity,
+    this.hazardPoi,
+  });
+
+  String get formattedDistance {
+    if (distanceMeters < 1000) return '${distanceMeters.toStringAsFixed(0)} m';
+    return '${(distanceMeters / 1000).toStringAsFixed(2)} km';
+  }
+}
+
+final hazardProximityProvider = Provider<HazardProximityState>((ref) {
+  final posAsync = ref.watch(locationStreamProvider);
+  final pois = ref.watch(roomProvider.select((r) => r.pois.values.toList()));
+
+  if (!posAsync.hasValue || pois.isEmpty) {
+    return const HazardProximityState();
+  }
+
+  final hazardPois = pois.where((p) => p.category == PoiCategory.hazard).toList();
+  if (hazardPois.isEmpty) return const HazardProximityState();
+
+  final myPos = LatLng(posAsync.value!.latitude, posAsync.value!.longitude);
+  const distCalc = Distance();
+
+  double minDistance = double.infinity;
+  SharedPoi? nearestHazard;
+
+  for (final h in hazardPois) {
+    final d = distCalc.as(LengthUnit.Meter, myPos, LatLng(h.latitude, h.longitude));
+    if (d < minDistance) {
+      minDistance = d;
+      nearestHazard = h;
+    }
+  }
+
+  final isApproaching = minDistance <= 150.0;
+  return HazardProximityState(
+    isApproaching: isApproaching,
+    distanceMeters: minDistance,
+    hazardPoi: nearestHazard,
+  );
+});
+
 // --- Auto-Follow Camera State ---
 final autoFollowProvider = StateProvider<bool>((ref) => true);
 
