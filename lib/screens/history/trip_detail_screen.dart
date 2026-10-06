@@ -516,43 +516,95 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                     ],
                   ),
                 ),
-                // Map Style Switcher Overlay
+                // Map Style Switcher & Heatmap Toggle Toolbar Overlay
                 Positioned(
                   top: 12,
                   right: 12,
-                  child: PremiumGlass(
-                    borderRadius: BorderRadius.circular(16),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<MapStyleOption>(
-                        value: _selectedMapStyle,
-                        dropdownColor: isDark ? const Color(0xFF12151B) : Colors.white,
-                        icon: Icon(
-                          Icons.layers_outlined, 
-                          color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7), 
-                          size: 18,
-                        ),
-                        style: GoogleFonts.inter(
-                          color: isDark ? Colors.white : const Color(0xFF0D1117), 
-                          fontSize: 12, 
-                          fontWeight: FontWeight.w600,
-                        ),
-                        items: ref.watch(mapStyleListProvider).map((style) {
-                          return DropdownMenuItem(
-                            value: style,
-                            child: Text(
-                              style.name,
-                              style: TextStyle(
-                                color: isDark ? Colors.white : const Color(0xFF0D1117),
-                              ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Heatmap Toggle Button
+                      PremiumGlass(
+                        borderRadius: BorderRadius.circular(16),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            setState(() => _showSpeedHeatmap = !_showSpeedHeatmap);
+                            CustomSnackbar.show(
+                              context,
+                              message: _showSpeedHeatmap
+                                  ? 'Mode Speed Heatmap Aktif'
+                                  : 'Mode Solid Neon Polyline Aktif',
+                              type: SnackbarType.info,
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.speed_rounded,
+                                  size: 16,
+                                  color: _showSpeedHeatmap
+                                      ? const Color(0xFFFFD600)
+                                      : (isDark ? Colors.white38 : Colors.black38),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'HEATMAP',
+                                  style: GoogleFonts.shareTechMono(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: _showSpeedHeatmap
+                                        ? (isDark ? Colors.white : Colors.black87)
+                                        : (isDark ? Colors.white38 : Colors.black38),
+                                  ),
+                                ),
+                              ],
                             ),
-                          );
-                        }).toList(),
-                        onChanged: (newStyle) {
-                          if (newStyle != null) setState(() => _selectedMapStyle = newStyle);
-                        },
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      // Map Style Selector
+                      PremiumGlass(
+                        borderRadius: BorderRadius.circular(16),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<MapStyleOption>(
+                            value: _selectedMapStyle,
+                            dropdownColor: isDark ? const Color(0xFF12151B) : Colors.white,
+                            icon: Icon(
+                              Icons.layers_outlined, 
+                              color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7), 
+                              size: 18,
+                            ),
+                            style: GoogleFonts.inter(
+                              color: isDark ? Colors.white : const Color(0xFF0D1117), 
+                              fontSize: 12, 
+                              fontWeight: FontWeight.w600,
+                            ),
+                            items: ref.watch(mapStyleListProvider).map((style) {
+                              return DropdownMenuItem(
+                                value: style,
+                                child: Text(
+                                  style.name,
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : const Color(0xFF0D1117),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (newStyle) {
+                              if (newStyle != null) setState(() => _selectedMapStyle = newStyle);
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
