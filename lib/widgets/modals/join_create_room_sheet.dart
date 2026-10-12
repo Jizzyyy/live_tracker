@@ -25,17 +25,22 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final roomState = ref.watch(roomProvider);
+    final isLoading = ref.watch(roomProvider.select((r) => r.status == TrackingConnectionStatus.reconnecting));
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final accentColor = isDark ? const Color(0xFF00E5FF) : Theme.of(context).colorScheme.primary;
     final btnForegroundColor = isDark ? Colors.black : Colors.white;
 
-    ref.listen(roomProvider, (prev, next) {
-      if (next.status == TrackingConnectionStatus.connected && next.roomCode != null && prev?.roomCode == null) {
-        CustomSnackbar.show(context, message: 'Berhasil masuk ke Room ${next.roomCode}', type: SnackbarType.success);
-        Navigator.pop(context);
-      }
-    });
+    ref.listen(
+      roomProvider.select((r) => (status: r.status, roomCode: r.roomCode)),
+      (prev, next) {
+        if (next.status == TrackingConnectionStatus.connected &&
+            next.roomCode != null &&
+            prev?.roomCode == null) {
+          CustomSnackbar.show(context, message: 'Berhasil masuk ke Room ${next.roomCode}', type: SnackbarType.success);
+          Navigator.pop(context);
+        }
+      },
+    );
 
     ref.listen(roomProvider.select((r) => r.lastError), (prev, next) {
       if (next != null) {
@@ -43,8 +48,6 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
         ref.read(roomProvider.notifier).clearError();
       }
     });
-
-    final isLoading = roomState.status == TrackingConnectionStatus.reconnecting;
 
     return SafeArea(
       child: PremiumGlass(

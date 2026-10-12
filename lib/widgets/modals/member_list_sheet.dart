@@ -14,8 +14,8 @@ class MemberListSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final roomState = ref.watch(roomProvider);
-    final members = roomState.members.values.toList();
+    final members = ref.watch(roomProvider.select((r) => r.members.values.toList()));
+    final roomCode = ref.watch(roomProvider.select((r) => r.roomCode));
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -59,7 +59,7 @@ class MemberListSheet extends ConsumerWidget {
               ),
               const SizedBox(height: 14),
 
-              if (roomState.roomCode != null) ...[
+              if (roomCode != null) ...[
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
@@ -81,7 +81,7 @@ class MemberListSheet extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        roomState.roomCode!,
+                        roomCode,
                         style: GoogleFonts.jetBrainsMono(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -95,8 +95,8 @@ class MemberListSheet extends ConsumerWidget {
                         tooltip: 'Salin Kode',
                         onPressed: () {
                           HapticFeedback.lightImpact();
-                          Clipboard.setData(ClipboardData(text: roomState.roomCode!));
-                          CustomSnackbar.show(context, message: 'Kode Room ${roomState.roomCode} disalin!', type: SnackbarType.success);
+                          Clipboard.setData(ClipboardData(text: roomCode));
+                          CustomSnackbar.show(context, message: 'Kode Room $roomCode disalin!', type: SnackbarType.success);
                         },
                       ),
                       IconButton(
@@ -107,7 +107,7 @@ class MemberListSheet extends ConsumerWidget {
                           HapticFeedback.lightImpact();
                           SharePlus.instance.share(
                             ShareParams(
-                              text: 'Gabung room Live Tracker saya dengan kode: ${roomState.roomCode}',
+                              text: 'Gabung room Live Tracker saya dengan kode: $roomCode',
                               subject: 'Undangan Room Live Tracker',
                             ),
                           );
