@@ -42,13 +42,11 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
       if (_haloCtrl == null) {
         _haloCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
         _haloCtrl!.repeat(reverse: true);
-        if (mounted) setState(() {});
       }
-    } else {
-      _haloCtrl?.stop();
-      _haloCtrl?.dispose();
+    } else if (_haloCtrl != null) {
+      _haloCtrl!.stop();
+      _haloCtrl!.dispose();
       _haloCtrl = null;
-      if (mounted) setState(() {});
     }
   }
 
