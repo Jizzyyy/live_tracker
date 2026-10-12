@@ -8,6 +8,9 @@ class BatteryService {
   static int _lastFetchMs = 0;
   static const int ttlMs = 30000; // 30 seconds
 
+  /// Synchronous access to currently cached battery level
+  static int? get cachedLevel => _cachedLevel;
+
   /// Returns current battery percentage (0-100), or null if unavailable.
   /// Throttled by 30-second TTL cache to eliminate redundant Android Binder IPC.
   static Future<int?> getBatteryLevel({bool forceRefresh = false}) async {

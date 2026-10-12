@@ -34,11 +34,16 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
   final _mapController = MapController();
   bool _initialCentered = false;
   bool _isMapReady = false;
+  int _lastBatteryCheckMs = 0;
+  int? _cachedBatteryLevel;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    BatteryService.getBatteryLevel().then((b) {
+      if (mounted) _cachedBatteryLevel = b;
+    });
   }
 
   @override
@@ -87,28 +92,36 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
       if (!next.hasValue) return;
       final pos = next.value!;
       
-      BatteryService.getBatteryLevel().then((battery) {
-        if (mounted) {
-          ref.read(roomProvider.notifier).sendPosition(pos, batteryPercent: battery);
-
-          // Smart Battery Guard: auto-activate low-bandwidth mode below 20%
-          if (battery != null && battery <= 20) {
-            final currentSettings = ref.read(appSettingsProvider);
-            if (!currentSettings.lowBandwidthMode) {
-              ref.read(appSettingsProvider.notifier).updateSettings(
-                currentSettings.copyWith(lowBandwidthMode: true),
-              );
-              if (context.mounted) {
-                CustomSnackbar.show(
-                  context,
-                  message: '⚡ Smart Battery Guard: Baterai <= 20%, mode hemat data aktif otomatis!',
-                  type: SnackbarType.warning,
+      final now = DateTime.now().millisecondsSinceEpoch;
+      if (now - _lastBatteryCheckMs > 30000 || _lastBatteryCheckMs == 0) {
+        _lastBatteryCheckMs = now;
+        BatteryService.getBatteryLevel().then((battery) {
+          if (mounted) {
+            _cachedBatteryLevel = battery;
+            // Smart Battery Guard: auto-activate low-bandwidth mode below 20%
+            if (battery != null && battery <= 20) {
+              final currentSettings = ref.read(appSettingsProvider);
+              if (!currentSettings.lowBandwidthMode) {
+                ref.read(appSettingsProvider.notifier).updateSettings(
+                  currentSettings.copyWith(lowBandwidthMode: true),
                 );
+                if (context.mounted) {
+                  CustomSnackbar.show(
+                    context,
+                    message: '⚡ Smart Battery Guard: Baterai <= 20%, mode hemat data aktif otomatis!',
+                    type: SnackbarType.warning,
+                  );
+                }
               }
             }
           }
-        }
-      });
+        });
+      }
+
+      ref.read(roomProvider.notifier).sendPosition(
+        pos,
+        batteryPercent: _cachedBatteryLevel ?? BatteryService.cachedLevel,
+      );
 
       final isAutoFollow = ref.read(autoFollowProvider);
 
