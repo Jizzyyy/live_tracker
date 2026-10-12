@@ -120,3 +120,65 @@ class AppTheme {
     );
   }
 }
+
+class AppTextStyles {
+  // HUD & Telemetry Labels (ShareTechMono)
+  static TextStyle hudLabel({
+    double fontSize = 11,
+    Color? color,
+    double letterSpacing = 1.5,
+    FontWeight fontWeight = FontWeight.bold,
+  }) =>
+      GoogleFonts.shareTechMono(
+        fontSize: fontSize,
+        color: color,
+        letterSpacing: letterSpacing,
+        fontWeight: fontWeight,
+      );
+
+  // Digital Monospaced Metrics (JetBrainsMono)
+  static TextStyle monoMetric({
+    double fontSize = 14,
+    Color? color,
+    FontWeight fontWeight = FontWeight.bold,
+  }) =>
+      GoogleFonts.jetBrainsMono(
+        fontSize: fontSize,
+        color: color,
+        fontWeight: fontWeight,
+      );
+
+  // Clean UI Titles & Body (Inter)
+  static TextStyle title({
+    double fontSize = 18,
+    Color? color,
+    FontWeight fontWeight = FontWeight.bold,
+  }) =>
+      GoogleFonts.inter(
+        fontSize: fontSize,
+        color: color,
+        fontWeight: fontWeight,
+      );
+
+  static TextStyle body({
+    double fontSize = 14,
+    Color? color,
+    FontWeight fontWeight = FontWeight.normal,
+  }) =>
+      GoogleFonts.inter(
+        fontSize: fontSize,
+        color: color,
+        fontWeight: fontWeight,
+      );
+
+  static TextStyle caption({
+    double fontSize = 11,
+    Color? color,
+    FontWeight fontWeight = FontWeight.normal,
+  }) =>
+      GoogleFonts.inter(
+        fontSize: fontSize,
+        color: color,
+        fontWeight: fontWeight,
+      );
+}
