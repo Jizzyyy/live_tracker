@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
@@ -666,8 +667,8 @@ class TripSessionNotifier extends Notifier<TripSession> {
   DateTime? _startTime;
   double _maxSpeed = 0;
   int _stationaryTicks = 0;
-  final List<RoutePoint> _routeBuffer = [];
-  final List<LatLng> _simplifiedCache = [];
+  final ListQueue<RoutePoint> _routeBuffer = ListQueue<RoutePoint>(1024);
+  final ListQueue<LatLng> _simplifiedCache = ListQueue<LatLng>(512);
   int _lastUiEmitMs = 0;
   int _lastBgDataMs = 0;
 
@@ -757,15 +758,15 @@ class TripSessionNotifier extends Notifier<TripSession> {
       altitude: altitude,
     ));
 
-    // Cap route buffer to max 1000 points to prevent memory leaks on multi-hour trips
+    // Cap route buffer to max 1000 points to prevent memory leaks on multi-hour trips (O(1) FIFO eviction)
     if (_routeBuffer.length > 1000) {
-      _routeBuffer.removeAt(0);
+      _routeBuffer.removeFirst();
     }
 
-    // Dynamic downsampling: incremental push to simplified cache O(1) instead of re-filtering full list O(N)
+    // Dynamic downsampling: incremental push to simplified cache O(1) ring buffer
     _simplifiedCache.add(currentLatLng);
     if (_simplifiedCache.length > 500) {
-      _simplifiedCache.removeAt(0);
+      _simplifiedCache.removeFirst();
     }
 
     final speedKmh = speedMps * 3.6;
