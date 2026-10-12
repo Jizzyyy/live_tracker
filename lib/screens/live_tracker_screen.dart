@@ -363,24 +363,28 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
               Consumer(
                 builder: (context, ref, _) {
                   final members = ref.watch(roomProvider.select((r) => r.members.values.toList()));
-                  return MarkerLayer(
-                    markers: members.map((m) {
-                      return Marker(
-                        point: LatLng(m.latitude, m.longitude),
-                        width: 56,
-                        height: 56,
-                        child: GestureDetector(
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            _showMemberInspectionSheet(m);
-                          },
-                          child: CustomUserMarker(
-                            location: m,
-                            color: _getColorForId(m.id),
+                  if (members.isEmpty) return const SizedBox.shrink();
+
+                  return RepaintBoundary(
+                    child: MarkerLayer(
+                      markers: members.map((m) {
+                        return Marker(
+                          point: LatLng(m.latitude, m.longitude),
+                          width: 56,
+                          height: 56,
+                          child: GestureDetector(
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              _showMemberInspectionSheet(m);
+                            },
+                            child: CustomUserMarker(
+                              location: m,
+                              color: _getColorForId(m.id),
+                            ),
                           ),
-                        ),
-                      );
-                    }).toList(),
+                        );
+                      }).toList(),
+                    ),
                   );
                 },
               ),
@@ -391,42 +395,44 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                   final pois = ref.watch(roomProvider.select((r) => r.pois.values.toList()));
                   if (pois.isEmpty) return const SizedBox.shrink();
 
-                  return MarkerLayer(
-                    markers: pois.map((poi) {
-                      final categoryConfig = switch (poi.category) {
-                        PoiCategory.rendezvous => (icon: Icons.flag_rounded, color: const Color(0xFF00E5FF)),
-                        PoiCategory.fuel => (icon: Icons.local_gas_station_rounded, color: const Color(0xFFFFD600)),
-                        PoiCategory.hazard => (icon: Icons.warning_amber_rounded, color: const Color(0xFFFF1744)),
-                        PoiCategory.rest => (icon: Icons.hotel_rounded, color: const Color(0xFF00E676)),
-                      };
+                  return RepaintBoundary(
+                    child: MarkerLayer(
+                      markers: pois.map((poi) {
+                        final categoryConfig = switch (poi.category) {
+                          PoiCategory.rendezvous => (icon: Icons.flag_rounded, color: const Color(0xFF00E5FF)),
+                          PoiCategory.fuel => (icon: Icons.local_gas_station_rounded, color: const Color(0xFFFFD600)),
+                          PoiCategory.hazard => (icon: Icons.warning_amber_rounded, color: const Color(0xFFFF1744)),
+                          PoiCategory.rest => (icon: Icons.hotel_rounded, color: const Color(0xFF00E676)),
+                        };
 
-                      return Marker(
-                        point: LatLng(poi.latitude, poi.longitude),
-                        width: 44,
-                        height: 44,
-                        child: GestureDetector(
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            _showPoiDetailSheet(poi);
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF12151B),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: categoryConfig.color, width: 2),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: categoryConfig.color.withValues(alpha: 0.35),
-                                  blurRadius: 8,
-                                  spreadRadius: 1,
-                                ),
-                              ],
+                        return Marker(
+                          point: LatLng(poi.latitude, poi.longitude),
+                          width: 44,
+                          height: 44,
+                          child: GestureDetector(
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              _showPoiDetailSheet(poi);
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF12151B),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: categoryConfig.color, width: 2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: categoryConfig.color.withValues(alpha: 0.35),
+                                    blurRadius: 8,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(categoryConfig.icon, color: categoryConfig.color, size: 20),
                             ),
-                            child: Icon(categoryConfig.icon, color: categoryConfig.color, size: 20),
                           ),
-                        ),
-                      );
-                    }).toList(),
+                        );
+                      }).toList(),
+                    ),
                   );
                 },
               ),
@@ -439,21 +445,23 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                     return const SizedBox.shrink();
                   }
 
-                  return MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: LatLng(activeSos.latitude!, activeSos.longitude!),
-                        width: 68,
-                        height: 68,
-                        child: SosBeaconMarker(
-                          alert: activeSos,
-                          onTap: () {
-                            HapticFeedback.heavyImpact();
-                            _animatedMapMove(LatLng(activeSos.latitude!, activeSos.longitude!), 17.5);
-                          },
+                  return RepaintBoundary(
+                    child: MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: LatLng(activeSos.latitude!, activeSos.longitude!),
+                          width: 68,
+                          height: 68,
+                          child: SosBeaconMarker(
+                            alert: activeSos,
+                            onTap: () {
+                              HapticFeedback.heavyImpact();
+                              _animatedMapMove(LatLng(activeSos.latitude!, activeSos.longitude!), 17.5);
+                            },
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   );
                 },
               ),
@@ -465,26 +473,28 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                   if (!posAsync.hasValue) return const SizedBox.shrink();
                   final pos = posAsync.value!;
 
-                  return MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: LatLng(pos.latitude, pos.longitude),
-                        width: 56,
-                        height: 56,
-                        child: CustomUserMarker(
-                          isLocalUser: true,
-                          location: MemberLocation(
-                            id: 'YOU',
-                            latitude: pos.latitude,
-                            longitude: pos.longitude,
-                            lastUpdated: pos.timestamp,
-                            heading: pos.heading,
-                            speedKmh: pos.speed * 3.6,
+                  return RepaintBoundary(
+                    child: MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: LatLng(pos.latitude, pos.longitude),
+                          width: 56,
+                          height: 56,
+                          child: CustomUserMarker(
+                            isLocalUser: true,
+                            location: MemberLocation(
+                              id: 'YOU',
+                              latitude: pos.latitude,
+                              longitude: pos.longitude,
+                              lastUpdated: pos.timestamp,
+                              heading: pos.heading,
+                              speedKmh: pos.speed * 3.6,
+                            ),
+                            color: const Color(0xFF00E5FF),
                           ),
-                          color: const Color(0xFF00E5FF),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   );
                 },
               ),
