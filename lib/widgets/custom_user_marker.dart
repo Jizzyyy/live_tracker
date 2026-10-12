@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/tracker_models.dart';
+import '../utils/app_theme.dart';
 
 class CustomUserMarker extends StatefulWidget {
   final MemberLocation location;
@@ -69,9 +70,9 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
     final fullLabel = '$rolePrefix$displayName';
 
     final roleBorderColor = switch (widget.location.role) {
-      ConvoyRole.leader => const Color(0xFFFFD700),
-      ConvoyRole.sweeper => const Color(0xFF00E5FF),
-      ConvoyRole.scout => const Color(0xFF76FF03),
+      ConvoyRole.leader => AppTheme.warningAmber,
+      ConvoyRole.sweeper => AppTheme.primaryCyan,
+      ConvoyRole.scout => AppTheme.secondaryGreen,
       ConvoyRole.member => widget.color,
     };
 
@@ -112,7 +113,7 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
               decoration: BoxDecoration(
-                color: const Color(0xFF12151B).withValues(alpha: 0.9),
+                color: AppTheme.darkSurface.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
                   color: isStale ? Colors.grey : roleBorderColor.withValues(alpha: 0.75),

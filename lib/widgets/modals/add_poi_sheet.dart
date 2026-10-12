@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import '../../models/tracker_models.dart';
 import '../../providers/tracker_providers.dart';
 import '../../utils/ui_helpers.dart';
+import '../../utils/app_theme.dart';
 
 class AddPoiSheet extends ConsumerStatefulWidget {
   final LatLng point;
@@ -60,10 +61,10 @@ class _AddPoiSheetState extends ConsumerState<AddPoiSheet> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                      color: AppTheme.primaryCyan.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.add_location_alt_rounded, color: Color(0xFF00E5FF), size: 24),
+                    child: const Icon(Icons.add_location_alt_rounded, color: AppTheme.primaryCyan, size: 24),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -76,7 +77,7 @@ class _AddPoiSheetState extends ConsumerState<AddPoiSheet> {
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 2,
-                            color: const Color(0xFF00E5FF),
+                            color: AppTheme.primaryCyan,
                           ),
                         ),
                         Text(
@@ -107,10 +108,10 @@ class _AddPoiSheetState extends ConsumerState<AddPoiSheet> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  _categoryChip(PoiCategory.rendezvous, 'Rendezvous', Icons.flag_rounded, const Color(0xFF00E5FF)),
-                  _categoryChip(PoiCategory.fuel, 'SPBU', Icons.local_gas_station_rounded, const Color(0xFFFFD600)),
-                  _categoryChip(PoiCategory.hazard, 'Bahaya / Rintangan', Icons.warning_amber_rounded, const Color(0xFFFF1744)),
-                  _categoryChip(PoiCategory.rest, 'Rest Area', Icons.hotel_rounded, const Color(0xFF00E676)),
+                  _categoryChip(PoiCategory.rendezvous, 'Rendezvous', Icons.flag_rounded, AppTheme.primaryCyan),
+                  _categoryChip(PoiCategory.fuel, 'SPBU', Icons.local_gas_station_rounded, AppTheme.warningAmber),
+                  _categoryChip(PoiCategory.hazard, 'Bahaya / Rintangan', Icons.warning_amber_rounded, AppTheme.dangerRed),
+                  _categoryChip(PoiCategory.rest, 'Rest Area', Icons.hotel_rounded, AppTheme.secondaryGreen),
                 ],
               ),
               const SizedBox(height: 16),
@@ -138,7 +139,7 @@ class _AddPoiSheetState extends ConsumerState<AddPoiSheet> {
                   errorText: _errorMessage,
                   hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 12),
                   filled: true,
-                  fillColor: isDark ? const Color(0xFF1E232D) : const Color(0xFFF1F5F9),
+                  fillColor: isDark ? AppTheme.darkCard : AppTheme.lightCard,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
@@ -148,7 +149,7 @@ class _AddPoiSheetState extends ConsumerState<AddPoiSheet> {
                 width: double.infinity,
                 child: FilledButton.icon(
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF00E5FF),
+                    backgroundColor: AppTheme.primaryCyan,
                     foregroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

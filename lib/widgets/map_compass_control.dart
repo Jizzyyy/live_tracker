@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import '../utils/app_theme.dart';
 
 class MapCompassControl extends StatelessWidget {
   final MapController mapController;
@@ -47,7 +48,7 @@ class MapCompassControl extends StatelessWidget {
                 child: Icon(
                   Icons.navigation, 
                   size: 20, 
-                  color: isDark ? const Color(0xFF00E5FF) : colorScheme.primary,
+                  color: isDark ? AppTheme.primaryCyan : colorScheme.primary,
                 ),
               ),
             ),

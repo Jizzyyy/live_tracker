@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import '../providers/tracker_providers.dart';
 import '../utils/custom_snackbar.dart';
+import '../utils/app_theme.dart';
 
 class AutoCenterButton extends ConsumerWidget {
   final MapController mapController;
@@ -54,7 +55,7 @@ class AutoCenterButton extends ConsumerWidget {
             posAsync.hasValue ? (isAutoFollow ? Icons.my_location : Icons.location_searching) : Icons.location_disabled,
             size: 20,
             color: isAutoFollow 
-                ? (isDark ? const Color(0xFF00E5FF) : Theme.of(context).colorScheme.primary) 
+                ? (isDark ? AppTheme.primaryCyan : Theme.of(context).colorScheme.primary) 
                 : (isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black54),
           ),
         ),

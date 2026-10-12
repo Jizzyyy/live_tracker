@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import '../providers/tracker_providers.dart';
 import '../utils/custom_snackbar.dart';
 import '../utils/map_bounds_helper.dart';
+import '../utils/app_theme.dart';
 
 class ConvoyOverviewButton extends ConsumerWidget {
   final MapController mapController;
@@ -23,7 +24,7 @@ class ConvoyOverviewButton extends ConsumerWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isDark 
-            ? const Color(0xFF12151B).withValues(alpha: 0.9)
+            ? AppTheme.darkSurface.withValues(alpha: 0.9)
             : Colors.white.withValues(alpha: 0.9),
         border: Border.all(
           color: isDark ? Colors.white10 : Colors.black12,
@@ -78,7 +79,7 @@ class ConvoyOverviewButton extends ConsumerWidget {
           child: Icon(
             Icons.groups_rounded,
             size: 22,
-            color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
+            color: isDark ? AppTheme.warningAmber : const Color(0xFFD97706),
           ),
         ),
       ),

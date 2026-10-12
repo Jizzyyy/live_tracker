@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'app_theme.dart';
 
 class PremiumGlass extends StatelessWidget {
   final Widget child;
@@ -23,8 +24,8 @@ class PremiumGlass extends StatelessWidget {
     
     final decoration = BoxDecoration(
       color: isDark 
-          ? const Color(0xFF12151B).withValues(alpha: enableBlur ? 0.88 : 0.94)
-          : const Color(0xFFFFFFFF).withValues(alpha: enableBlur ? 0.88 : 0.95),
+          ? AppTheme.darkSurface.withValues(alpha: enableBlur ? 0.88 : 0.94)
+          : AppTheme.lightSurface.withValues(alpha: enableBlur ? 0.88 : 0.95),
       borderRadius: borderRadius,
       border: Border.all(
         color: isDark 

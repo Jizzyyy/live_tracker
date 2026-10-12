@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import '../../models/tracker_models.dart';
 import '../../providers/tracker_providers.dart';
 import '../../utils/ui_helpers.dart';
+import '../../utils/app_theme.dart';
 
 class PoiDetailSheet extends ConsumerWidget {
   final SharedPoi poi;
@@ -67,10 +68,10 @@ class PoiDetailSheet extends ConsumerWidget {
     }
 
     final categoryConfig = switch (poi.category) {
-      PoiCategory.rendezvous => (name: 'Titik Kumpul', icon: Icons.flag_rounded, color: const Color(0xFF00E5FF)),
-      PoiCategory.fuel => (name: 'SPBU', icon: Icons.local_gas_station_rounded, color: const Color(0xFFFFD600)),
-      PoiCategory.hazard => (name: 'Bahaya / Rintangan', icon: Icons.warning_amber_rounded, color: const Color(0xFFFF1744)),
-      PoiCategory.rest => (name: 'Rest Area', icon: Icons.hotel_rounded, color: const Color(0xFF00E676)),
+      PoiCategory.rendezvous => (name: 'Titik Kumpul', icon: Icons.flag_rounded, color: AppTheme.primaryCyan),
+      PoiCategory.fuel => (name: 'SPBU', icon: Icons.local_gas_station_rounded, color: AppTheme.warningAmber),
+      PoiCategory.hazard => (name: 'Bahaya / Rintangan', icon: Icons.warning_amber_rounded, color: AppTheme.dangerRed),
+      PoiCategory.rest => (name: 'Rest Area', icon: Icons.hotel_rounded, color: AppTheme.secondaryGreen),
     };
 
     return SafeArea(
@@ -128,7 +129,7 @@ class PoiDetailSheet extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E232D) : const Color(0xFFF1F5F9),
+                color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(

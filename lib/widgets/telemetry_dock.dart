@@ -7,6 +7,7 @@ import '../providers/tracker_providers.dart';
 import '../models/tracker_models.dart';
 import '../utils/ui_helpers.dart';
 import '../utils/custom_snackbar.dart';
+import '../utils/app_theme.dart';
 
 class TelemetryBottomDock extends ConsumerStatefulWidget {
   const TelemetryBottomDock({super.key});
@@ -361,7 +362,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                                 Icon(
                                                   m.batteryPercent! <= 20 ? Icons.battery_alert_rounded : Icons.battery_charging_full_rounded,
                                                   size: 13,
-                                                  color: m.batteryPercent! <= 20 ? const Color(0xFFFF1744) : const Color(0xFF00E676),
+                                                  color: m.batteryPercent! <= 20 ? AppTheme.dangerRed : AppTheme.secondaryGreen,
                                                 ),
                                                 const SizedBox(width: 3),
                                                 Text(
@@ -440,8 +441,8 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                             flex: 3,
                             child: OutlinedButton.icon(
                               style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: const Color(0xFFFFD600).withValues(alpha: 0.8), width: 1.5),
-                                foregroundColor: const Color(0xFFFFD600),
+                                side: BorderSide(color: AppTheme.warningAmber.withValues(alpha: 0.8), width: 1.5),
+                                foregroundColor: AppTheme.warningAmber,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                 padding: const EdgeInsets.symmetric(vertical: 15),
                               ),
@@ -461,7 +462,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                             flex: 3,
                             child: FilledButton.icon(
                               style: FilledButton.styleFrom(
-                                backgroundColor: const Color(0xFFFF1744),
+                                backgroundColor: AppTheme.dangerRed,
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -486,7 +487,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                           flex: 3,
                           child: FilledButton.icon(
                             style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFF00E676),
+                              backgroundColor: AppTheme.secondaryGreen,
                               foregroundColor: Colors.black,
                               elevation: 0,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -508,8 +509,8 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                           flex: 3,
                           child: OutlinedButton.icon(
                             style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xFFFF1744), width: 1.5),
-                              foregroundColor: const Color(0xFFFF1744),
+                              side: const BorderSide(color: AppTheme.dangerRed, width: 1.5),
+                              foregroundColor: AppTheme.dangerRed,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                               padding: const EdgeInsets.symmetric(vertical: 15),
                             ),

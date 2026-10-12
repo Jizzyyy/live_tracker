@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../providers/tracker_providers.dart';
 import '../../utils/ui_helpers.dart';
 import '../../utils/sound_manager.dart';
+import '../../utils/app_theme.dart';
 
 class SosModalSheet extends ConsumerStatefulWidget {
   const SosModalSheet({super.key});
@@ -66,10 +67,10 @@ class _SosModalSheetState extends ConsumerState<SosModalSheet> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF1744).withValues(alpha: 0.15),
+                      color: AppTheme.dangerRed.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.sos_rounded, color: Color(0xFFFF1744), size: 28),
+                    child: const Icon(Icons.sos_rounded, color: AppTheme.dangerRed, size: 28),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -82,7 +83,7 @@ class _SosModalSheetState extends ConsumerState<SosModalSheet> {
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 2,
-                            color: const Color(0xFFFF1744),
+                            color: AppTheme.dangerRed,
                           ),
                         ),
                         Text(
@@ -175,14 +176,14 @@ class _SosModalSheetState extends ConsumerState<SosModalSheet> {
                   return ChoiceChip(
                     label: Text(preset),
                     selected: isSelected,
-                    selectedColor: const Color(0xFFFF1744).withValues(alpha: 0.25),
+                    selectedColor: AppTheme.dangerRed.withValues(alpha: 0.25),
                     side: BorderSide(
-                      color: isSelected ? const Color(0xFFFF1744) : (isDark ? Colors.white12 : Colors.black12),
+                      color: isSelected ? AppTheme.dangerRed : (isDark ? Colors.white12 : Colors.black12),
                     ),
                     labelStyle: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? const Color(0xFFFF1744) : (isDark ? Colors.white70 : Colors.black87),
+                      color: isSelected ? AppTheme.dangerRed : (isDark ? Colors.white70 : Colors.black87),
                     ),
                     onSelected: (val) {
                       if (val) setState(() => _selectedPreset = preset);

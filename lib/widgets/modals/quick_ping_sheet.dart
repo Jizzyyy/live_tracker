@@ -7,6 +7,7 @@ import '../../providers/tracker_providers.dart';
 import '../../utils/ui_helpers.dart';
 import '../../utils/sound_manager.dart';
 import '../../utils/custom_snackbar.dart';
+import '../../utils/app_theme.dart';
 
 class QuickPingSelectorSheet extends ConsumerWidget {
   const QuickPingSelectorSheet({super.key});
@@ -17,21 +18,21 @@ class QuickPingSelectorSheet extends ConsumerWidget {
       title: 'Regroup / Kumpul',
       subtitle: 'Minta rekan memperlambat & berkumpul',
       icon: Icons.groups_rounded,
-      color: Color(0xFF00E5FF),
+      color: AppTheme.primaryCyan,
     ),
     (
       cue: TacticalCueType.hazard,
       title: 'Bahaya di Depan',
       subtitle: 'Peringatan lubang, jalan licin, atau rintangan',
       icon: Icons.warning_amber_rounded,
-      color: Color(0xFFFF1744),
+      color: AppTheme.dangerRed,
     ),
     (
       cue: TacticalCueType.fuel,
       title: 'Isi Bensin / SPBU',
       subtitle: 'Butuh isi bahan bakar di SPBU terdekat',
       icon: Icons.local_gas_station_rounded,
-      color: Color(0xFFFFD600),
+      color: AppTheme.warningAmber,
     ),
     (
       cue: TacticalCueType.turnLeft,
@@ -52,7 +53,7 @@ class QuickPingSelectorSheet extends ConsumerWidget {
       title: 'Istirahat / Coffee Stop',
       subtitle: 'Usulan menepi sejenak untuk istirahat',
       icon: Icons.coffee_rounded,
-      color: Color(0xFFFF9100),
+      color: AppTheme.accentOrange,
     ),
   ];
 
@@ -87,10 +88,10 @@ class QuickPingSelectorSheet extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                      color: AppTheme.primaryCyan.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.campaign_rounded, color: Color(0xFF00E5FF), size: 26),
+                    child: const Icon(Icons.campaign_rounded, color: AppTheme.primaryCyan, size: 26),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -103,7 +104,7 @@ class QuickPingSelectorSheet extends ConsumerWidget {
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 2,
-                            color: const Color(0xFF00E5FF),
+                            color: AppTheme.primaryCyan,
                           ),
                         ),
                         Text(

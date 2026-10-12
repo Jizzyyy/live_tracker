@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'app_theme.dart';
 
 enum SnackbarType { success, warning, error, info }
 
@@ -14,10 +15,10 @@ class CustomSnackbar {
     HapticFeedback.lightImpact();
 
     final Color accentColor = switch (type) {
-      SnackbarType.success => const Color(0xFF00E676),
-      SnackbarType.warning => const Color(0xFFFFD600),
-      SnackbarType.error => const Color(0xFFFF1744),
-      SnackbarType.info => const Color(0xFF00E5FF),
+      SnackbarType.success => AppTheme.secondaryGreen,
+      SnackbarType.warning => AppTheme.warningAmber,
+      SnackbarType.error => AppTheme.dangerRed,
+      SnackbarType.info => AppTheme.primaryCyan,
     };
 
     final IconData icon = switch (type) {
@@ -39,7 +40,7 @@ class CustomSnackbar {
           content: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFF12151B).withValues(alpha: 0.9),
+              color: AppTheme.darkSurface.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: accentColor.withValues(alpha: 0.3), width: 1),
               boxShadow: [

@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import '../models/trip_history_model.dart';
 import '../utils/map_bounds_helper.dart';
 import '../utils/speed_heatmap_segmenter.dart';
+import '../utils/app_theme.dart';
 import '../src/core/constants.dart';
 
 class TripShareCard extends StatelessWidget {
@@ -55,15 +56,15 @@ class TripShareCard extends StatelessWidget {
     final points = trip.routePoints.map((p) => LatLng(p.latitude, p.longitude)).toList();
     final bounds = calculateSafeBounds(points);
 
-    final bgColor = isDark ? const Color(0xFF0B0D11) : const Color(0xFFFFFFFF);
+    final bgColor = isDark ? AppTheme.darkCanvas : AppTheme.lightSurface;
     final cardBorder = isDark ? Colors.white12 : Colors.black12;
-    final textHeader = isDark ? Colors.white : const Color(0xFF0D1117);
+    final textHeader = isDark ? Colors.white : AppTheme.textDark;
     final textSecondary = isDark ? Colors.white60 : const Color(0xFF64748B);
     final dividerColor = isDark ? Colors.white10 : Colors.black12;
     // Watermark-free Esri Canvas tiles for crystal-clear exports
     final mapTileUrl = isDark ? MapTileUrls.esriDarkCanvas : MapTileUrls.esriLightCanvas;
-    final polylineColor = isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7);
-    final footerBg = isDark ? const Color(0xFF12151B) : const Color(0xFFF1F5F9);
+    final polylineColor = isDark ? AppTheme.primaryCyan : AppTheme.accentBlue;
+    final footerBg = isDark ? AppTheme.darkSurface : AppTheme.lightCard;
     final footerText = isDark ? Colors.white30 : const Color(0xFF94A3B8);
 
     return RepaintBoundary(

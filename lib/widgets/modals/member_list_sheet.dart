@@ -8,6 +8,7 @@ import '../../models/tracker_models.dart';
 import '../../providers/tracker_providers.dart';
 import '../../utils/ui_helpers.dart';
 import '../../utils/custom_snackbar.dart';
+import '../../utils/app_theme.dart';
 
 class MemberListSheet extends ConsumerWidget {
   const MemberListSheet({super.key});
@@ -63,13 +64,13 @@ class MemberListSheet extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E232D) : const Color(0xFFF1F5F9),
+                    color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.meeting_room_outlined, size: 18, color: isDark ? const Color(0xFF00E5FF) : colorScheme.primary),
+                      Icon(Icons.meeting_room_outlined, size: 18, color: isDark ? AppTheme.primaryCyan : colorScheme.primary),
                       const SizedBox(width: 8),
                       Text(
                         'ROOM: ',
@@ -85,7 +86,7 @@ class MemberListSheet extends ConsumerWidget {
                         style: GoogleFonts.jetBrainsMono(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? const Color(0xFF00E5FF) : colorScheme.primary,
+                          color: isDark ? AppTheme.primaryCyan : colorScheme.primary,
                         ),
                       ),
                       const Spacer(),
@@ -159,11 +160,11 @@ class MemberListSheet extends ConsumerWidget {
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: CircleAvatar(
-                          backgroundColor: isDark ? const Color(0xFF12151B) : colorScheme.primaryContainer,
+                          backgroundColor: isDark ? AppTheme.darkSurface : colorScheme.primaryContainer,
                           child: Text(
                             initialLetter,
                             style: GoogleFonts.jetBrainsMono(
-                              color: isDark ? const Color(0xFF00E5FF) : colorScheme.primary, 
+                              color: isDark ? AppTheme.primaryCyan : colorScheme.primary, 
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -176,17 +177,17 @@ class MemberListSheet extends ConsumerWidget {
                                 margin: const EdgeInsets.only(right: 6),
                                 decoration: BoxDecoration(
                                   color: (switch (m.role) {
-                                    ConvoyRole.leader => const Color(0xFFFFD700),
-                                    ConvoyRole.sweeper => const Color(0xFF00E5FF),
-                                    ConvoyRole.scout => const Color(0xFF76FF03),
+                                    ConvoyRole.leader => AppTheme.warningAmber,
+                                    ConvoyRole.sweeper => AppTheme.primaryCyan,
+                                    ConvoyRole.scout => AppTheme.secondaryGreen,
                                     ConvoyRole.member => Colors.grey,
                                   }).withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
                                     color: (switch (m.role) {
-                                      ConvoyRole.leader => const Color(0xFFFFD700),
-                                      ConvoyRole.sweeper => const Color(0xFF00E5FF),
-                                      ConvoyRole.scout => const Color(0xFF76FF03),
+                                      ConvoyRole.leader => AppTheme.warningAmber,
+                                      ConvoyRole.sweeper => AppTheme.primaryCyan,
+                                      ConvoyRole.scout => AppTheme.secondaryGreen,
                                       ConvoyRole.member => Colors.grey,
                                     }).withValues(alpha: 0.6),
                                     width: 1,
@@ -198,9 +199,9 @@ class MemberListSheet extends ConsumerWidget {
                                     fontSize: 9,
                                     fontWeight: FontWeight.bold,
                                     color: switch (m.role) {
-                                      ConvoyRole.leader => const Color(0xFFFFD700),
-                                      ConvoyRole.sweeper => const Color(0xFF00E5FF),
-                                      ConvoyRole.scout => const Color(0xFF76FF03),
+                                      ConvoyRole.leader => AppTheme.warningAmber,
+                                      ConvoyRole.sweeper => AppTheme.primaryCyan,
+                                      ConvoyRole.scout => AppTheme.secondaryGreen,
                                       ConvoyRole.member => Colors.grey,
                                     },
                                   ),
@@ -242,20 +243,20 @@ class MemberListSheet extends ConsumerWidget {
                               const SizedBox(width: 8),
                               const Icon(Icons.near_me_outlined, size: 12, color: Colors.grey),
                               const SizedBox(width: 2),
-                              Text(distStr, style: GoogleFonts.jetBrainsMono(color: isDark ? const Color(0xFF00E5FF) : colorScheme.primary, fontSize: 11, fontWeight: FontWeight.bold)),
+                              Text(distStr, style: GoogleFonts.jetBrainsMono(color: isDark ? AppTheme.primaryCyan : colorScheme.primary, fontSize: 11, fontWeight: FontWeight.bold)),
                             ],
                             if (batteryIcon != null && m.batteryPercent != null) ...[
                               const SizedBox(width: 8),
                               Icon(
                                 batteryIcon,
                                 size: 13,
-                                color: m.batteryPercent! < 20 ? const Color(0xFFFF1744) : Colors.grey,
+                                color: m.batteryPercent! < 20 ? AppTheme.dangerRed : Colors.grey,
                               ),
                               const SizedBox(width: 2),
                               Text(
                                 '${m.batteryPercent}%',
                                 style: GoogleFonts.jetBrainsMono(
-                                  color: m.batteryPercent! < 20 ? const Color(0xFFFF1744) : Colors.grey,
+                                  color: m.batteryPercent! < 20 ? AppTheme.dangerRed : Colors.grey,
                                   fontSize: 11,
                                 ),
                               ),

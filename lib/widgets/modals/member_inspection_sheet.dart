@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import '../../models/tracker_models.dart';
 import '../../providers/tracker_providers.dart';
 import '../../utils/ui_helpers.dart';
+import '../../utils/app_theme.dart';
 
 class MemberInspectionSheet extends ConsumerWidget {
   final MemberLocation member;
@@ -56,11 +57,11 @@ class MemberInspectionSheet extends ConsumerWidget {
               children: [
                 CircleAvatar(
                   radius: 24,
-                  backgroundColor: isDark ? const Color(0xFF12151B) : colorScheme.primaryContainer,
+                  backgroundColor: isDark ? AppTheme.darkSurface : colorScheme.primaryContainer,
                   child: Text(
                     displayName.substring(0, 1).toUpperCase(),
                     style: GoogleFonts.jetBrainsMono(
-                      color: isDark ? const Color(0xFF00E5FF) : colorScheme.primary,
+                      color: isDark ? AppTheme.primaryCyan : colorScheme.primary,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -141,19 +142,19 @@ class MemberInspectionSheet extends ConsumerWidget {
                     value: distMeters != null
                         ? (distMeters < 1000 ? '${distMeters.toStringAsFixed(0)} m' : '${(distMeters / 1000).toStringAsFixed(2)} km')
                         : '--',
-                    color: isDark ? const Color(0xFF00E5FF) : colorScheme.primary,
+                    color: isDark ? AppTheme.primaryCyan : colorScheme.primary,
                   ),
                   _MetricItem(
                     label: 'KECEPATAN',
                     value: '${(member.speedKmh ?? 0).toStringAsFixed(1)} km/h',
-                    color: const Color(0xFFFFD600),
+                    color: AppTheme.warningAmber,
                   ),
                   _MetricItem(
                     label: 'BATERAI',
                     value: member.batteryPercent != null ? '${member.batteryPercent}%' : '--',
                     color: (member.batteryPercent != null && member.batteryPercent! < 20)
-                        ? const Color(0xFFFF1744)
-                        : const Color(0xFF00E676),
+                        ? AppTheme.dangerRed
+                        : AppTheme.secondaryGreen,
                   ),
                 ],
               ),
@@ -163,7 +164,7 @@ class MemberInspectionSheet extends ConsumerWidget {
               width: double.infinity,
               child: FilledButton.icon(
                 style: FilledButton.styleFrom(
-                  backgroundColor: isDark ? const Color(0xFF00E5FF) : colorScheme.primary,
+                  backgroundColor: isDark ? AppTheme.primaryCyan : colorScheme.primary,
                   foregroundColor: isDark ? Colors.black : Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

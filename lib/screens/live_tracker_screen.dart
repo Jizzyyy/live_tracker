@@ -15,6 +15,7 @@ import '../widgets/map_compass_control.dart';
 import '../utils/ui_helpers.dart';
 import '../utils/sound_manager.dart';
 import '../utils/custom_snackbar.dart';
+import '../utils/app_theme.dart';
 import '../src/core/services/battery_service.dart';
 import '../widgets/modals/add_poi_sheet.dart';
 import '../widgets/modals/poi_detail_sheet.dart';
@@ -203,7 +204,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0D11),
+      backgroundColor: AppTheme.darkCanvas,
       body: Stack(
         children: [
           // 1. High-Performance Map Viewport with Caching
@@ -262,7 +263,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                         Polyline(
                           points: routePoints,
                           strokeWidth: 4.5,
-                          color: const Color(0xFF00E5FF).withValues(alpha: 0.85),
+                          color: AppTheme.primaryCyan.withValues(alpha: 0.85),
                         ),
                       ],
                     ),
@@ -284,7 +285,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                         Polyline(
                           points: [LatLng(myPos.latitude, myPos.longitude), target],
                           strokeWidth: 2.8,
-                          color: const Color(0xFFFFD600).withValues(alpha: 0.85),
+                          color: AppTheme.warningAmber.withValues(alpha: 0.85),
                           pattern: StrokePattern.dashed(segments: const [10, 6]),
                         ),
                       ],
@@ -307,7 +308,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                         Polyline(
                           points: backtrack.reversePath,
                           strokeWidth: 4.2,
-                          color: const Color(0xFFFF9100).withValues(alpha: 0.9),
+                          color: AppTheme.accentOrange.withValues(alpha: 0.9),
                           pattern: StrokePattern.dashed(segments: const [12, 6]),
                         ),
                       ],
@@ -336,12 +337,12 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                         height: 38,
                         child: Container(
                           decoration: BoxDecoration(
-                            color: const Color(0xFF12151B),
+                            color: AppTheme.darkSurface,
                             shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFF00E676), width: 2.2),
+                            border: Border.all(color: AppTheme.secondaryGreen, width: 2.2),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF00E676).withValues(alpha: 0.45),
+                                color: AppTheme.secondaryGreen.withValues(alpha: 0.45),
                                 blurRadius: 8,
                                 spreadRadius: 1,
                               ),
@@ -349,7 +350,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                           ),
                           child: const Icon(
                             Icons.flag_rounded,
-                            color: Color(0xFF00E676),
+                            color: AppTheme.secondaryGreen,
                             size: 20,
                           ),
                         ),
@@ -399,10 +400,10 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                     child: MarkerLayer(
                       markers: pois.map((poi) {
                         final categoryConfig = switch (poi.category) {
-                          PoiCategory.rendezvous => (icon: Icons.flag_rounded, color: const Color(0xFF00E5FF)),
-                          PoiCategory.fuel => (icon: Icons.local_gas_station_rounded, color: const Color(0xFFFFD600)),
-                          PoiCategory.hazard => (icon: Icons.warning_amber_rounded, color: const Color(0xFFFF1744)),
-                          PoiCategory.rest => (icon: Icons.hotel_rounded, color: const Color(0xFF00E676)),
+                          PoiCategory.rendezvous => (icon: Icons.flag_rounded, color: AppTheme.primaryCyan),
+                          PoiCategory.fuel => (icon: Icons.local_gas_station_rounded, color: AppTheme.warningAmber),
+                          PoiCategory.hazard => (icon: Icons.warning_amber_rounded, color: AppTheme.dangerRed),
+                          PoiCategory.rest => (icon: Icons.hotel_rounded, color: AppTheme.secondaryGreen),
                         };
 
                         return Marker(
@@ -416,7 +417,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                             },
                             child: Container(
                               decoration: BoxDecoration(
-                                color: const Color(0xFF12151B),
+                                color: AppTheme.darkSurface,
                                 shape: BoxShape.circle,
                                 border: Border.all(color: categoryConfig.color, width: 2),
                                 boxShadow: [
@@ -490,7 +491,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                               heading: pos.heading,
                               speedKmh: pos.speed * 3.6,
                             ),
-                            color: const Color(0xFF00E5FF),
+                            color: AppTheme.primaryCyan,
                           ),
                         ),
                       ],
@@ -651,9 +652,9 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E232D).withValues(alpha: 0.95),
+                          color: AppTheme.darkCard.withValues(alpha: 0.95),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.6), width: 1),
+                          border: Border.all(color: AppTheme.primaryCyan.withValues(alpha: 0.6), width: 1),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -661,7 +662,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                             const SizedBox(
                               width: 10,
                               height: 10,
-                              child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFF00E5FF)),
+                              child: CircularProgressIndicator(strokeWidth: 1.5, color: AppTheme.primaryCyan),
                             ),
                             const SizedBox(width: 8),
                             Text(
@@ -669,7 +670,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                               style: GoogleFonts.shareTechMono(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: const Color(0xFF00E5FF),
+                                color: AppTheme.primaryCyan,
                               ),
                             ),
                           ],
@@ -696,11 +697,11 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFF1744).withValues(alpha: 0.95),
+                            color: AppTheme.dangerRed.withValues(alpha: 0.95),
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFFF1744).withValues(alpha: 0.4),
+                                color: AppTheme.dangerRed.withValues(alpha: 0.4),
                                 blurRadius: 16,
                                 spreadRadius: 2,
                               ),
@@ -757,11 +758,11 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                     if (activePing == null || activePing.isExpired) return const SizedBox.shrink();
 
                     final cueColor = switch (activePing.cue) {
-                      TacticalCueType.hazard => const Color(0xFFFF1744),
-                      TacticalCueType.regroup => const Color(0xFF00E5FF),
-                      TacticalCueType.fuel => const Color(0xFFFFD600),
+                      TacticalCueType.hazard => AppTheme.dangerRed,
+                      TacticalCueType.regroup => AppTheme.primaryCyan,
+                      TacticalCueType.fuel => AppTheme.warningAmber,
                       TacticalCueType.turnLeft || TacticalCueType.turnRight => const Color(0xFF69F0AE),
-                      TacticalCueType.rest => const Color(0xFFFF9100),
+                      TacticalCueType.rest => AppTheme.accentOrange,
                     };
 
                     final cueIcon = switch (activePing.cue) {
@@ -784,7 +785,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF12151B).withValues(alpha: 0.95),
+                            color: AppTheme.darkSurface.withValues(alpha: 0.95),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: cueColor, width: 1.5),
                             boxShadow: [
@@ -970,7 +971,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                     final span = ref.watch(convoySpanProvider);
                     if (!span.hasFormation) return const SizedBox.shrink();
 
-                    final spanColor = span.isSpanExcessive ? const Color(0xFFFF9100) : const Color(0xFF00E5FF);
+                    final spanColor = span.isSpanExcessive ? AppTheme.accentOrange : AppTheme.primaryCyan;
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
@@ -978,7 +979,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF12151B).withValues(alpha: 0.9),
+                          color: AppTheme.darkSurface.withValues(alpha: 0.9),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(color: spanColor.withValues(alpha: 0.6), width: 1.2),
                           boxShadow: [
@@ -1007,7 +1008,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFF9100),
+                                  color: AppTheme.accentOrange,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: const Text(
@@ -1030,7 +1031,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                     if (!backtrack.isBacktrackActive) return const SizedBox.shrink();
 
                     final isOffTrail = backtrack.isOffTrail;
-                    final pillColor = isOffTrail ? const Color(0xFFFF1744) : const Color(0xFFFF9100);
+                    final pillColor = isOffTrail ? AppTheme.dangerRed : AppTheme.accentOrange;
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
@@ -1038,7 +1039,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF12151B).withValues(alpha: 0.95),
+                          color: AppTheme.darkSurface.withValues(alpha: 0.95),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: pillColor, width: 1.2),
                           boxShadow: [
@@ -1103,12 +1104,12 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF12151B).withValues(alpha: 0.95),
+                          color: AppTheme.darkSurface.withValues(alpha: 0.95),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFFFD600), width: 1.2),
+                          border: Border.all(color: AppTheme.warningAmber, width: 1.2),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFFFD600).withValues(alpha: 0.25),
+                              color: AppTheme.warningAmber.withValues(alpha: 0.25),
                               blurRadius: 10,
                             ),
                           ],
@@ -1116,12 +1117,12 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.navigation_rounded, color: Color(0xFFFFD600), size: 16),
+                            const Icon(Icons.navigation_rounded, color: AppTheme.warningAmber, size: 16),
                             const SizedBox(width: 8),
                             Text(
                               'TARGET: ${label ?? "POI"} • $distStr',
                               style: GoogleFonts.shareTechMono(
-                                color: const Color(0xFFFFD600),
+                                color: AppTheme.warningAmber,
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 0.8,
@@ -1164,7 +1165,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.gps_fixed, size: 14, color: Color(0xFF00E5FF)),
+                            Icon(Icons.gps_fixed, size: 14, color: AppTheme.primaryCyan),
                             SizedBox(width: 8),
                             Text(
                               'Ketuk untuk ikuti lokasi otomatis',

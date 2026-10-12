@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/tracker_models.dart';
+import '../utils/app_theme.dart';
 
 class SosBeaconMarker extends StatefulWidget {
   final SosAlert alert;
@@ -65,7 +66,7 @@ class _SosBeaconMarkerState extends State<SosBeaconMarker> with SingleTickerProv
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFFFF1744).withValues(alpha: _opacityAnimation.value),
+                        color: AppTheme.dangerRed.withValues(alpha: _opacityAnimation.value),
                         width: 2.5,
                       ),
                     ),
@@ -76,12 +77,12 @@ class _SosBeaconMarkerState extends State<SosBeaconMarker> with SingleTickerProv
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12151B),
+                    color: AppTheme.darkSurface,
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFFF1744), width: 2.5),
+                    border: Border.all(color: AppTheme.dangerRed, width: 2.5),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFF1744).withValues(alpha: 0.6),
+                        color: AppTheme.dangerRed.withValues(alpha: 0.6),
                         blurRadius: 10,
                         spreadRadius: 2,
                       ),
@@ -90,7 +91,7 @@ class _SosBeaconMarkerState extends State<SosBeaconMarker> with SingleTickerProv
                   child: const Center(
                     child: Icon(
                       Icons.warning_amber_rounded,
-                      color: Color(0xFFFF1744),
+                      color: AppTheme.dangerRed,
                       size: 20,
                     ),
                   ),
@@ -101,7 +102,7 @@ class _SosBeaconMarkerState extends State<SosBeaconMarker> with SingleTickerProv
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF1744),
+                      color: AppTheme.dangerRed,
                       borderRadius: BorderRadius.circular(6),
                       boxShadow: [
                         BoxShadow(

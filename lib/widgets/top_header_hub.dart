@@ -13,6 +13,7 @@ import 'modals/join_create_room_sheet.dart';
 import 'modals/sos_modal_sheet.dart';
 import 'modals/quick_ping_sheet.dart';
 import '../utils/custom_snackbar.dart';
+import '../utils/app_theme.dart';
 
 class TopHeaderHub extends ConsumerStatefulWidget {
   const TopHeaderHub({super.key});
@@ -81,8 +82,8 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                     const SizedBox(width: 8),
                                     _ActionButton(
                                       icon: Icons.campaign_rounded,
-                                      iconColor: const Color(0xFF00E5FF),
-                                      backgroundColor: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                                      iconColor: AppTheme.primaryCyan,
+                                      backgroundColor: AppTheme.primaryCyan.withValues(alpha: 0.15),
                                       onTap: () {
                                         setState(() => _isExpanded = false);
                                         _showQuickPingSheet(context);
@@ -91,8 +92,8 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                     const SizedBox(width: 8),
                                     _ActionButton(
                                       icon: Icons.sos_rounded,
-                                      iconColor: const Color(0xFFFF1744),
-                                      backgroundColor: const Color(0xFFFF1744).withValues(alpha: 0.15),
+                                      iconColor: AppTheme.dangerRed,
+                                      backgroundColor: AppTheme.dangerRed.withValues(alpha: 0.15),
                                       onTap: () {
                                         setState(() => _isExpanded = false);
                                         _showSosSheet(context);
@@ -127,9 +128,9 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                     const SizedBox(width: 8),
                                     _ActionButton(
                                       icon: Icons.undo_rounded,
-                                      iconColor: const Color(0xFFFF9100),
+                                      iconColor: AppTheme.accentOrange,
                                       backgroundColor: ref.watch(backtrackActiveProvider)
-                                          ? const Color(0xFFFF9100).withValues(alpha: 0.25)
+                                          ? AppTheme.accentOrange.withValues(alpha: 0.25)
                                           : null,
                                       onTap: () {
                                         setState(() => _isExpanded = false);
@@ -250,7 +251,7 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                               const SizedBox(width: 4),
                               _ActionButton(
                                 icon: Icons.campaign_rounded,
-                                iconColor: const Color(0xFF00E5FF),
+                                iconColor: AppTheme.primaryCyan,
                                 onTap: () {
                                   HapticFeedback.lightImpact();
                                   _showQuickPingSheet(context);
@@ -259,9 +260,9 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                               const SizedBox(width: 4),
                               _ActionButton(
                                 icon: Icons.undo_rounded,
-                                iconColor: const Color(0xFFFF9100),
+                                iconColor: AppTheme.accentOrange,
                                 backgroundColor: ref.watch(backtrackActiveProvider)
-                                    ? const Color(0xFFFF9100).withValues(alpha: 0.25)
+                                    ? AppTheme.accentOrange.withValues(alpha: 0.25)
                                     : null,
                                 onTap: () {
                                   HapticFeedback.lightImpact();
@@ -278,9 +279,9 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                             ],
                             _ActionButton(
                               icon: Icons.sos_rounded,
-                              iconColor: const Color(0xFFFF1744),
+                              iconColor: AppTheme.dangerRed,
                               backgroundColor: hasActiveSos
-                                  ? const Color(0xFFFF1744).withValues(alpha: 0.35)
+                                  ? AppTheme.dangerRed.withValues(alpha: 0.35)
                                   : null,
                               badgeCount: hasActiveSos ? 1 : null,
                               onTap: () {
@@ -347,11 +348,11 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF12151B) : Colors.white,
+        backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Keluar dari Room?',
-          style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0D1117)),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textDark),
         ),
         content: Text(
           'Anda akan berhenti berbagi lokasi real-time dengan anggota room ini.',
@@ -363,7 +364,7 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
             child: Text('BATAL', style: TextStyle(color: isDark ? Colors.white60 : Colors.black54)),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: const Color(0xFFFF1744)),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.dangerRed),
             onPressed: () {
               Navigator.pop(ctx);
               ref.read(roomProvider.notifier).leaveRoom();
