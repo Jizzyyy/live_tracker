@@ -34,12 +34,26 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
   bool _showSpeedHeatmap = true;
   late CompletedTrip _currentTrip;
   late final RoutePlaybackController _playbackController;
+  late final List<LatLng> _cachedPoints;
+  late final LatLngBounds _cachedBounds;
+  late final List<Polyline> _cachedHeatmapPolylines;
 
   @override
   void initState() {
     super.initState();
     _currentTrip = widget.trip;
     _playbackController = RoutePlaybackController(trip: widget.trip);
+    _cachedPoints = _currentTrip.routePoints.map((p) => LatLng(p.latitude, p.longitude)).toList();
+    _cachedBounds = calculateSafeBounds(_cachedPoints);
+    _cachedHeatmapPolylines = _currentTrip.routePoints.length >= 2
+        ? SpeedHeatmapSegmenter.segmentRoute(_currentTrip.routePoints).map((seg) {
+            return Polyline(
+              points: seg.points,
+              strokeWidth: 4.8,
+              color: seg.color.withValues(alpha: 0.9),
+            );
+          }).toList()
+        : const [];
   }
 
   @override
@@ -278,8 +292,8 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
   Widget build(BuildContext context) {
     final trip = _currentTrip;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final points = trip.routePoints.map((p) => LatLng(p.latitude, p.longitude)).toList();
-    final bounds = calculateSafeBounds(points);
+    final points = _cachedPoints;
+    final bounds = _cachedBounds;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -441,14 +455,8 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                         tileUpdateTransformer: TileUpdateTransformers.throttle(const Duration(milliseconds: 250)),
                       ),
                       PolylineLayer(
-                        polylines: _showSpeedHeatmap && _currentTrip.routePoints.length >= 2
-                            ? SpeedHeatmapSegmenter.segmentRoute(_currentTrip.routePoints).map((seg) {
-                                return Polyline(
-                                  points: seg.points,
-                                  strokeWidth: 4.8,
-                                  color: seg.color.withValues(alpha: 0.9),
-                                );
-                              }).toList()
+                        polylines: _showSpeedHeatmap && _cachedHeatmapPolylines.isNotEmpty
+                            ? _cachedHeatmapPolylines
                             : [
                                 Polyline(
                                   points: points,

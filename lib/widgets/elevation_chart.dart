@@ -20,12 +20,41 @@ class ElevationChart extends StatefulWidget {
 
 class _ElevationChartState extends State<ElevationChart> {
   double? _selectedXFraction;
+  late List<double> _altitudes;
+  double _minAlt = 0.0;
+  double _maxAlt = 0.0;
+  bool _hasValidData = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initAltitudeData();
+  }
+
+  @override
+  void didUpdateWidget(ElevationChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.trip != widget.trip) {
+      _initAltitudeData();
+    }
+  }
+
+  void _initAltitudeData() {
+    final pointsWithAlt = widget.trip.routePoints.where((p) => p.altitude != null).toList();
+    if (pointsWithAlt.length < 2) {
+      _altitudes = const [];
+      _hasValidData = false;
+      return;
+    }
+    _altitudes = pointsWithAlt.map((p) => p.altitude!).toList();
+    _minAlt = _altitudes.reduce((a, b) => a < b ? a : b);
+    _maxAlt = _altitudes.reduce((a, b) => a > b ? a : b);
+    _hasValidData = true;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final pointsWithAlt = widget.trip.routePoints.where((p) => p.altitude != null).toList();
-
-    if (pointsWithAlt.length < 2) {
+    if (!_hasValidData) {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
         alignment: Alignment.center,
@@ -39,10 +68,6 @@ class _ElevationChartState extends State<ElevationChart> {
       );
     }
 
-    final altitudes = pointsWithAlt.map((p) => p.altitude!).toList();
-    final minAlt = altitudes.reduce((a, b) => a < b ? a : b);
-    final maxAlt = altitudes.reduce((a, b) => a > b ? a : b);
-
     final effectiveFraction = _selectedXFraction ?? widget.externalCursorFraction;
 
     // Selected point inspection
@@ -50,11 +75,11 @@ class _ElevationChartState extends State<ElevationChart> {
     double? selectedAlt;
     double? selectedDistKm;
     if (effectiveFraction != null) {
-      selectedIndex = (effectiveFraction * (altitudes.length - 1)).round().clamp(0, altitudes.length - 1);
-      selectedAlt = altitudes[selectedIndex];
+      selectedIndex = (effectiveFraction * (_altitudes.length - 1)).round().clamp(0, _altitudes.length - 1);
+      selectedAlt = _altitudes[selectedIndex];
 
       final totalDistM = widget.trip.distanceMeters;
-      final distFraction = (selectedIndex / (altitudes.length - 1)).clamp(0.0, 1.0);
+      final distFraction = (selectedIndex / (_altitudes.length - 1)).clamp(0.0, 1.0);
       selectedDistKm = (totalDistM * distFraction) / 1000;
     }
 
@@ -124,9 +149,9 @@ class _ElevationChartState extends State<ElevationChart> {
             },
             child: CustomPaint(
               painter: _ElevationChartPainter(
-                altitudes: altitudes,
-                minAlt: minAlt,
-                maxAlt: maxAlt,
+                altitudes: _altitudes,
+                minAlt: _minAlt,
+                maxAlt: _maxAlt,
                 isDark: widget.isDark,
                 selectedFraction: effectiveFraction,
               ),
