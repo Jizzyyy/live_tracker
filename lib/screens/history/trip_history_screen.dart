@@ -1,44 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../models/trip_history_model.dart';
 import '../../providers/tracker_providers.dart';
 import '../../utils/ui_helpers.dart';
 import '../../utils/custom_snackbar.dart';
 import 'trip_detail_screen.dart';
 
-enum TripSortOption { newest, longestDistance, longestDuration }
-
-class TripHistoryScreen extends ConsumerStatefulWidget {
+class TripHistoryScreen extends ConsumerWidget {
   const TripHistoryScreen({super.key});
 
   @override
-  ConsumerState<TripHistoryScreen> createState() => _TripHistoryScreenState();
-}
-
-class _TripHistoryScreenState extends ConsumerState<TripHistoryScreen> {
-  TripSortOption _sortOption = TripSortOption.newest;
-
-  List<CompletedTrip> _sortTrips(List<CompletedTrip> original) {
-    final list = List<CompletedTrip>.from(original);
-    switch (_sortOption) {
-      case TripSortOption.newest:
-        list.sort((a, b) => b.startTime.compareTo(a.startTime));
-        break;
-      case TripSortOption.longestDistance:
-        list.sort((a, b) => b.distanceMeters.compareTo(a.distanceMeters));
-        break;
-      case TripSortOption.longestDuration:
-        list.sort((a, b) => b.durationSeconds.compareTo(a.durationSeconds));
-        break;
-    }
-    return list;
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final rawTrips = ref.watch(tripHistoryProvider);
-    final trips = _sortTrips(rawTrips);
+    final trips = ref.watch(sortedTripHistoryProvider);
+    final sortOption = ref.watch(tripSortOptionProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -188,23 +163,23 @@ class _TripHistoryScreenState extends ConsumerState<TripHistoryScreen> {
                                 const SizedBox(width: 8),
                                 ChoiceChip(
                                   label: const Text('TERBARU'),
-                                  selected: _sortOption == TripSortOption.newest,
+                                  selected: sortOption == TripSortOption.newest,
                                   labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                                  onSelected: (_) => setState(() => _sortOption = TripSortOption.newest),
+                                  onSelected: (_) => ref.read(tripSortOptionProvider.notifier).state = TripSortOption.newest,
                                 ),
                                 const SizedBox(width: 6),
                                 ChoiceChip(
                                   label: const Text('JARAK'),
-                                  selected: _sortOption == TripSortOption.longestDistance,
+                                  selected: sortOption == TripSortOption.longestDistance,
                                   labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                                  onSelected: (_) => setState(() => _sortOption = TripSortOption.longestDistance),
+                                  onSelected: (_) => ref.read(tripSortOptionProvider.notifier).state = TripSortOption.longestDistance,
                                 ),
                                 const SizedBox(width: 6),
                                 ChoiceChip(
                                   label: const Text('DURASI'),
-                                  selected: _sortOption == TripSortOption.longestDuration,
+                                  selected: sortOption == TripSortOption.longestDuration,
                                   labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                                  onSelected: (_) => setState(() => _sortOption = TripSortOption.longestDuration),
+                                  onSelected: (_) => ref.read(tripSortOptionProvider.notifier).state = TripSortOption.longestDuration,
                                 ),
                               ],
                             ),

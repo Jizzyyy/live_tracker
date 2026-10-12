@@ -917,6 +917,31 @@ class TripHistoryNotifier extends Notifier<List<CompletedTrip>> {
 }
 final tripHistoryProvider = NotifierProvider<TripHistoryNotifier, List<CompletedTrip>>(TripHistoryNotifier.new);
 
+// --- Trip History Sorting & Memoization ---
+enum TripSortOption { newest, longestDistance, longestDuration }
+
+final tripSortOptionProvider = StateProvider<TripSortOption>((ref) => TripSortOption.newest);
+
+final sortedTripHistoryProvider = Provider<List<CompletedTrip>>((ref) {
+  final trips = ref.watch(tripHistoryProvider);
+  final sortOption = ref.watch(tripSortOptionProvider);
+  if (trips.isEmpty) return const [];
+
+  final list = List<CompletedTrip>.from(trips);
+  switch (sortOption) {
+    case TripSortOption.newest:
+      list.sort((a, b) => b.startTime.compareTo(a.startTime));
+      break;
+    case TripSortOption.longestDistance:
+      list.sort((a, b) => b.distanceMeters.compareTo(a.distanceMeters));
+      break;
+    case TripSortOption.longestDuration:
+      list.sort((a, b) => b.durationSeconds.compareTo(a.durationSeconds));
+      break;
+  }
+  return list;
+});
+
 // --- Focus State ---
 final focusedMemberProvider = StateProvider<MemberLocation?>((ref) => null);
 
