@@ -166,14 +166,7 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                               }
 
                               // Auto sanitize protocol scheme
-                              if (url.startsWith('https://')) {
-                                url = url.replaceFirst('https://', 'wss://');
-                              } else if (url.startsWith('http://')) {
-                                url = url.replaceFirst('http://', 'ws://');
-                              } else if (!url.startsWith('ws://') &&
-                                  !url.startsWith('wss://')) {
-                                url = 'wss://$url';
-                              }
+                              url = WebSocketService.toWsUrl(url);
 
                               setState(() => _isTesting = true);
                               CustomSnackbar.show(

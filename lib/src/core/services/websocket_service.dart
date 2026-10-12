@@ -19,16 +19,22 @@ class WebSocketService {
   bool get isConnected => _channel != null;
   int get queuedCount => _offlineQueue.length;
 
+  /// Converts an HTTP/HTTPS or schemeless URL into a valid ws:// or wss:// URL.
+  static String toWsUrl(String url) {
+    final trimmed = url.trim();
+    if (trimmed.startsWith('http://')) {
+      return trimmed.replaceFirst('http://', 'ws://');
+    } else if (trimmed.startsWith('https://')) {
+      return trimmed.replaceFirst('https://', 'wss://');
+    } else if (!trimmed.startsWith('ws://') && !trimmed.startsWith('wss://')) {
+      return 'wss://$trimmed';
+    }
+    return trimmed;
+  }
+
   /// Quick health check to test if a WebSocket URL is responsive.
   static Future<bool> testConnection(String url, {Duration timeout = const Duration(seconds: 4)}) async {
-    String wsUrl = url.trim();
-    if (wsUrl.startsWith('http://')) {
-      wsUrl = wsUrl.replaceFirst('http://', 'ws://');
-    } else if (wsUrl.startsWith('https://')) {
-      wsUrl = wsUrl.replaceFirst('https://', 'wss://');
-    } else if (!wsUrl.startsWith('ws://') && !wsUrl.startsWith('wss://')) {
-      wsUrl = 'wss://$wsUrl';
-    }
+    final wsUrl = toWsUrl(url);
 
     try {
       final uri = Uri.parse(wsUrl);
@@ -81,14 +87,7 @@ class WebSocketService {
     _channel = null;
 
     // Ensure URL has ws: or wss: scheme
-    String wsUrl = _url!;
-    if (wsUrl.startsWith('http://')) {
-      wsUrl = wsUrl.replaceFirst('http://', 'ws://');
-    } else if (wsUrl.startsWith('https://')) {
-      wsUrl = wsUrl.replaceFirst('https://', 'wss://');
-    } else if (!wsUrl.startsWith('ws://') && !wsUrl.startsWith('wss://')) {
-      wsUrl = 'wss://$wsUrl'; // Default to secure wss:// for public servers
-    }
+    final wsUrl = toWsUrl(_url!);
 
     try {
       // Some versions of web_socket_channel expect Uri, others expect String or Uri.
