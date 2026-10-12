@@ -26,7 +26,10 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
 
   @override
   Widget build(BuildContext context) {
-    final roomState = ref.watch(roomProvider);
+    final status = ref.watch(roomProvider.select((r) => r.status));
+    final roomCode = ref.watch(roomProvider.select((r) => r.roomCode));
+    final membersCount = ref.watch(roomProvider.select((r) => r.members.length));
+    final hasActiveSos = ref.watch(roomProvider.select((r) => r.activeSos != null));
     final theme = Theme.of(context);
 
     return RepaintBoundary(
@@ -59,7 +62,7 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                       ? Row(
                           key: const ValueKey('expanded_hub'),
                           children: [
-                            _PulseDot(status: roomState.status),
+                            _PulseDot(status: status),
                             const SizedBox(width: 8),
                             Expanded(
                               child: FittedBox(
@@ -98,10 +101,10 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                     const SizedBox(width: 8),
                                     _ActionButton(
                                       icon: Icons.group_outlined,
-                                      badgeCount: roomState.members.length,
+                                      badgeCount: membersCount,
                                       onTap: () {
                                         setState(() => _isExpanded = false);
-                                        if (roomState.roomCode == null) {
+                                        if (roomCode == null) {
                                           showModalBottomSheet(
                                             context: context,
                                             backgroundColor: Colors.transparent,
@@ -164,14 +167,14 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                       : Row(
                           key: const ValueKey('collapsed_hub'),
                           children: [
-                            _PulseDot(status: roomState.status),
+                            _PulseDot(status: status),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: roomState.roomCode != null
+                              child: roomCode != null
                                   ? GestureDetector(
                                       onTap: () {
                                         HapticFeedback.lightImpact();
-                                        Clipboard.setData(ClipboardData(text: roomState.roomCode!));
+                                        Clipboard.setData(ClipboardData(text: roomCode));
                                         CustomSnackbar.show(
                                           context,
                                           message: 'Room Code Copied!',
@@ -179,7 +182,7 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                         );
                                       },
                                       child: Text(
-                                        roomState.roomCode!,
+                                        roomCode,
                                         style: GoogleFonts.inter(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w800,
@@ -214,13 +217,13 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                       ],
                                     ),
                             ),
-                            if (roomState.roomCode != null) ...[
+                            if (roomCode != null) ...[
                               _ActionButton(
                                 icon: Icons.share_rounded,
                                 iconColor: const Color(0xFF69F0AE),
                                 onTap: () {
                                   HapticFeedback.lightImpact();
-                                  final code = roomState.roomCode!;
+                                  final code = roomCode;
                                   Clipboard.setData(ClipboardData(text: code));
                                   SharePlus.instance.share(
                                     ShareParams(
@@ -276,10 +279,10 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                             _ActionButton(
                               icon: Icons.sos_rounded,
                               iconColor: const Color(0xFFFF1744),
-                              backgroundColor: roomState.activeSos != null
+                              backgroundColor: hasActiveSos
                                   ? const Color(0xFFFF1744).withValues(alpha: 0.35)
                                   : null,
-                              badgeCount: roomState.activeSos != null ? 1 : null,
+                              badgeCount: hasActiveSos ? 1 : null,
                               onTap: () {
                                 HapticFeedback.heavyImpact();
                                 _showSosSheet(context);
