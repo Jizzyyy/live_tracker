@@ -12,6 +12,7 @@ import '../repositories/trip_history_repository.dart';
 import '../services/background_tracking_service.dart';
 import '../src/core/services/location_service.dart';
 import '../src/core/services/websocket_service.dart';
+import '../src/core/constants.dart';
 import '../utils/trail_backtracker.dart';
 
 // --- Shared Prefs ---
@@ -68,7 +69,7 @@ List<MapStyleOption> getAvailableMapStyles([String googleApiKey = '', String car
     const MapStyleOption(
       id: 'dark',
       name: 'Midnight Dark (Esri Canvas)',
-      urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      urlTemplate: MapTileUrls.esriDarkCanvas,
       subdomains: [],
       attribution: 'Esri, HERE, Garmin, OpenStreetMap',
     ),
@@ -76,7 +77,7 @@ List<MapStyleOption> getAvailableMapStyles([String googleApiKey = '', String car
     const MapStyleOption(
       id: 'osm',
       name: 'OSM Standard (OpenStreetMap)',
-      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      urlTemplate: MapTileUrls.osmStandard,
       subdomains: [],
       attribution: 'OpenStreetMap contributors',
     ),
@@ -84,7 +85,7 @@ List<MapStyleOption> getAvailableMapStyles([String googleApiKey = '', String car
     const MapStyleOption(
       id: 'light',
       name: 'Clean Light (Esri Canvas)',
-      urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      urlTemplate: MapTileUrls.esriLightCanvas,
       subdomains: [],
       attribution: 'Esri, HERE, Garmin, OpenStreetMap',
     ),
@@ -92,7 +93,7 @@ List<MapStyleOption> getAvailableMapStyles([String googleApiKey = '', String car
     const MapStyleOption(
       id: 'satellite',
       name: 'Satellite Aerial (Esri Imagery)',
-      urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      urlTemplate: MapTileUrls.esriSatellite,
       subdomains: [],
       attribution: 'Esri, Maxar, Earthstar Geographics',
     ),
@@ -105,14 +106,14 @@ List<MapStyleOption> getAvailableMapStyles([String googleApiKey = '', String car
       MapStyleOption(
         id: 'carto_dark',
         name: 'CartoDB Dark Matter (Auth)',
-        urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png$keyParam',
+        urlTemplate: MapTileUrls.cartoDark(keyParam),
         subdomains: const ['a', 'b', 'c', 'd'],
         attribution: 'CARTO, OpenStreetMap',
       ),
       MapStyleOption(
         id: 'carto_light',
         name: 'CartoDB Positron (Auth)',
-        urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png$keyParam',
+        urlTemplate: MapTileUrls.cartoLight(keyParam),
         subdomains: const ['a', 'b', 'c', 'd'],
         attribution: 'CARTO, OpenStreetMap',
       ),
@@ -125,21 +126,21 @@ List<MapStyleOption> getAvailableMapStyles([String googleApiKey = '', String car
       MapStyleOption(
         id: 'google_roadmap',
         name: 'Google Maps (Roadmap)',
-        urlTemplate: 'https://mt0.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&key=$googleApiKey',
+        urlTemplate: MapTileUrls.googleRoadmap(googleApiKey),
         subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
         attribution: 'Google Maps',
       ),
       MapStyleOption(
         id: 'google_satellite',
         name: 'Google Maps (Satellite Hybrid)',
-        urlTemplate: 'https://mt0.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&key=$googleApiKey',
+        urlTemplate: MapTileUrls.googleSatellite(googleApiKey),
         subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
         attribution: 'Google Maps',
       ),
       MapStyleOption(
         id: 'google_terrain',
         name: 'Google Maps (Terrain)',
-        urlTemplate: 'https://mt0.google.com/vt/lyrs=p&x={x}&y={y}&z={z}&key=$googleApiKey',
+        urlTemplate: MapTileUrls.googleTerrain(googleApiKey),
         subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
         attribution: 'Google Maps',
       ),

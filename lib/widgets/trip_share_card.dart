@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import '../models/trip_history_model.dart';
 import '../utils/map_bounds_helper.dart';
 import '../utils/speed_heatmap_segmenter.dart';
+import '../src/core/constants.dart';
 
 class TripShareCard extends StatelessWidget {
   final CompletedTrip trip;
@@ -60,9 +61,7 @@ class TripShareCard extends StatelessWidget {
     final textSecondary = isDark ? Colors.white60 : const Color(0xFF64748B);
     final dividerColor = isDark ? Colors.white10 : Colors.black12;
     // Watermark-free Esri Canvas tiles for crystal-clear exports
-    final mapTileUrl = isDark 
-        ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
-        : 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}';
+    final mapTileUrl = isDark ? MapTileUrls.esriDarkCanvas : MapTileUrls.esriLightCanvas;
     final polylineColor = isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7);
     final footerBg = isDark ? const Color(0xFF12151B) : const Color(0xFFF1F5F9);
     final footerText = isDark ? Colors.white30 : const Color(0xFF94A3B8);
