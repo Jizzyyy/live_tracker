@@ -151,6 +151,39 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                         _showSettingsSheet(context);
                                       },
                                     ),
+                                    if (roomCode != null) ...[
+                                      const SizedBox(width: 8),
+                                      _ActionButton(
+                                        icon: Icons.share_rounded,
+                                        iconColor: const Color(0xFF69F0AE),
+                                        onTap: () {
+                                          setState(() => _isExpanded = false);
+                                          HapticFeedback.lightImpact();
+                                          Clipboard.setData(ClipboardData(text: roomCode));
+                                          SharePlus.instance.share(
+                                            ShareParams(
+                                              text: 'Gabung room konvoi Live Tracker saya! Kode: $roomCode',
+                                              subject: 'Undangan Room Konvoi Live Tracker',
+                                            ),
+                                          );
+                                          CustomSnackbar.show(
+                                            context,
+                                            message: 'Kode Room $roomCode disalin ke clipboard!',
+                                            type: SnackbarType.success,
+                                          );
+                                        },
+                                      ),
+                                      const SizedBox(width: 8),
+                                      _ActionButton(
+                                        icon: Icons.logout_rounded,
+                                        iconColor: Colors.redAccent,
+                                        onTap: () {
+                                          setState(() => _isExpanded = false);
+                                          HapticFeedback.lightImpact();
+                                          _confirmLeaveRoom(context);
+                                        },
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),
@@ -169,28 +202,40 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                           key: const ValueKey('collapsed_hub'),
                           children: [
                             _PulseDot(status: status),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 10),
                             Expanded(
                               child: roomCode != null
-                                  ? GestureDetector(
+                                  ? InkWell(
+                                      borderRadius: BorderRadius.circular(12),
                                       onTap: () {
                                         HapticFeedback.lightImpact();
                                         Clipboard.setData(ClipboardData(text: roomCode));
                                         CustomSnackbar.show(
                                           context,
-                                          message: 'Room Code Copied!',
+                                          message: 'Kode Room $roomCode disalin!',
                                           type: SnackbarType.success,
                                         );
                                       },
-                                      child: Text(
-                                        roomCode,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w800,
-                                          letterSpacing: 2,
-                                          color: theme.colorScheme.onSurface,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.meeting_room_outlined, size: 16, color: AppTheme.primaryCyan),
+                                          const SizedBox(width: 6),
+                                          Flexible(
+                                            child: Text(
+                                              roomCode,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w800,
+                                                letterSpacing: 1.5,
+                                                color: theme.colorScheme.onSurface,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Icon(Icons.copy_rounded, size: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
+                                        ],
                                       ),
                                     )
                                   : Row(
@@ -218,61 +263,14 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                       ],
                                     ),
                             ),
+                            const SizedBox(width: 6),
                             if (roomCode != null) ...[
-                              _ActionButton(
-                                icon: Icons.share_rounded,
-                                iconColor: const Color(0xFF69F0AE),
-                                onTap: () {
-                                  HapticFeedback.lightImpact();
-                                  final code = roomCode;
-                                  Clipboard.setData(ClipboardData(text: code));
-                                  SharePlus.instance.share(
-                                    ShareParams(
-                                      text: 'Gabung room konvoi Live Tracker saya! Kode: $code',
-                                      subject: 'Undangan Room Konvoi Live Tracker',
-                                    ),
-                                  );
-                                  CustomSnackbar.show(
-                                    context,
-                                    message: 'Kode Room $code disalin ke clipboard!',
-                                    type: SnackbarType.success,
-                                  );
-                                },
-                              ),
-                              const SizedBox(width: 4),
-                              _ActionButton(
-                                icon: Icons.logout_rounded,
-                                iconColor: Colors.redAccent,
-                                onTap: () {
-                                  HapticFeedback.lightImpact();
-                                  _confirmLeaveRoom(context);
-                                },
-                              ),
-                              const SizedBox(width: 4),
                               _ActionButton(
                                 icon: Icons.campaign_rounded,
                                 iconColor: AppTheme.primaryCyan,
                                 onTap: () {
                                   HapticFeedback.lightImpact();
                                   _showQuickPingSheet(context);
-                                },
-                              ),
-                              const SizedBox(width: 4),
-                              _ActionButton(
-                                icon: Icons.undo_rounded,
-                                iconColor: AppTheme.accentOrange,
-                                backgroundColor: ref.watch(backtrackActiveProvider)
-                                    ? AppTheme.accentOrange.withValues(alpha: 0.25)
-                                    : null,
-                                onTap: () {
-                                  HapticFeedback.lightImpact();
-                                  final isAct = ref.read(backtrackActiveProvider);
-                                  ref.read(backtrackActiveProvider.notifier).state = !isAct;
-                                  CustomSnackbar.show(
-                                    context,
-                                    message: !isAct ? 'Navigasi Backtrack Aktif!' : 'Navigasi Backtrack Dinonaktifkan',
-                                    type: SnackbarType.info,
-                                  );
                                 },
                               ),
                               const SizedBox(width: 4),
