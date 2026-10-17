@@ -39,11 +39,12 @@ class _SosModalSheetState extends ConsumerState<SosModalSheet> {
     final activeSos = ref.watch(roomProvider.select((r) => r.activeSos));
     final inRoom = ref.watch(roomProvider.select((r) => r.roomCode != null));
 
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: PremiumGlass(
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: PremiumGlass(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         child: SingleChildScrollView(
@@ -240,6 +241,7 @@ class _SosModalSheetState extends ConsumerState<SosModalSheet> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }

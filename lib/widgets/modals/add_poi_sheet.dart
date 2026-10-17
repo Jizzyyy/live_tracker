@@ -33,11 +33,12 @@ class _AddPoiSheetState extends ConsumerState<AddPoiSheet> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: PremiumGlass(
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: PremiumGlass(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         child: SingleChildScrollView(
@@ -188,7 +189,8 @@ class _AddPoiSheetState extends ConsumerState<AddPoiSheet> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _categoryChip(PoiCategory category, String label, IconData icon, Color color) {
