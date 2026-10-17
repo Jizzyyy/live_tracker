@@ -18,6 +18,7 @@ import '../../utils/custom_snackbar.dart';
 import '../../utils/map_bounds_helper.dart';
 import '../../widgets/trip_share_card.dart';
 import '../../widgets/elevation_chart.dart';
+import '../../utils/app_theme.dart';
 
 class TripDetailScreen extends ConsumerStatefulWidget {
   final CompletedTrip trip;
@@ -69,11 +70,11 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
     final newTitle = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF12151B) : Colors.white,
+        backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Ubah Nama Rute',
-          style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0D1117)),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textDark),
         ),
         content: TextField(
           controller: controller,
@@ -135,13 +136,13 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF12151B) : Colors.white,
+        backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Hapus rute ini?',
           style: GoogleFonts.inter(
             fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : const Color(0xFF0D1117),
+            color: isDark ? Colors.white : AppTheme.textDark,
           ),
         ),
         content: Text(
@@ -194,7 +195,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12151B).withValues(alpha: 0.9),
+                    color: AppTheme.darkSurface.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: Colors.white12),
                   ),
@@ -211,7 +212,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                         ChoiceChip(
                           label: const Text('DARK'),
                           selected: cardIsDark,
-                          selectedColor: const Color(0xFF00E5FF),
+                          selectedColor: AppTheme.primaryCyan,
                           labelStyle: TextStyle(
                             color: cardIsDark ? Colors.black : Colors.white70,
                             fontWeight: FontWeight.bold,
@@ -225,7 +226,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                         ChoiceChip(
                           label: const Text('LIGHT'),
                           selected: !cardIsDark,
-                          selectedColor: const Color(0xFF00E5FF),
+                          selectedColor: AppTheme.primaryCyan,
                           labelStyle: TextStyle(
                             color: !cardIsDark ? Colors.black : Colors.white70,
                             fontWeight: FontWeight.bold,
@@ -240,11 +241,14 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                   ),
                 ),
 
-                // Card with selectable Theme (Dark/Light)
-                TripShareCard(
-                  trip: widget.trip, 
-                  boundaryKey: _shareCardKey,
-                  isDark: cardIsDark,
+                // Card with selectable Theme (Dark/Light) - Responsive scaling
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: TripShareCard(
+                    trip: widget.trip, 
+                    boundaryKey: _shareCardKey,
+                    isDark: cardIsDark,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 
@@ -265,7 +269,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                     const SizedBox(width: 12),
                     FilledButton.icon(
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF00E5FF),
+                        backgroundColor: AppTheme.primaryCyan,
                         foregroundColor: Colors.black,
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
