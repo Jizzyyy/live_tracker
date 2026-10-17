@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../src/core/constants.dart';
 import '../providers/tracker_providers.dart';
 import '../models/tracker_models.dart';
+import '../utils/trail_backtracker.dart';
 import '../widgets/top_header_hub.dart';
 import '../widgets/telemetry_dock.dart';
 import '../widgets/custom_user_marker.dart';
@@ -514,11 +516,17 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
             top: MediaQuery.of(context).padding.top + 76.0,
             left: 16,
             right: 16,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // GPS Status & Permission Warning Banner
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.42,
+              ),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // GPS Status & Permission Warning Banner
                 Consumer(
                   builder: (context, ref, _) {
                     final posAsync = ref.watch(locationStreamProvider);
@@ -965,177 +973,41 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                   },
                 ),
 
-                // Convoy Formation Span Indicator
+                // Horizontal Tactical Navigation HUD Bar (Span, Backtrack, Target Vector)
                 Consumer(
                   builder: (context, ref, _) {
                     final span = ref.watch(convoySpanProvider);
-                    if (!span.hasFormation) return const SizedBox.shrink();
-
-                    final spanColor = span.isSpanExcessive ? AppTheme.accentOrange : AppTheme.primaryCyan;
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      alignment: Alignment.center,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: AppTheme.darkSurface.withValues(alpha: 0.9),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: spanColor.withValues(alpha: 0.6), width: 1.2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: spanColor.withValues(alpha: 0.2),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.social_distance_rounded, size: 14, color: spanColor),
-                            const SizedBox(width: 6),
-                            Text(
-                              '[LEAD] ${span.leaderName} ↔ [SWEEP] ${span.sweeperName} • SPAN: ${span.formattedSpan}',
-                              style: GoogleFonts.shareTechMono(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: spanColor,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            if (span.isSpanExcessive) ...[
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.accentOrange,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Text(
-                                  'GAP BESAR',
-                                  style: TextStyle(color: Colors.black, fontSize: 8, fontWeight: FontWeight.w900),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-
-                // Backtrack Navigation HUD Pill
-                Consumer(
-                  builder: (context, ref, _) {
                     final backtrack = ref.watch(backtrackProvider);
-                    if (!backtrack.isBacktrackActive) return const SizedBox.shrink();
-
-                    final isOffTrail = backtrack.isOffTrail;
-                    final pillColor = isOffTrail ? AppTheme.dangerRed : AppTheme.accentOrange;
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      alignment: Alignment.center,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppTheme.darkSurface.withValues(alpha: 0.95),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: pillColor, width: 1.2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: pillColor.withValues(alpha: 0.3),
-                              blurRadius: 10,
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.undo_rounded, color: pillColor, size: 16),
-                            const SizedBox(width: 8),
-                            Text(
-                              isOffTrail
-                                  ? 'OFF-TRAIL (${backtrack.crossTrackDeviationMeters.toStringAsFixed(0)}m) • SISA: ${backtrack.formattedDistanceToOrigin}'
-                                  : 'BACKTRACK KE AWAL • SISA: ${backtrack.formattedDistanceToOrigin}',
-                              style: GoogleFonts.shareTechMono(
-                                color: pillColor,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            InkWell(
-                              onTap: () {
-                                HapticFeedback.lightImpact();
-                                ref.read(backtrackActiveProvider.notifier).state = false;
-                              },
-                              child: const Icon(Icons.close_rounded, color: Colors.white70, size: 16),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-
-                // Active Target Vector HUD Pill
-                Consumer(
-                  builder: (context, ref, _) {
                     final target = ref.watch(navigationTargetProvider);
-                    final label = ref.watch(navigationTargetLabelProvider);
-                    if (target == null) return const SizedBox.shrink();
+                    final targetLabel = ref.watch(navigationTargetLabelProvider);
+                    final posAsync = ref.watch(locationStreamProvider);
 
-                    final myPos = ref.watch(locationStreamProvider).valueOrNull;
-                    String distStr = '';
-                    if (myPos != null) {
-                      final d = const Distance().as(
-                        LengthUnit.Meter,
-                        LatLng(myPos.latitude, myPos.longitude),
-                        target,
-                      );
-                      distStr = d < 1000 ? '${d.toStringAsFixed(0)} m' : '${(d / 1000).toStringAsFixed(2)} km';
-                    }
+                    final hasSpan = span.hasFormation;
+                    final hasBacktrack = backtrack.isBacktrackActive;
+                    final hasTarget = target != null;
+
+                    if (!hasSpan && !hasBacktrack && !hasTarget) return const SizedBox.shrink();
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
                       alignment: Alignment.center,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppTheme.darkSurface.withValues(alpha: 0.95),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppTheme.warningAmber, width: 1.2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.warningAmber.withValues(alpha: 0.25),
-                              blurRadius: 10,
-                            ),
-                          ],
-                        ),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.navigation_rounded, color: AppTheme.warningAmber, size: 16),
-                            const SizedBox(width: 8),
-                            Text(
-                              'TARGET: ${label ?? "POI"} • $distStr',
-                              style: GoogleFonts.shareTechMono(
-                                color: AppTheme.warningAmber,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            InkWell(
-                              onTap: () {
-                                ref.read(navigationTargetProvider.notifier).state = null;
-                                ref.read(navigationTargetLabelProvider.notifier).state = null;
-                              },
-                              child: const Icon(Icons.close_rounded, color: Colors.white70, size: 16),
-                            ),
+                            if (hasSpan) ...[
+                              _buildSpanPill(span),
+                              if (hasBacktrack || hasTarget) const SizedBox(width: 8),
+                            ],
+                            if (hasBacktrack) ...[
+                              _buildBacktrackPill(backtrack, ref),
+                              if (hasTarget) const SizedBox(width: 8),
+                            ],
+                            if (hasTarget) ...[
+                              _buildTargetPill(target, targetLabel, posAsync.valueOrNull, ref),
+                            ],
                           ],
                         ),
                       ),
@@ -1180,6 +1052,8 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
               ],
             ),
           ),
+        ),
+      ),
           
           // 3. Floating Micro-Controls Stack
           Consumer(
@@ -1208,6 +1082,151 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
           const Align(
             alignment: Alignment.bottomCenter,
             child: TelemetryBottomDock(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSpanPill(ConvoySpanState span) {
+    final spanColor = span.isSpanExcessive ? AppTheme.accentOrange : AppTheme.primaryCyan;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppTheme.darkSurface.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: spanColor.withValues(alpha: 0.6), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: spanColor.withValues(alpha: 0.2),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.social_distance_rounded, size: 14, color: spanColor),
+          const SizedBox(width: 6),
+          Text(
+            '[LEAD] ${span.leaderName} ↔ [SWEEP] ${span.sweeperName} • SPAN: ${span.formattedSpan}',
+            style: GoogleFonts.shareTechMono(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: spanColor,
+              letterSpacing: 0.5,
+            ),
+          ),
+          if (span.isSpanExcessive) ...[
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              decoration: BoxDecoration(
+                color: AppTheme.accentOrange,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Text(
+                'GAP BESAR',
+                style: TextStyle(color: Colors.black, fontSize: 8, fontWeight: FontWeight.w900),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBacktrackPill(BacktrackState backtrack, WidgetRef ref) {
+    final isOffTrail = backtrack.isOffTrail;
+    final pillColor = isOffTrail ? AppTheme.dangerRed : AppTheme.accentOrange;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppTheme.darkSurface.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: pillColor, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: pillColor.withValues(alpha: 0.3),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.undo_rounded, color: pillColor, size: 16),
+          const SizedBox(width: 8),
+          Text(
+            isOffTrail
+                ? 'OFF-TRAIL (${backtrack.crossTrackDeviationMeters.toStringAsFixed(0)}m) • SISA: ${backtrack.formattedDistanceToOrigin}'
+                : 'BACKTRACK KE AWAL • SISA: ${backtrack.formattedDistanceToOrigin}',
+            style: GoogleFonts.shareTechMono(
+              color: pillColor,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.8,
+            ),
+          ),
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              ref.read(backtrackActiveProvider.notifier).state = false;
+            },
+            child: const Icon(Icons.close_rounded, color: Colors.white70, size: 16),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTargetPill(LatLng target, String? label, Position? myPos, WidgetRef ref) {
+    String distStr = '';
+    if (myPos != null) {
+      final d = const Distance().as(
+        LengthUnit.Meter,
+        LatLng(myPos.latitude, myPos.longitude),
+        target,
+      );
+      distStr = d < 1000 ? '${d.toStringAsFixed(0)} m' : '${(d / 1000).toStringAsFixed(2)} km';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppTheme.darkSurface.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.warningAmber, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.warningAmber.withValues(alpha: 0.25),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.navigation_rounded, color: AppTheme.warningAmber, size: 16),
+          const SizedBox(width: 8),
+          Text(
+            'TARGET: ${label ?? "POI"} • $distStr',
+            style: GoogleFonts.shareTechMono(
+              color: AppTheme.warningAmber,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.8,
+            ),
+          ),
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: () {
+              ref.read(navigationTargetProvider.notifier).state = null;
+              ref.read(navigationTargetLabelProvider.notifier).state = null;
+            },
+            child: const Icon(Icons.close_rounded, color: Colors.white70, size: 16),
           ),
         ],
       ),
