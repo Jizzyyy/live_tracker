@@ -433,527 +433,555 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
           const SizedBox(width: 4),
         ],
       ),
-      body: Column(
-        children: [
-          // Map Canvas with Custom Style & Start/End Markers
-          Expanded(
-            flex: 5,
-            child: Stack(
+      body: OrientationBuilder(
+        builder: (context, orientation) {
+          final isLandscape = orientation == Orientation.landscape;
+          final mapSection = _buildMapSection(context, isLandscape, isDark, points, bounds);
+          final telemetrySection = _buildTelemetrySection(context, isDark, trip);
+
+          if (isLandscape) {
+            return Row(
               children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
-                  child: FlutterMap(
-                    options: MapOptions(
-                      initialCameraFit: CameraFit.bounds(
-                        bounds: bounds,
-                        padding: const EdgeInsets.all(48),
-                      ),
+                Expanded(flex: 5, child: mapSection),
+                Expanded(flex: 4, child: telemetrySection),
+              ],
+            );
+          }
+
+          return Column(
+            children: [
+              Expanded(flex: 5, child: mapSection),
+              Expanded(flex: 4, child: telemetrySection),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildMapSection(
+    BuildContext context,
+    bool isLandscape,
+    bool isDark,
+    List<LatLng> points,
+    LatLngBounds bounds,
+  ) {
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: isLandscape
+              ? const BorderRadius.horizontal(right: Radius.circular(28))
+              : const BorderRadius.vertical(bottom: Radius.circular(28)),
+          child: FlutterMap(
+            options: MapOptions(
+              initialCameraFit: CameraFit.bounds(
+                bounds: bounds,
+                padding: const EdgeInsets.all(48),
+              ),
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: _selectedMapStyle.urlTemplate,
+                subdomains: _selectedMapStyle.subdomains,
+                userAgentPackageName: 'VellumLiveTracker/1.0 (contact: kadhafiinl@github)',
+                keepBuffer: 2,
+                panBuffer: 1,
+                tileUpdateTransformer: TileUpdateTransformers.throttle(const Duration(milliseconds: 250)),
+              ),
+              PolylineLayer(
+                polylines: _showSpeedHeatmap && _cachedHeatmapPolylines.isNotEmpty
+                    ? _cachedHeatmapPolylines
+                    : [
+                        Polyline(
+                          points: points,
+                          strokeWidth: 4.5,
+                          color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                        ),
+                      ],
+              ),
+              MarkerLayer(
+                markers: [
+                  if (points.isNotEmpty)
+                    Marker(
+                      point: points.first,
+                      width: 32, height: 32,
+                      child: const Icon(Icons.flag_rounded, color: Color(0xFF00E676), size: 28),
                     ),
-                    children: [
-                      TileLayer(
-                        urlTemplate: _selectedMapStyle.urlTemplate,
-                        subdomains: _selectedMapStyle.subdomains,
-                        userAgentPackageName: 'VellumLiveTracker/1.0 (contact: kadhafiinl@github)',
-                        keepBuffer: 2,
-                        panBuffer: 1,
-                        tileUpdateTransformer: TileUpdateTransformers.throttle(const Duration(milliseconds: 250)),
-                      ),
-                      PolylineLayer(
-                        polylines: _showSpeedHeatmap && _cachedHeatmapPolylines.isNotEmpty
-                            ? _cachedHeatmapPolylines
-                            : [
-                                Polyline(
-                                  points: points,
-                                  strokeWidth: 4.5,
-                                  color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                  if (points.length > 1)
+                    Marker(
+                      point: points.last,
+                      width: 32, height: 32,
+                      child: const Icon(Icons.sports_score_rounded, color: Color(0xFFFF1744), size: 28),
+                    ),
+                ],
+              ),
+              // Replay Vehicle Marker with Animated Rotation
+              ListenableBuilder(
+                listenable: _playbackController,
+                builder: (context, _) {
+                  final pt = _playbackController.currentPoint;
+                  if (pt == null) return const SizedBox.shrink();
+                  final heading = _playbackController.currentHeading ?? 0.0;
+                  return MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: LatLng(pt.latitude, pt.longitude),
+                        width: 44,
+                        height: 44,
+                        child: Transform.rotate(
+                          angle: heading * 3.1415926535 / 180.0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF12151B),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: const Color(0xFFFFD600), width: 2.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFFD600).withValues(alpha: 0.5),
+                                  blurRadius: 10,
+                                  spreadRadius: 2,
                                 ),
                               ],
-                      ),
-                      MarkerLayer(
-                        markers: [
-                          if (points.isNotEmpty)
-                            Marker(
-                              point: points.first,
-                              width: 32, height: 32,
-                              child: const Icon(Icons.flag_rounded, color: Color(0xFF00E676), size: 28),
                             ),
-                          if (points.length > 1)
-                            Marker(
-                              point: points.last,
-                              width: 32, height: 32,
-                              child: const Icon(Icons.sports_score_rounded, color: Color(0xFFFF1744), size: 28),
+                            child: const Icon(
+                              Icons.navigation_rounded,
+                              color: Color(0xFFFFD600),
+                              size: 22,
                             ),
-                        ],
-                      ),
-                      // Replay Vehicle Marker with Animated Rotation
-                      ListenableBuilder(
-                        listenable: _playbackController,
-                        builder: (context, _) {
-                          final pt = _playbackController.currentPoint;
-                          if (pt == null) return const SizedBox.shrink();
-                          final heading = _playbackController.currentHeading ?? 0.0;
-                          return MarkerLayer(
-                            markers: [
-                              Marker(
-                                point: LatLng(pt.latitude, pt.longitude),
-                                width: 44,
-                                height: 44,
-                                child: Transform.rotate(
-                                  angle: heading * 3.1415926535 / 180.0,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF12151B),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: const Color(0xFFFFD600), width: 2.5),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xFFFFD600).withValues(alpha: 0.5),
-                                          blurRadius: 10,
-                                          spreadRadius: 2,
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Icon(
-                                      Icons.navigation_rounded,
-                                      color: Color(0xFFFFD600),
-                                      size: 22,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
+                          ),
+                        ),
                       ),
                     ],
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        // Map Style Switcher & Heatmap Toggle Toolbar Overlay
+        Positioned(
+          top: 12,
+          right: 12,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Heatmap Toggle Button
+              PremiumGlass(
+                borderRadius: BorderRadius.circular(16),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    setState(() => _showSpeedHeatmap = !_showSpeedHeatmap);
+                    CustomSnackbar.show(
+                      context,
+                      message: _showSpeedHeatmap
+                          ? 'Mode Speed Heatmap Aktif'
+                          : 'Mode Solid Neon Polyline Aktif',
+                      type: SnackbarType.info,
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.speed_rounded,
+                          size: 16,
+                          color: _showSpeedHeatmap
+                              ? const Color(0xFFFFD600)
+                              : (isDark ? Colors.white38 : Colors.black38),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'HEATMAP',
+                          style: GoogleFonts.shareTechMono(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: _showSpeedHeatmap
+                                ? (isDark ? Colors.white : Colors.black87)
+                                : (isDark ? Colors.white38 : Colors.black38),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                // Map Style Switcher & Heatmap Toggle Toolbar Overlay
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Heatmap Toggle Button
-                      PremiumGlass(
-                        borderRadius: BorderRadius.circular(16),
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            setState(() => _showSpeedHeatmap = !_showSpeedHeatmap);
-                            CustomSnackbar.show(
-                              context,
-                              message: _showSpeedHeatmap
-                                  ? 'Mode Speed Heatmap Aktif'
-                                  : 'Mode Solid Neon Polyline Aktif',
-                              type: SnackbarType.info,
-                            );
+              ),
+              const SizedBox(width: 8),
+              // Map Style Selector
+              PremiumGlass(
+                borderRadius: BorderRadius.circular(16),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<MapStyleOption>(
+                    value: _selectedMapStyle,
+                    dropdownColor: isDark ? const Color(0xFF12151B) : Colors.white,
+                    icon: Icon(
+                      Icons.layers_outlined, 
+                      color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7), 
+                      size: 18,
+                    ),
+                    style: GoogleFonts.inter(
+                      color: isDark ? Colors.white : const Color(0xFF0D1117), 
+                      fontSize: 12, 
+                      fontWeight: FontWeight.w600,
+                    ),
+                    items: ref.watch(mapStyleListProvider).map((style) {
+                      return DropdownMenuItem(
+                        value: style,
+                        child: Text(
+                          style.name,
+                          style: TextStyle(
+                            color: isDark ? Colors.white : const Color(0xFF0D1117),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (newStyle) {
+                      if (newStyle != null) setState(() => _selectedMapStyle = newStyle);
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Speed Heatmap Legend Card Overlay
+        if (_showSpeedHeatmap && _currentTrip.routePoints.length >= 2)
+          Positioned(
+            top: 60,
+            right: 12,
+            child: PremiumGlass(
+              borderRadius: BorderRadius.circular(14),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'SPEED SPECTRUM',
+                    style: GoogleFonts.shareTechMono(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                      color: isDark ? Colors.white60 : Colors.black54,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  _HeatmapLegendRow(
+                    color: SpeedHeatmapSegmenter.tierSlowColor,
+                    label: '< 20 km/h',
+                    isDark: isDark,
+                  ),
+                  const SizedBox(height: 2),
+                  _HeatmapLegendRow(
+                    color: SpeedHeatmapSegmenter.tierCruiseColor,
+                    label: '20-45 km/h',
+                    isDark: isDark,
+                  ),
+                  const SizedBox(height: 2),
+                  _HeatmapLegendRow(
+                    color: SpeedHeatmapSegmenter.tierFastColor,
+                    label: '45-75 km/h',
+                    isDark: isDark,
+                  ),
+                  const SizedBox(height: 2),
+                  _HeatmapLegendRow(
+                    color: SpeedHeatmapSegmenter.tierSprintColor,
+                    label: '> 75 km/h',
+                    isDark: isDark,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+        // Live Replay Telemetry HUD Pill
+        Positioned(
+          top: 12,
+          left: 12,
+          child: ListenableBuilder(
+            listenable: _playbackController,
+            builder: (context, _) {
+              final pt = _playbackController.currentPoint;
+              if (pt == null) return const SizedBox.shrink();
+
+              final spd = pt.speed != null ? '${pt.speed!.toStringAsFixed(1)} km/h' : '-- km/h';
+              final alt = pt.altitude != null ? '${pt.altitude!.toStringAsFixed(0)} m' : '-- m';
+              final firstTs = widget.trip.routePoints.isNotEmpty ? widget.trip.routePoints.first.timestamp : pt.timestamp;
+              final elapsedSecs = ((pt.timestamp - firstTs) / 1000).round();
+              final m = (elapsedSecs ~/ 60).toString().padLeft(2, '0');
+              final s = (elapsedSecs % 60).toString().padLeft(2, '0');
+
+              return PremiumGlass(
+                borderRadius: BorderRadius.circular(16),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.speed_rounded, size: 14, color: Color(0xFF00E5FF)),
+                    const SizedBox(width: 4),
+                    Text(
+                      spd,
+                      style: GoogleFonts.jetBrainsMono(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.terrain_rounded, size: 14, color: Color(0xFF00E676)),
+                    const SizedBox(width: 4),
+                    Text(
+                      alt,
+                      style: GoogleFonts.jetBrainsMono(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '$m:$s',
+                      style: GoogleFonts.shareTechMono(
+                        fontSize: 11,
+                        color: isDark ? Colors.white60 : Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+
+        // Interactive Route Playback Dock
+        Positioned(
+          bottom: 12,
+          left: 12,
+          right: 12,
+          child: ListenableBuilder(
+            listenable: _playbackController,
+            builder: (context, _) {
+              final isPlaying = _playbackController.isPlaying;
+              final progress = _playbackController.progress;
+              final speedLabel = '${_playbackController.playbackSpeed.toStringAsFixed(0)}x';
+
+              return PremiumGlass(
+                borderRadius: BorderRadius.circular(20),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_fill_rounded,
+                        color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                        size: 32,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        _playbackController.togglePlay();
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 3.5,
+                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                          overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                          activeTrackColor: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                          inactiveTrackColor: isDark ? Colors.white12 : Colors.black12,
+                          thumbColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
+                        ),
+                        child: Slider(
+                          value: progress.clamp(0.0, 1.0),
+                          onChanged: (val) {
+                            _playbackController.seekToFraction(val);
                           },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.speed_rounded,
-                                  size: 16,
-                                  color: _showSpeedHeatmap
-                                      ? const Color(0xFFFFD600)
-                                      : (isDark ? Colors.white38 : Colors.black38),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'HEATMAP',
-                                  style: GoogleFonts.shareTechMono(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: _showSpeedHeatmap
-                                        ? (isDark ? Colors.white : Colors.black87)
-                                        : (isDark ? Colors.white38 : Colors.black38),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      // Map Style Selector
-                      PremiumGlass(
-                        borderRadius: BorderRadius.circular(16),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<MapStyleOption>(
-                            value: _selectedMapStyle,
-                            dropdownColor: isDark ? const Color(0xFF12151B) : Colors.white,
-                            icon: Icon(
-                              Icons.layers_outlined, 
-                              color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7), 
-                              size: 18,
-                            ),
-                            style: GoogleFonts.inter(
-                              color: isDark ? Colors.white : const Color(0xFF0D1117), 
-                              fontSize: 12, 
-                              fontWeight: FontWeight.w600,
-                            ),
-                            items: ref.watch(mapStyleListProvider).map((style) {
-                              return DropdownMenuItem(
-                                value: style,
-                                child: Text(
-                                  style.name,
-                                  style: TextStyle(
-                                    color: isDark ? Colors.white : const Color(0xFF0D1117),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (newStyle) {
-                              if (newStyle != null) setState(() => _selectedMapStyle = newStyle);
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Speed Heatmap Legend Card Overlay
-                if (_showSpeedHeatmap && _currentTrip.routePoints.length >= 2)
-                  Positioned(
-                    top: 60,
-                    right: 12,
-                    child: PremiumGlass(
-                      borderRadius: BorderRadius.circular(14),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'SPEED SPECTRUM',
-                            style: GoogleFonts.shareTechMono(
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
-                              color: isDark ? Colors.white60 : Colors.black54,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          _HeatmapLegendRow(
-                            color: SpeedHeatmapSegmenter.tierSlowColor,
-                            label: '< 20 km/h',
-                            isDark: isDark,
-                          ),
-                          const SizedBox(height: 2),
-                          _HeatmapLegendRow(
-                            color: SpeedHeatmapSegmenter.tierCruiseColor,
-                            label: '20-45 km/h',
-                            isDark: isDark,
-                          ),
-                          const SizedBox(height: 2),
-                          _HeatmapLegendRow(
-                            color: SpeedHeatmapSegmenter.tierFastColor,
-                            label: '45-75 km/h',
-                            isDark: isDark,
-                          ),
-                          const SizedBox(height: 2),
-                          _HeatmapLegendRow(
-                            color: SpeedHeatmapSegmenter.tierSprintColor,
-                            label: '> 75 km/h',
-                            isDark: isDark,
-                          ),
-                        ],
                       ),
                     ),
-                  ),
-
-                // Live Replay Telemetry HUD Pill
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  child: ListenableBuilder(
-                    listenable: _playbackController,
-                    builder: (context, _) {
-                      final pt = _playbackController.currentPoint;
-                      if (pt == null) return const SizedBox.shrink();
-
-                      final spd = pt.speed != null ? '${pt.speed!.toStringAsFixed(1)} km/h' : '-- km/h';
-                      final alt = pt.altitude != null ? '${pt.altitude!.toStringAsFixed(0)} m' : '-- m';
-                      final firstTs = widget.trip.routePoints.isNotEmpty ? widget.trip.routePoints.first.timestamp : pt.timestamp;
-                      final elapsedSecs = ((pt.timestamp - firstTs) / 1000).round();
-                      final m = (elapsedSecs ~/ 60).toString().padLeft(2, '0');
-                      final s = (elapsedSecs % 60).toString().padLeft(2, '0');
-
-                      return PremiumGlass(
-                        borderRadius: BorderRadius.circular(16),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.speed_rounded, size: 14, color: Color(0xFF00E5FF)),
-                            const SizedBox(width: 4),
-                            Text(
-                              spd,
-                              style: GoogleFonts.jetBrainsMono(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Icon(Icons.terrain_rounded, size: 14, color: Color(0xFF00E676)),
-                            const SizedBox(width: 4),
-                            Text(
-                              alt,
-                              style: GoogleFonts.jetBrainsMono(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '$m:$s',
-                              style: GoogleFonts.shareTechMono(
-                                fontSize: 11,
-                                color: isDark ? Colors.white60 : Colors.black54,
-                              ),
-                            ),
-                          ],
+                    const SizedBox(width: 4),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(10),
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        _playbackController.cycleSpeed();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E232D) : const Color(0xFFE2E8F0),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isDark ? Colors.white12 : Colors.black12,
+                          ),
                         ),
-                      );
-                    },
+                        child: Text(
+                          speedLabel,
+                          style: GoogleFonts.shareTechMono(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTelemetrySection(
+    BuildContext context,
+    bool isDark,
+    CompletedTrip trip,
+  ) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: PremiumGlass(
+        borderRadius: BorderRadius.circular(24),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'TRIP METRICS',
+                  style: GoogleFonts.shareTechMono(
+                    fontSize: 11,
+                    letterSpacing: 2,
+                    color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-
-                // Interactive Route Playback Dock
-                Positioned(
-                  bottom: 12,
-                  left: 12,
-                  right: 12,
-                  child: ListenableBuilder(
-                    listenable: _playbackController,
-                    builder: (context, _) {
-                      final isPlaying = _playbackController.isPlaying;
-                      final progress = _playbackController.progress;
-                      final speedLabel = '${_playbackController.playbackSpeed.toStringAsFixed(0)}x';
-
-                      return PremiumGlass(
-                        borderRadius: BorderRadius.circular(20),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        child: Row(
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_fill_rounded,
-                                color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
-                                size: 32,
-                              ),
-                              visualDensity: VisualDensity.compact,
-                              padding: EdgeInsets.zero,
-                              onPressed: () {
-                                HapticFeedback.selectionClick();
-                                _playbackController.togglePlay();
-                              },
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: SliderTheme(
-                                data: SliderTheme.of(context).copyWith(
-                                  trackHeight: 3.5,
-                                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
-                                  activeTrackColor: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
-                                  inactiveTrackColor: isDark ? Colors.white12 : Colors.black12,
-                                  thumbColor: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
-                                ),
-                                child: Slider(
-                                  value: progress.clamp(0.0, 1.0),
-                                  onChanged: (val) {
-                                    _playbackController.seekToFraction(val);
-                                  },
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            InkWell(
-                              borderRadius: BorderRadius.circular(10),
-                              onTap: () {
-                                HapticFeedback.lightImpact();
-                                _playbackController.cycleSpeed();
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF1E232D) : const Color(0xFFE2E8F0),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: isDark ? Colors.white12 : Colors.black12,
-                                  ),
-                                ),
-                                child: Text(
-                                  speedLabel,
-                                  style: GoogleFonts.shareTechMono(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                Text(
+                  trip.formattedTimeRange,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: isDark ? Colors.white70 : const Color(0xFF475569),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
-          ),
-
-          // Telemetry Breakdown
-          Expanded(
-            flex: 4,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: PremiumGlass(
-                borderRadius: BorderRadius.circular(24),
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'TRIP METRICS',
-                          style: GoogleFonts.shareTechMono(
-                            fontSize: 11,
-                            letterSpacing: 2,
-                            color: isDark ? Colors.white60 : const Color(0xFF64748B),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          trip.formattedTimeRange,
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: isDark ? Colors.white70 : const Color(0xFF475569),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _TelemetryTile(
-                            label: 'DISTANCE', 
-                            value: trip.formattedDistance, 
-                            color: isDark ? const Color(0xFF00E676) : const Color(0xFF059669),
-                          ),
-                        ),
-                        Expanded(
-                          child: _TelemetryTile(
-                            label: 'TOTAL DURATION', 
-                            value: trip.formattedDuration, 
-                            color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _TelemetryTile(
-                            label: 'MOVING TIME', 
-                            value: trip.formattedMovingDuration, 
-                            color: isDark ? const Color(0xFF00E676) : const Color(0xFF059669),
-                          ),
-                        ),
-                        Expanded(
-                          child: _TelemetryTile(
-                            label: 'STOPPED TIME', 
-                            value: trip.formattedStoppedDuration, 
-                            color: isDark ? const Color(0xFFFF9100) : const Color(0xFFD97706),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _TelemetryTile(
-                            label: 'AVG PACE', 
-                            value: trip.formattedPace, 
-                            color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
-                          ),
-                        ),
-                        Expanded(
-                          child: _TelemetryTile(
-                            label: 'AVG SPEED', 
-                            value: trip.formattedAvgSpeed, 
-                            color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _TelemetryTile(
-                            label: 'TOP SPEED', 
-                            value: trip.formattedMaxSpeed, 
-                            color: isDark ? const Color(0xFFFF1744) : const Color(0xFFDC2626),
-                          ),
-                        ),
-                        Expanded(
-                          child: _TelemetryTile(
-                            label: 'MAX GRADIENT', 
-                            value: trip.formattedMaxGradient, 
-                            color: isDark ? const Color(0xFFFF5252) : const Color(0xFFE11D48),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
-                    const SizedBox(height: 16),
-                    ListenableBuilder(
-                      listenable: _playbackController,
-                      builder: (context, _) {
-                        return ElevationChart(
-                          trip: trip,
-                          isDark: isDark,
-                          externalCursorFraction: _playbackController.progress,
-                        );
-                      },
-                    ),
-                    if (trip.splits.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
-                      const SizedBox(height: 16),
-                      _SplitsTable(splits: trip.splits, isDark: isDark),
-                    ],
-                  ],
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _TelemetryTile(
+                    label: 'DISTANCE', 
+                    value: trip.formattedDistance, 
+                    color: isDark ? const Color(0xFF00E676) : const Color(0xFF059669),
+                  ),
                 ),
-              ),
+                Expanded(
+                  child: _TelemetryTile(
+                    label: 'TOTAL DURATION', 
+                    value: trip.formattedDuration, 
+                    color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _TelemetryTile(
+                    label: 'MOVING TIME', 
+                    value: trip.formattedMovingDuration, 
+                    color: isDark ? const Color(0xFF00E676) : const Color(0xFF059669),
+                  ),
+                ),
+                Expanded(
+                  child: _TelemetryTile(
+                    label: 'STOPPED TIME', 
+                    value: trip.formattedStoppedDuration, 
+                    color: isDark ? const Color(0xFFFF9100) : const Color(0xFFD97706),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _TelemetryTile(
+                    label: 'AVG PACE', 
+                    value: trip.formattedPace, 
+                    color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                  ),
+                ),
+                Expanded(
+                  child: _TelemetryTile(
+                    label: 'AVG SPEED', 
+                    value: trip.formattedAvgSpeed, 
+                    color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _TelemetryTile(
+                    label: 'TOP SPEED', 
+                    value: trip.formattedMaxSpeed, 
+                    color: isDark ? const Color(0xFFFF1744) : const Color(0xFFDC2626),
+                  ),
+                ),
+                Expanded(
+                  child: _TelemetryTile(
+                    label: 'MAX GRADIENT', 
+                    value: trip.formattedMaxGradient, 
+                    color: isDark ? const Color(0xFFFF5252) : const Color(0xFFE11D48),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
+            const SizedBox(height: 16),
+            ListenableBuilder(
+              listenable: _playbackController,
+              builder: (context, _) {
+                return ElevationChart(
+                  trip: trip,
+                  isDark: isDark,
+                  externalCursorFraction: _playbackController.progress,
+                );
+              },
+            ),
+            if (trip.splits.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
+              const SizedBox(height: 16),
+              _SplitsTable(splits: trip.splits, isDark: isDark),
+            ],
+          ],
+        ),
       ),
     );
   }
