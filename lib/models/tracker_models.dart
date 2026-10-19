@@ -371,3 +371,52 @@ class TacticalPing {
   );
 }
 
+@immutable
+class ChatMessage {
+  final String id;
+  final String userId;
+  final String? senderName;
+  final String text;
+  final DateTime timestamp;
+  final bool isSystem;
+
+  const ChatMessage({
+    required this.id,
+    required this.userId,
+    this.senderName,
+    required this.text,
+    required this.timestamp,
+    this.isSystem = false,
+  });
+
+  String get callerDisplayName =>
+      (senderName != null && senderName!.trim().isNotEmpty) ? senderName!.trim() : 'User $userId';
+
+  String get formattedTime {
+    final h = timestamp.hour.toString().padLeft(2, '0');
+    final m = timestamp.minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'userId': userId,
+    if (senderName != null) 'senderName': senderName,
+    'text': text,
+    'timestamp': timestamp.millisecondsSinceEpoch,
+    'isSystem': isSystem,
+  };
+
+  factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
+    id: json['id'] as String? ?? '${DateTime.now().millisecondsSinceEpoch}',
+    userId: json['userId'] as String? ?? 'unknown',
+    senderName: json['senderName'] as String?,
+    text: json['text'] as String? ?? '',
+    timestamp: DateTime.fromMillisecondsSinceEpoch(
+      json['timestamp'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+    ),
+    isSystem: json['isSystem'] as bool? ?? false,
+  );
+}
+
+
