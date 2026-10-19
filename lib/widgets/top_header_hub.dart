@@ -12,6 +12,7 @@ import 'modals/settings_sheet.dart';
 import 'modals/join_create_room_sheet.dart';
 import 'modals/sos_modal_sheet.dart';
 import 'modals/quick_ping_sheet.dart';
+import 'modals/tactical_chat_sheet.dart';
 import '../utils/custom_snackbar.dart';
 import '../utils/app_theme.dart';
 
@@ -31,6 +32,7 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
     final roomCode = ref.watch(roomProvider.select((r) => r.roomCode));
     final membersCount = ref.watch(roomProvider.select((r) => r.members.length));
     final hasActiveSos = ref.watch(roomProvider.select((r) => r.activeSos != null));
+    final unreadChat = ref.watch(roomProvider.select((r) => r.unreadChatCount));
     final theme = Theme.of(context);
 
     return RepaintBoundary(
@@ -87,6 +89,16 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                       onTap: () {
                                         setState(() => _isExpanded = false);
                                         _showQuickPingSheet(context);
+                                      },
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _ActionButton(
+                                      icon: Icons.forum_outlined,
+                                      iconColor: AppTheme.primaryCyan,
+                                      badgeCount: unreadChat > 0 ? unreadChat : null,
+                                      onTap: () {
+                                        setState(() => _isExpanded = false);
+                                        _showChatSheet(context);
                                       },
                                     ),
                                     const SizedBox(width: 8),
@@ -274,6 +286,16 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                 },
                               ),
                               const SizedBox(width: 4),
+                              _ActionButton(
+                                icon: Icons.forum_outlined,
+                                iconColor: AppTheme.primaryCyan,
+                                badgeCount: unreadChat > 0 ? unreadChat : null,
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  _showChatSheet(context);
+                                },
+                              ),
+                              const SizedBox(width: 4),
                             ],
                             _ActionButton(
                               icon: Icons.sos_rounded,
@@ -390,6 +412,15 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) => const QuickPingSelectorSheet(),
+    );
+  }
+
+  void _showChatSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => const TacticalChatSheet(),
     );
   }
 
