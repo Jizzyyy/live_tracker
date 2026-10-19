@@ -179,6 +179,8 @@ class RoomState {
     this.pois = const {},
     this.activePing,
     this.offlineQueueCount = 0,
+    this.chatMessages = const [],
+    this.unreadChatCount = 0,
     this.lastError,
   });
 
@@ -189,6 +191,8 @@ class RoomState {
   final Map<String, SharedPoi> pois;
   final TacticalPing? activePing;
   final int offlineQueueCount;
+  final List<ChatMessage> chatMessages;
+  final int unreadChatCount;
   final String? lastError;
 
   RoomState copyWith({
@@ -199,6 +203,8 @@ class RoomState {
     Map<String, SharedPoi>? pois,
     TacticalPing? Function()? activePing,
     int? offlineQueueCount,
+    List<ChatMessage>? chatMessages,
+    int? unreadChatCount,
     String? Function()? lastError,
   }) =>
     RoomState(
@@ -209,6 +215,8 @@ class RoomState {
       pois: pois ?? this.pois,
       activePing: activePing != null ? activePing() : this.activePing,
       offlineQueueCount: offlineQueueCount ?? this.offlineQueueCount,
+      chatMessages: chatMessages ?? this.chatMessages,
+      unreadChatCount: unreadChatCount ?? this.unreadChatCount,
       lastError: lastError != null ? lastError() : this.lastError,
     );
 }
@@ -267,7 +275,48 @@ class RoomNotifier extends Notifier<RoomState> {
       activeSos: null,
       pois: {},
       activePing: null,
+      chatMessages: [],
+      unreadChatCount: 0,
     );
+  }
+
+  /// Sends a tactical text chat message to room members
+  void sendChatMessage(String text) {
+    if (state.status != TrackingConnectionStatus.connected) return;
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
+
+    final userName = ref.read(appSettingsProvider).userName.trim();
+    final msgId = '${DateTime.now().millisecondsSinceEpoch}_chat';
+    final chatMsg = ChatMessage(
+      id: msgId,
+      userId: userName.isNotEmpty ? userName : 'ME',
+      senderName: userName.isNotEmpty ? userName : null,
+      text: trimmed,
+      timestamp: DateTime.now(),
+      isSystem: false,
+    );
+
+    final updated = List<ChatMessage>.from(state.chatMessages)..add(chatMsg);
+    if (updated.length > 100) updated.removeAt(0);
+
+    state = state.copyWith(chatMessages: updated);
+    _ws.send({
+      'type': 'chat_message',
+      'id': msgId,
+      'text': trimmed,
+      'senderName': userName.isNotEmpty ? userName : null,
+    });
+  }
+
+  void markChatAsRead() {
+    if (state.unreadChatCount > 0) {
+      state = state.copyWith(unreadChatCount: 0);
+    }
+  }
+
+  void clearChat() {
+    state = state.copyWith(chatMessages: const [], unreadChatCount: 0);
   }
 
   /// Broadcast a quick tactical cue to all members in current room
@@ -461,6 +510,17 @@ class RoomNotifier extends Notifier<RoomState> {
         try {
           final ping = TacticalPing.fromJson(msg);
           state = state.copyWith(activePing: () => ping);
+        } catch (_) {}
+        break;
+      case 'chat_message':
+        try {
+          final chat = ChatMessage.fromJson(msg);
+          final updated = List<ChatMessage>.from(state.chatMessages)..add(chat);
+          if (updated.length > 100) updated.removeAt(0);
+          state = state.copyWith(
+            chatMessages: updated,
+            unreadChatCount: state.unreadChatCount + 1,
+          );
         } catch (_) {}
         break;
       case 'poi_created':
