@@ -13,6 +13,7 @@ import 'modals/join_create_room_sheet.dart';
 import 'modals/sos_modal_sheet.dart';
 import 'modals/quick_ping_sheet.dart';
 import 'modals/tactical_chat_sheet.dart';
+import 'modals/tactical_guide_sheet.dart';
 import '../utils/custom_snackbar.dart';
 import '../utils/app_theme.dart';
 
@@ -161,6 +162,15 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                       onTap: () {
                                         setState(() => _isExpanded = false);
                                         _showSettingsSheet(context);
+                                      },
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _ActionButton(
+                                      icon: Icons.menu_book_rounded,
+                                      iconColor: AppTheme.primaryCyan,
+                                      onTap: () {
+                                        setState(() => _isExpanded = false);
+                                        _showGuideSheet(context);
                                       },
                                     ),
                                     if (roomCode != null) ...[
@@ -443,6 +453,15 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) => const SettingsSheet(),
+    );
+  }
+
+  void _showGuideSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => const TacticalGuideSheet(),
     );
   }
 }

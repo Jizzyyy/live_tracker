@@ -6,6 +6,8 @@ import '../../providers/tracker_providers.dart';
 import '../../src/core/services/websocket_service.dart';
 import '../../utils/custom_snackbar.dart';
 import '../../utils/ui_helpers.dart';
+import '../../utils/app_theme.dart';
+import 'tactical_guide_sheet.dart';
 
 class SettingsSheet extends ConsumerStatefulWidget {
   const SettingsSheet({super.key});
@@ -296,7 +298,26 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                   value: settings.hazardProximityAlert,
                   onChanged: (val) => ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(hazardProximityAlert: val)),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    side: BorderSide(color: AppTheme.primaryCyan.withValues(alpha: 0.5)),
+                    foregroundColor: isDark ? AppTheme.primaryCyan : Theme.of(context).colorScheme.primary,
+                  ),
+                  icon: const Icon(Icons.menu_book_rounded, size: 18),
+                  label: const Text('Buka Panduan Taktis Konvoi', style: TextStyle(fontWeight: FontWeight.bold)),
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      isScrollControlled: true,
+                      builder: (_) => const TacticalGuideSheet(),
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
                 
                 FilledButton(
                   style: FilledButton.styleFrom(
