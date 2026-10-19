@@ -97,14 +97,9 @@ class TacticalGuideSheet extends StatelessWidget {
                     _GuideCard(
                       icon: Icons.groups_rounded,
                       iconColor: AppTheme.warningAmber,
-                      title: '2. Formasi & Peran Konvoi',
+                      title: '2. Identitas & Pelacakan Kelompok',
                       description:
-                          'Atur peran Anda di menu Settings:\n'
-                          '• [LEAD]: Pemimpin barisan depan (Badge Emas)\n'
-                          '• [SWEEP]: Penyapu barisan belakang (Badge Cyan)\n'
-                          '• [SCOUT]: Penjelajah medan di depan (Badge Hijau)\n'
-                          '• [MBR]: Anggota konvoi standar\n'
-                          'HUD akan otomatis menghitung jarak bentang (Convoy Span) antara Leader dan Sweeper serta memberi peringatan jika celah rombongan > 1.5 km.',
+                          'Atur Nama Panggilan / Callsign Anda di menu Pengaturan. Peta secara otomatis menampilkan posisi GPS real-time, heading arah, tingkat baterai, dan jarak relatif seluruh rekan konvoi secara presisi.',
                       isDark: isDark,
                     ),
                     _GuideCard(
@@ -120,7 +115,7 @@ class TacticalGuideSheet extends StatelessWidget {
                       iconColor: AppTheme.dangerRed,
                       title: '4. Keselamatan SOS & Geofence Bahaya',
                       description:
-                          '• Tombol SOS menyiarkan sirene akustik dan banner darurat ke seluruh anggota room.\n'
+                          '• Tombol SOS di menu Pengaturan menyiarkan sirene akustik dan banner darurat ke seluruh anggota room saat terjadi kendala.\n'
                           '• Watchdog Bahaya: Jika ada anggota yang menandai titik bahaya (lubang, longsor, licin), aplikasi akan membunyikan alarm otomatis saat Anda mendekati radius 150 meter.\n'
                           '• Watchdog Pemisahan: Memberi peringatan jika Anda terpisah > 500m dari rekan terdekat.',
                       isDark: isDark,

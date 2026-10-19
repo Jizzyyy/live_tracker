@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../models/tracker_models.dart';
 import '../../providers/tracker_providers.dart';
 import '../../src/core/services/websocket_service.dart';
 import '../../utils/custom_snackbar.dart';
 import '../../utils/ui_helpers.dart';
 import '../../utils/app_theme.dart';
 import 'tactical_guide_sheet.dart';
+import 'sos_modal_sheet.dart';
 
 class SettingsSheet extends ConsumerStatefulWidget {
   const SettingsSheet({super.key});
@@ -96,32 +97,6 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                     ),
                   ),
                   style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Peran dalam Konvoi (Convoy Role)',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white70 : Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: ConvoyRole.values.map((role) {
-                    final isSelected = settings.convoyRole == role;
-                    return ChoiceChip(
-                      label: Text('[${role.badgeText}] ${role.label}'),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        if (selected) {
-                          ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(convoyRole: role));
-                        }
-                      },
-                    );
-                  }).toList(),
                 ),
                 const SizedBox(height: 16),
                 
@@ -298,7 +273,30 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                   value: settings.hazardProximityAlert,
                   onChanged: (val) => ref.read(appSettingsProvider.notifier).updateSettings(settings.copyWith(hazardProximityAlert: val)),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
+                FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppTheme.dangerRed,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  icon: const Icon(Icons.sos_rounded, size: 22),
+                  label: const Text(
+                    'SIARKAN SINYAL DARURAT (SOS)',
+                    style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                  ),
+                  onPressed: () {
+                    HapticFeedback.heavyImpact();
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      isScrollControlled: true,
+                      builder: (_) => const SosModalSheet(),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),

@@ -973,20 +973,18 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                   },
                 ),
 
-                // Horizontal Tactical Navigation HUD Bar (Span, Backtrack, Target Vector)
+                // Horizontal Tactical Navigation HUD Bar (Backtrack, Target Vector)
                 Consumer(
                   builder: (context, ref, _) {
-                    final span = ref.watch(convoySpanProvider);
                     final backtrack = ref.watch(backtrackProvider);
                     final target = ref.watch(navigationTargetProvider);
                     final targetLabel = ref.watch(navigationTargetLabelProvider);
                     final posAsync = ref.watch(locationStreamProvider);
 
-                    final hasSpan = span.hasFormation;
                     final hasBacktrack = backtrack.isBacktrackActive;
                     final hasTarget = target != null;
 
-                    if (!hasSpan && !hasBacktrack && !hasTarget) return const SizedBox.shrink();
+                    if (!hasBacktrack && !hasTarget) return const SizedBox.shrink();
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
@@ -997,10 +995,6 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (hasSpan) ...[
-                              _buildSpanPill(span),
-                              if (hasBacktrack || hasTarget) const SizedBox(width: 8),
-                            ],
                             if (hasBacktrack) ...[
                               _buildBacktrackPill(backtrack, ref),
                               if (hasTarget) const SizedBox(width: 8),
@@ -1083,54 +1077,6 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
             alignment: Alignment.bottomCenter,
             child: TelemetryBottomDock(),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSpanPill(ConvoySpanState span) {
-    final spanColor = span.isSpanExcessive ? AppTheme.accentOrange : AppTheme.primaryCyan;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      decoration: BoxDecoration(
-        color: AppTheme.darkSurface.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: spanColor.withValues(alpha: 0.6), width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: spanColor.withValues(alpha: 0.2),
-            blurRadius: 8,
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.social_distance_rounded, size: 14, color: spanColor),
-          const SizedBox(width: 6),
-          Text(
-            '[LEAD] ${span.leaderName} ↔ [SWEEP] ${span.sweeperName} • SPAN: ${span.formattedSpan}',
-            style: GoogleFonts.shareTechMono(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: spanColor,
-              letterSpacing: 0.5,
-            ),
-          ),
-          if (span.isSpanExcessive) ...[
-            const SizedBox(width: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-              decoration: BoxDecoration(
-                color: AppTheme.accentOrange,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: const Text(
-                'GAP BESAR',
-                style: TextStyle(color: Colors.black, fontSize: 8, fontWeight: FontWeight.w900),
-              ),
-            ),
-          ],
         ],
       ),
     );

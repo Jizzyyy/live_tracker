@@ -2,72 +2,27 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:live_tracker/models/tracker_models.dart';
-import 'package:live_tracker/providers/tracker_providers.dart';
 
 void main() {
-  group('ConvoySpanAndBearingTest', () {
-    test('ConvoyRole extension provides correct badge and label text', () {
-      expect(ConvoyRole.leader.badgeText, 'LEAD');
-      expect(ConvoyRole.leader.label, 'Leader');
-
-      expect(ConvoyRole.sweeper.badgeText, 'SWEEP');
-      expect(ConvoyRole.sweeper.label, 'Sweeper');
-
-      expect(ConvoyRole.scout.badgeText, 'SCOUT');
-      expect(ConvoyRole.scout.label, 'Scout');
-
-      expect(ConvoyRole.member.badgeText, 'MBR');
-      expect(ConvoyRole.member.label, 'Member');
-    });
-
-    test('MemberLocation accurately parses ConvoyRole from JSON', () {
-      final leadJson = {
-        'userId': 'lead_1',
+  group('BearingAndMemberLocationTest', () {
+    test('MemberLocation accurately parses coordinates, speed, and telemetry from JSON', () {
+      final json = {
+        'userId': 'rider_1',
         'lat': -6.2000,
         'lng': 106.8000,
-        'role': 'leader',
+        'name': 'Alpha 1',
+        'speed': 35.5,
+        'heading': 90.0,
+        'battery': 85,
       };
-      final leadMember = MemberLocation.fromJson(leadJson);
-      expect(leadMember.role, ConvoyRole.leader);
-
-      final sweepJson = {
-        'userId': 'sweep_1',
-        'lat': -6.2050,
-        'lng': 106.8000,
-        'role': 'sweeper',
-      };
-      final sweepMember = MemberLocation.fromJson(sweepJson);
-      expect(sweepMember.role, ConvoyRole.sweeper);
-
-      final defaultJson = {
-        'userId': 'mbr_1',
-        'lat': -6.2020,
-        'lng': 106.8000,
-      };
-      final defaultMember = MemberLocation.fromJson(defaultJson);
-      expect(defaultMember.role, ConvoyRole.member);
-    });
-
-    test('ConvoySpanState calculates formatted distance and excess flag', () {
-      const normalSpan = ConvoySpanState(
-        hasFormation: true,
-        spanDistanceMeters: 850.0,
-        leaderName: 'Alpha Lead',
-        sweeperName: 'Bravo Sweep',
-        isSpanExcessive: false,
-      );
-      expect(normalSpan.formattedSpan, '850 m');
-      expect(normalSpan.isSpanExcessive, isFalse);
-
-      const excessiveSpan = ConvoySpanState(
-        hasFormation: true,
-        spanDistanceMeters: 2450.0,
-        leaderName: 'Alpha Lead',
-        sweeperName: 'Bravo Sweep',
-        isSpanExcessive: true,
-      );
-      expect(excessiveSpan.formattedSpan, '2.45 km');
-      expect(excessiveSpan.isSpanExcessive, isTrue);
+      final member = MemberLocation.fromJson(json);
+      expect(member.id, 'rider_1');
+      expect(member.name, 'Alpha 1');
+      expect(member.latitude, -6.2000);
+      expect(member.longitude, 106.8000);
+      expect(member.speedKmh, 35.5);
+      expect(member.heading, 90.0);
+      expect(member.batteryPercent, 85);
     });
 
     test('Bearing calculation returns correct degrees and cardinal points', () {

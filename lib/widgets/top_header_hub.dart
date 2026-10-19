@@ -10,7 +10,6 @@ import '../screens/history/trip_history_screen.dart';
 import 'modals/member_list_sheet.dart';
 import 'modals/settings_sheet.dart';
 import 'modals/join_create_room_sheet.dart';
-import 'modals/sos_modal_sheet.dart';
 import 'modals/quick_ping_sheet.dart';
 import 'modals/tactical_chat_sheet.dart';
 import 'modals/tactical_guide_sheet.dart';
@@ -32,7 +31,6 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
     final status = ref.watch(roomProvider.select((r) => r.status));
     final roomCode = ref.watch(roomProvider.select((r) => r.roomCode));
     final membersCount = ref.watch(roomProvider.select((r) => r.members.length));
-    final hasActiveSos = ref.watch(roomProvider.select((r) => r.activeSos != null));
     final unreadChat = ref.watch(roomProvider.select((r) => r.unreadChatCount));
     final theme = Theme.of(context);
 
@@ -100,16 +98,6 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                       onTap: () {
                                         setState(() => _isExpanded = false);
                                         _showChatSheet(context);
-                                      },
-                                    ),
-                                    const SizedBox(width: 8),
-                                    _ActionButton(
-                                      icon: Icons.sos_rounded,
-                                      iconColor: AppTheme.dangerRed,
-                                      backgroundColor: AppTheme.dangerRed.withValues(alpha: 0.15),
-                                      onTap: () {
-                                        setState(() => _isExpanded = false);
-                                        _showSosSheet(context);
                                       },
                                     ),
                                     const SizedBox(width: 8),
@@ -308,19 +296,6 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                               const SizedBox(width: 4),
                             ],
                             _ActionButton(
-                              icon: Icons.sos_rounded,
-                              iconColor: AppTheme.dangerRed,
-                              backgroundColor: hasActiveSos
-                                  ? AppTheme.dangerRed.withValues(alpha: 0.35)
-                                  : null,
-                              badgeCount: hasActiveSos ? 1 : null,
-                              onTap: () {
-                                HapticFeedback.heavyImpact();
-                                _showSosSheet(context);
-                              },
-                            ),
-                            const SizedBox(width: 4),
-                            _ActionButton(
                               icon: Icons.more_vert_rounded,
                               onTap: () {
                                 HapticFeedback.lightImpact();
@@ -404,15 +379,6 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
           ),
         ],
       ),
-    );
-  }
-
-  void _showSosSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) => const SosModalSheet(),
     );
   }
 

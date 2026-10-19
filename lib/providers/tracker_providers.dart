@@ -36,10 +36,6 @@ class SettingsNotifier extends Notifier<AppSettings> {
       soundAlertsEnabled: prefs.getBool('soundAlertsEnabled') ?? true,
       hapticAlertsEnabled: prefs.getBool('hapticAlertsEnabled') ?? true,
       smartAutoPause: prefs.getBool('smartAutoPause') ?? true,
-      convoyRole: ConvoyRole.values.firstWhere(
-        (r) => r.name == prefs.getString('convoyRole'),
-        orElse: () => ConvoyRole.member,
-      ),
       lowBandwidthMode: prefs.getBool('lowBandwidthMode') ?? false,
       hazardProximityAlert: prefs.getBool('hazardProximityAlert') ?? true,
     );
@@ -57,7 +53,6 @@ class SettingsNotifier extends Notifier<AppSettings> {
     prefs.setBool('soundAlertsEnabled', s.soundAlertsEnabled);
     prefs.setBool('hapticAlertsEnabled', s.hapticAlertsEnabled);
     prefs.setBool('smartAutoPause', s.smartAutoPause);
-    prefs.setString('convoyRole', s.convoyRole.name);
     prefs.setBool('lowBandwidthMode', s.lowBandwidthMode);
     prefs.setBool('hazardProximityAlert', s.hazardProximityAlert);
   }
@@ -423,7 +418,6 @@ class RoomNotifier extends Notifier<RoomState> {
       'heading': pos.heading,
       'battery': batteryPercent,
       'name': userName.isNotEmpty ? userName : null,
-      'role': settings.convoyRole.name,
       'timestamp': pos.timestamp.millisecondsSinceEpoch,
     });
   }

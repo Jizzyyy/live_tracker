@@ -2,23 +2,6 @@ import 'package:flutter/foundation.dart';
 
 enum TrackingConnectionStatus { disconnected, reconnecting, connected }
 enum TripSessionState { inactive, active, paused }
-enum ConvoyRole { leader, sweeper, scout, member }
-
-extension ConvoyRoleExt on ConvoyRole {
-  String get label => switch (this) {
-    ConvoyRole.leader => 'Leader',
-    ConvoyRole.sweeper => 'Sweeper',
-    ConvoyRole.scout => 'Scout',
-    ConvoyRole.member => 'Member',
-  };
-
-  String get badgeText => switch (this) {
-    ConvoyRole.leader => 'LEAD',
-    ConvoyRole.sweeper => 'SWEEP',
-    ConvoyRole.scout => 'SCOUT',
-    ConvoyRole.member => 'MBR',
-  };
-}
 
 @immutable
 class AppSettings {
@@ -33,7 +16,6 @@ class AppSettings {
     this.soundAlertsEnabled = true,
     this.hapticAlertsEnabled = true,
     this.smartAutoPause = true,
-    this.convoyRole = ConvoyRole.member,
     this.lowBandwidthMode = false,
     this.hazardProximityAlert = true,
   });
@@ -48,7 +30,6 @@ class AppSettings {
   final bool soundAlertsEnabled;
   final bool hapticAlertsEnabled;
   final bool smartAutoPause;
-  final ConvoyRole convoyRole;
   final bool lowBandwidthMode;
   final bool hazardProximityAlert;
 
@@ -63,7 +44,6 @@ class AppSettings {
     bool? soundAlertsEnabled,
     bool? hapticAlertsEnabled,
     bool? smartAutoPause,
-    ConvoyRole? convoyRole,
     bool? lowBandwidthMode,
     bool? hazardProximityAlert,
   }) {
@@ -78,7 +58,6 @@ class AppSettings {
       soundAlertsEnabled: soundAlertsEnabled ?? this.soundAlertsEnabled,
       hapticAlertsEnabled: hapticAlertsEnabled ?? this.hapticAlertsEnabled,
       smartAutoPause: smartAutoPause ?? this.smartAutoPause,
-      convoyRole: convoyRole ?? this.convoyRole,
       lowBandwidthMode: lowBandwidthMode ?? this.lowBandwidthMode,
       hazardProximityAlert: hazardProximityAlert ?? this.hazardProximityAlert,
     );
@@ -114,7 +93,6 @@ class MemberLocation {
     this.batteryPercent,
     required this.lastUpdated,
     this.isIdle = false,
-    this.role = ConvoyRole.member,
   });
 
   final String id;
@@ -127,7 +105,6 @@ class MemberLocation {
   final int? batteryPercent;
   final DateTime lastUpdated;
   final bool isIdle;
-  final ConvoyRole role;
 
   /// True if coordinate timestamp has not been updated for more than 45 seconds
   bool get isStale => DateTime.now().difference(lastUpdated).inSeconds > 45;
@@ -145,10 +122,6 @@ class MemberLocation {
       lastUpdated: DateTime.fromMillisecondsSinceEpoch(
           json['timestamp'] as int? ?? DateTime.now().millisecondsSinceEpoch),
       isIdle: json['isIdle'] as bool? ?? false,
-      role: ConvoyRole.values.firstWhere(
-        (r) => r.name == json['role'],
-        orElse: () => ConvoyRole.member,
-      ),
     );
   }
 }
