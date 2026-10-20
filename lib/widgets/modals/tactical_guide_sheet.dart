@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../utils/ui_helpers.dart';
 import '../../utils/app_theme.dart';
+import '../../providers/tracker_providers.dart';
 
-class TacticalGuideSheet extends StatelessWidget {
+class TacticalGuideSheet extends ConsumerWidget {
   const TacticalGuideSheet({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final s = ref.watch(appStringsProvider);
     final isDark = theme.brightness == Brightness.dark;
 
     return SafeArea(
@@ -53,7 +56,7 @@ class TacticalGuideSheet extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'PANDUAN TAKTIS KONVOI',
+                          s.tacticalGuideTitle,
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -62,7 +65,7 @@ class TacticalGuideSheet extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'Instruksi lengkap navigasi, formasi, dan keselamatan',
+                          s.tacticalGuideSubtitle,
                           style: GoogleFonts.inter(
                             fontSize: 11,
                             color: isDark ? Colors.white60 : Colors.black54,
@@ -147,15 +150,15 @@ class TacticalGuideSheet extends StatelessWidget {
                 style: FilledButton.styleFrom(
                   backgroundColor: AppTheme.primaryCyan,
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'SAYA MENGERTI',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1),
-                ),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                s.iUnderstand,
+                style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1),
+              ),
+            ),
             ],
           ),
         ),

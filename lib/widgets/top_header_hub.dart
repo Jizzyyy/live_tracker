@@ -32,6 +32,7 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
     final roomCode = ref.watch(roomProvider.select((r) => r.roomCode));
     final membersCount = ref.watch(roomProvider.select((r) => r.members.length));
     final unreadChat = ref.watch(roomProvider.select((r) => r.unreadChatCount));
+    final s = ref.watch(appStringsProvider);
     final theme = Theme.of(context);
 
     return RepaintBoundary(
@@ -138,7 +139,7 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                         ref.read(backtrackActiveProvider.notifier).state = !isAct;
                                         CustomSnackbar.show(
                                           context,
-                                          message: !isAct ? 'Navigasi Backtrack Aktif!' : 'Navigasi Backtrack Dinonaktifkan',
+                                          message: !isAct ? s.backtrackActive : s.backtrackDeactivated,
                                           type: SnackbarType.info,
                                         );
                                       },
@@ -171,13 +172,13 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                           Clipboard.setData(ClipboardData(text: roomCode));
                                           SharePlus.instance.share(
                                             ShareParams(
-                                              text: 'Gabung room konvoi Live Tracker saya! Kode: $roomCode',
-                                              subject: 'Undangan Room Konvoi Live Tracker',
+                                              text: s.shareRoomInvite(roomCode),
+                                              subject: s.shareRoomSubject,
                                             ),
                                           );
                                           CustomSnackbar.show(
                                             context,
-                                            message: 'Kode Room $roomCode disalin ke clipboard!',
+                                            message: s.roomCodeCopiedDetail(roomCode),
                                             type: SnackbarType.success,
                                           );
                                         },
@@ -221,7 +222,7 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                         Clipboard.setData(ClipboardData(text: roomCode));
                                         CustomSnackbar.show(
                                           context,
-                                          message: 'Kode Room $roomCode disalin!',
+                                          message: s.roomCodeCopied,
                                           type: SnackbarType.success,
                                         );
                                       },
@@ -318,6 +319,7 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final mapStyles = ref.watch(mapStyleListProvider);
     final currentStyleId = ref.watch(mapStyleProvider.select((s) => s.id));
+    final s = ref.read(appStringsProvider);
 
     showModalBottomSheet(
       context: context,
@@ -359,7 +361,7 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Map Style & Engine',
+                        s.mapStyleAndEngine,
                         style: GoogleFonts.inter(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -423,32 +425,33 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
 
   void _confirmLeaveRoom(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final s = ref.read(appStringsProvider);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          'Keluar dari Room?',
+          s.leaveRoomTitle,
           style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textDark),
         ),
         content: Text(
-          'Anda akan berhenti berbagi lokasi real-time dengan anggota room ini.',
+          s.leaveRoomDesc,
           style: TextStyle(color: isDark ? Colors.white70 : const Color(0xFF4A5568)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('BATAL', style: TextStyle(color: isDark ? Colors.white60 : Colors.black54)),
+            child: Text(s.cancel, style: TextStyle(color: isDark ? Colors.white60 : Colors.black54)),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppTheme.dangerRed),
             onPressed: () {
               Navigator.pop(ctx);
               ref.read(roomProvider.notifier).leaveRoom();
-              CustomSnackbar.show(context, message: 'Berhasil keluar dari room', type: SnackbarType.info);
+              CustomSnackbar.show(context, message: s.leftRoomSuccess, type: SnackbarType.info);
             },
-            child: const Text('KELUAR ROOM', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(s.leaveRoomConfirm, style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

@@ -65,6 +65,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
 
   Future<void> _handleRenameTrip() async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final s = ref.read(appStringsProvider);
     final controller = TextEditingController(text: _currentTrip.customTitle ?? '');
 
     final newTitle = await showDialog<String>(
@@ -73,7 +74,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
         backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          'Ubah Nama Rute',
+          s.renameRouteTitle,
           style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: isDark ? Colors.white : AppTheme.textDark),
         ),
         content: TextField(
@@ -81,7 +82,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
           autofocus: true,
           style: TextStyle(color: isDark ? Colors.white : Colors.black87),
           decoration: InputDecoration(
-            hintText: 'Misal: Touring Puncak, Morning Ride...',
+            hintText: s.renameRouteHint,
             hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
@@ -89,11 +90,11 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('BATAL', style: TextStyle(color: isDark ? Colors.white60 : Colors.black54)),
+            child: Text(s.cancel, style: TextStyle(color: isDark ? Colors.white60 : Colors.black54)),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('SIMPAN'),
+            child: Text(s.save),
           ),
         ],
       ),
@@ -106,11 +107,12 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
     setState(() => _currentTrip = updated);
 
     if (mounted) {
-      CustomSnackbar.show(context, message: 'Nama rute diperbarui!', type: SnackbarType.success);
+      CustomSnackbar.show(context, message: s.routeRenamed, type: SnackbarType.success);
     }
   }
 
   Future<void> _handleExport(String format) async {
+    final s = ref.read(appStringsProvider);
     setState(() => _isExporting = true);
     try {
       if (format == 'gpx') {
@@ -124,7 +126,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        CustomSnackbar.show(context, message: 'Gagal mengekspor ${format.toUpperCase()}: $e', type: SnackbarType.error);
+        CustomSnackbar.show(context, message: s.exportFailed(format, e.toString()), type: SnackbarType.error);
       }
     } finally {
       if (mounted) setState(() => _isExporting = false);
@@ -133,20 +135,21 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
 
   Future<void> _confirmDeleteTrip() async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final s = ref.read(appStringsProvider);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          'Hapus rute ini?',
+          s.deleteRouteTitle,
           style: GoogleFonts.inter(
             fontWeight: FontWeight.bold,
             color: isDark ? Colors.white : AppTheme.textDark,
           ),
         ),
         content: Text(
-          'Rekaman rute ini akan dihapus secara permanen dari perangkat.',
+          s.deleteRouteDesc,
           style: TextStyle(
             color: isDark ? Colors.white70 : const Color(0xFF4A5568),
           ),
@@ -155,13 +158,13 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(
-              'BATAL',
+              s.cancel,
               style: TextStyle(color: isDark ? Colors.white60 : Colors.black54),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('HAPUS', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            child: Text(s.deleteAllConfirm, style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -178,6 +181,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
   }
 
   void _showShareCardDialog() {
+    final s = ref.read(appStringsProvider);
     bool cardIsDark = Theme.of(context).brightness == Brightness.dark;
 
     showDialog(
@@ -205,7 +209,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'TEMA KARTU:',
+                          s.cardThemeLabel,
                           style: GoogleFonts.inter(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
                         ),
                         const SizedBox(width: 12),
@@ -264,7 +268,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                       ),
                       onPressed: () => Navigator.pop(ctx),
                       icon: const Icon(Icons.close, size: 18),
-                      label: const Text('TUTUP'),
+                      label: Text(s.close),
                     ),
                     const SizedBox(width: 12),
                     FilledButton.icon(
@@ -276,11 +280,11 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                       ),
                       onPressed: () async {
                         Navigator.pop(ctx);
-                        CustomSnackbar.show(context, message: 'Menyiapkan kartu rute...', type: SnackbarType.info);
+                        CustomSnackbar.show(context, message: s.preparingShareCard, type: SnackbarType.info);
                         await TripShareCard.captureAndShare(_shareCardKey, widget.trip);
                       },
                       icon: const Icon(Icons.share, size: 18),
-                      label: const Text('BAGIKAN GAMBAR', style: TextStyle(fontWeight: FontWeight.bold)),
+                      label: Text(s.shareImageButton, style: const TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -296,6 +300,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
   Widget build(BuildContext context) {
     final trip = _currentTrip;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final s = ref.watch(appStringsProvider);
     final points = _cachedPoints;
     final bounds = _cachedBounds;
 
@@ -317,7 +322,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
         actions: [
           // Rename Trip Action
           IconButton(
-            tooltip: 'Ubah Nama',
+            tooltip: s.renameRouteTooltip,
             icon: Icon(
               Icons.edit_outlined,
               color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
@@ -327,7 +332,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
           ),
           // Share Image Action (Card Exporter)
           IconButton(
-            tooltip: 'Share Card',
+            tooltip: s.shareCardTooltip,
             icon: Icon(
               Icons.photo_camera_back_outlined, 
               color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
@@ -336,7 +341,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
           ),
           // Multi-Format GIS Export Action
           PopupMenuButton<String>(
-            tooltip: 'Export GIS Data',
+            tooltip: s.exportGisTooltip,
             enabled: !_isExporting,
             icon: _isExporting
                 ? SizedBox(
@@ -426,7 +431,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
             ],
           ),
           IconButton(
-            tooltip: 'Hapus Rute',
+            tooltip: s.deleteRouteTooltip,
             icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
             onPressed: _confirmDeleteTrip,
           ),
@@ -466,6 +471,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
     List<LatLng> points,
     LatLngBounds bounds,
   ) {
+    final s = ref.watch(appStringsProvider);
     return Stack(
       children: [
         ClipRRect(
@@ -573,12 +579,13 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                   borderRadius: BorderRadius.circular(12),
                   onTap: () {
                     HapticFeedback.lightImpact();
+                    final s = ref.read(appStringsProvider);
                     setState(() => _showSpeedHeatmap = !_showSpeedHeatmap);
                     CustomSnackbar.show(
                       context,
                       message: _showSpeedHeatmap
-                          ? 'Mode Speed Heatmap Aktif'
-                          : 'Mode Solid Neon Polyline Aktif',
+                          ? s.speedHeatmapActive
+                          : s.solidPolylineActive,
                       type: SnackbarType.info,
                     );
                   },
@@ -663,15 +670,15 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            'SPEED SPECTRUM',
-                            style: GoogleFonts.inter(
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
-                              color: isDark ? Colors.white60 : Colors.black54,
-                            ),
-                          ),
+                    Text(
+                      s.speedSpectrumTitle,
+                      style: GoogleFonts.inter(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                        color: isDark ? Colors.white60 : Colors.black54,
+                      ),
+                    ),
                   const SizedBox(height: 4),
                   _HeatmapLegendRow(
                     color: SpeedHeatmapSegmenter.tierSlowColor,
@@ -855,6 +862,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
     bool isDark,
     CompletedTrip trip,
   ) {
+    final s = ref.watch(appStringsProvider);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: PremiumGlass(
@@ -867,7 +875,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'TRIP METRICS',
+                  s.tripMetricsTitle,
                   style: GoogleFonts.inter(
                     fontSize: 11,
                     letterSpacing: 1.5,
@@ -890,14 +898,14 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
               children: [
                 Expanded(
                   child: _TelemetryTile(
-                    label: 'DISTANCE', 
+                    label: s.metricDistance, 
                     value: trip.formattedDistance, 
                     color: isDark ? const Color(0xFF00E676) : const Color(0xFF059669),
                   ),
                 ),
                 Expanded(
                   child: _TelemetryTile(
-                    label: 'TOTAL DURATION', 
+                    label: s.metricTotalDuration, 
                     value: trip.formattedDuration, 
                     color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
                   ),
@@ -911,14 +919,14 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
               children: [
                 Expanded(
                   child: _TelemetryTile(
-                    label: 'MOVING TIME', 
+                    label: s.metricMovingTime, 
                     value: trip.formattedMovingDuration, 
                     color: isDark ? const Color(0xFF00E676) : const Color(0xFF059669),
                   ),
                 ),
                 Expanded(
                   child: _TelemetryTile(
-                    label: 'STOPPED TIME', 
+                    label: s.metricStoppedTime, 
                     value: trip.formattedStoppedDuration, 
                     color: isDark ? const Color(0xFFFF9100) : const Color(0xFFD97706),
                   ),
@@ -932,14 +940,14 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
               children: [
                 Expanded(
                   child: _TelemetryTile(
-                    label: 'AVG PACE', 
+                    label: s.metricAvgPace, 
                     value: trip.formattedPace, 
                     color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
                   ),
                 ),
                 Expanded(
                   child: _TelemetryTile(
-                    label: 'AVG SPEED', 
+                    label: s.metricAvgSpeed, 
                     value: trip.formattedAvgSpeed, 
                     color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
                   ),
@@ -953,14 +961,14 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
               children: [
                 Expanded(
                   child: _TelemetryTile(
-                    label: 'TOP SPEED', 
+                    label: s.metricTopSpeed, 
                     value: trip.formattedMaxSpeed, 
                     color: isDark ? const Color(0xFFFF1744) : const Color(0xFFDC2626),
                   ),
                 ),
                 Expanded(
                   child: _TelemetryTile(
-                    label: 'MAX GRADIENT', 
+                    label: s.metricMaxGradient, 
                     value: trip.formattedMaxGradient, 
                     color: isDark ? const Color(0xFFFF5252) : const Color(0xFFE11D48),
                   ),
@@ -984,7 +992,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
               const SizedBox(height: 16),
               Divider(color: isDark ? Colors.white10 : Colors.black12, height: 1),
               const SizedBox(height: 16),
-              _SplitsTable(splits: trip.splits, isDark: isDark),
+              _SplitsTable(splits: trip.splits, isDark: isDark, title: s.kmSplitsTitle),
             ],
           ],
         ),
@@ -996,8 +1004,9 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
 class _SplitsTable extends StatelessWidget {
   final List<TripSplit> splits;
   final bool isDark;
+  final String title;
 
-  const _SplitsTable({required this.splits, required this.isDark});
+  const _SplitsTable({required this.splits, required this.isDark, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -1008,7 +1017,7 @@ class _SplitsTable extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'KILOMETER SPLITS',
+              title,
               style: GoogleFonts.inter(
                 fontSize: 11,
                 letterSpacing: 1.5,

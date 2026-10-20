@@ -70,6 +70,7 @@ class _TacticalChatSheetState extends ConsumerState<TacticalChatSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final s = ref.watch(appStringsProvider);
     final roomCode = ref.watch(roomProvider.select((r) => r.roomCode));
     final messages = ref.watch(roomProvider.select((r) => r.chatMessages));
     final myName = ref.watch(appSettingsProvider.select((s) => s.userName.trim()));
@@ -121,7 +122,7 @@ class _TacticalChatSheetState extends ConsumerState<TacticalChatSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                         Text(
-                          'TACTICAL ROOM CHAT',
+                          s.tacticalChatTitle,
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -131,8 +132,8 @@ class _TacticalChatSheetState extends ConsumerState<TacticalChatSheet> {
                         ),
                           Text(
                             roomCode != null
-                                ? 'Room $roomCode • ${messages.length} pesan'
-                                : 'Mode Solo (Masuk room untuk berkirim pesan)',
+                                ? s.roomChatSubtitle(roomCode, messages.length)
+                                : s.soloModeChatSubtitle,
                             style: GoogleFonts.inter(
                               fontSize: 11,
                               color: isDark ? Colors.white60 : Colors.black54,
@@ -195,7 +196,7 @@ class _TacticalChatSheetState extends ConsumerState<TacticalChatSheet> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Belum ada obrolan konvoi.',
+                                s.noChatYet,
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -203,7 +204,7 @@ class _TacticalChatSheetState extends ConsumerState<TacticalChatSheet> {
                                 ),
                               ),
                               Text(
-                                'Ketik pesan atau ketuk frasa taktis di atas.',
+                                s.tapPhrasePrompt,
                                 style: GoogleFonts.inter(
                                   fontSize: 11,
                                   color: isDark ? Colors.white38 : Colors.black38,
@@ -252,7 +253,7 @@ class _TacticalChatSheetState extends ConsumerState<TacticalChatSheet> {
                             color: isDark ? Colors.white : Colors.black87,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Ketik pesan taktis...',
+                            hintText: s.typeTacticalMessage,
                             hintStyle: GoogleFonts.inter(
                               fontSize: 12,
                               color: isDark ? Colors.white38 : Colors.black38,

@@ -12,8 +12,9 @@ class TripHistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final rawTrips = ref.watch(tripHistoryProvider);
-    final trips = ref.watch(sortedTripHistoryProvider);
     final sortOption = ref.watch(tripSortOptionProvider);
+    final trips = ref.watch(sortedTripHistoryProvider);
+    final s = ref.watch(appStringsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -21,7 +22,7 @@ class TripHistoryScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text(
-          'Trip History',
+          s.tripHistoryTitle,
           style: GoogleFonts.inter(
             fontWeight: FontWeight.bold,
             color: isDark ? Colors.white : const Color(0xFF0D1117),
@@ -35,7 +36,7 @@ class TripHistoryScreen extends ConsumerWidget {
           if (rawTrips.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_sweep_outlined, color: Colors.redAccent),
-              tooltip: 'Clear All',
+              tooltip: s.deleteAllConfirm,
               onPressed: () => _showClearDialog(context, ref),
             ),
         ],
@@ -52,7 +53,7 @@ class TripHistoryScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No trips recorded yet', 
+                    s.noTripsYet, 
                     style: GoogleFonts.inter(
                       color: isDark ? Colors.white70 : const Color(0xFF4A5568), 
                       fontSize: 16,
@@ -60,7 +61,7 @@ class TripHistoryScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Start a session to build your route history.', 
+                    s.startRidingPrompt, 
                     style: GoogleFonts.inter(
                       color: isDark ? Colors.white38 : const Color(0xFF718096), 
                       fontSize: 13,
@@ -88,7 +89,7 @@ class TripHistoryScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'LIFETIME TOTALS',
+                            s.lifetimeTotals,
                             style: GoogleFonts.inter(
                               fontSize: 10,
                               letterSpacing: 1.5,
@@ -112,7 +113,7 @@ class TripHistoryScreen extends ConsumerWidget {
                                     ),
                                   ),
                                   const SizedBox(height: 2),
-                                  Text('JARAK', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                  Text(s.distanceShort, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
                                 ],
                               ),
                               Column(
@@ -127,7 +128,7 @@ class TripHistoryScreen extends ConsumerWidget {
                                     ),
                                   ),
                                   const SizedBox(height: 2),
-                                  Text('DURASI', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                  Text(s.durationShort, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
                                 ],
                               ),
                               Column(
@@ -142,7 +143,7 @@ class TripHistoryScreen extends ConsumerWidget {
                                     ),
                                   ),
                                   const SizedBox(height: 2),
-                                  Text('SESI', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                  Text(s.sessionsShort, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
                                 ],
                               ),
                             ],
@@ -155,7 +156,7 @@ class TripHistoryScreen extends ConsumerWidget {
                             child: Row(
                               children: [
                                 Text(
-                                  'URUTKAN: ',
+                                  s.sortBy,
                                   style: GoogleFonts.inter(
                                     fontSize: 9,
                                     letterSpacing: 1.0,
@@ -165,21 +166,21 @@ class TripHistoryScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(width: 8),
                                 ChoiceChip(
-                                  label: const Text('TERBARU'),
+                                  label: Text(s.sortNewest),
                                   selected: sortOption == TripSortOption.newest,
                                   labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
                                   onSelected: (_) => ref.read(tripSortOptionProvider.notifier).state = TripSortOption.newest,
                                 ),
                                 const SizedBox(width: 6),
                                 ChoiceChip(
-                                  label: const Text('JARAK'),
+                                  label: Text(s.sortDistance),
                                   selected: sortOption == TripSortOption.longestDistance,
                                   labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
                                   onSelected: (_) => ref.read(tripSortOptionProvider.notifier).state = TripSortOption.longestDistance,
                                 ),
                                 const SizedBox(width: 6),
                                 ChoiceChip(
-                                  label: const Text('DURASI'),
+                                  label: Text(s.sortDuration),
                                   selected: sortOption == TripSortOption.longestDuration,
                                   labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
                                   onSelected: (_) => ref.read(tripSortOptionProvider.notifier).state = TripSortOption.longestDuration,
@@ -353,20 +354,21 @@ class TripHistoryScreen extends ConsumerWidget {
 
   void _showClearDialog(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final s = ref.read(appStringsProvider);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: isDark ? const Color(0xFF12151B) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          'Clear all history?',
+          s.clearAllHistoryTitle,
           style: GoogleFonts.inter(
             fontWeight: FontWeight.bold,
             color: isDark ? Colors.white : const Color(0xFF0D1117),
           ),
         ),
         content: Text(
-          'All saved trips will be permanently deleted from this device.',
+          s.clearAllHistoryDesc,
           style: TextStyle(
             color: isDark ? Colors.white70 : const Color(0xFF4A5568),
           ),
@@ -375,7 +377,7 @@ class TripHistoryScreen extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
-              'CANCEL',
+              s.cancel,
               style: TextStyle(color: isDark ? Colors.white60 : Colors.black54),
             ),
           ),
@@ -383,9 +385,9 @@ class TripHistoryScreen extends ConsumerWidget {
             onPressed: () {
               ref.read(tripHistoryProvider.notifier).clearAll();
               Navigator.pop(ctx);
-              CustomSnackbar.show(context, message: 'All history cleared', type: SnackbarType.info);
+              CustomSnackbar.show(context, message: s.allHistoryCleared, type: SnackbarType.info);
             },
-            child: const Text('DELETE ALL', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            child: Text(s.deleteAllConfirm, style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
           ),
         ],
       ),

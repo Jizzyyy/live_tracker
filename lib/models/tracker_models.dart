@@ -2,6 +2,19 @@ import 'package:flutter/foundation.dart';
 
 enum TrackingConnectionStatus { disconnected, reconnecting, connected }
 enum TripSessionState { inactive, active, paused }
+enum AppLanguage { id, en }
+
+extension AppLanguageExt on AppLanguage {
+  String get label => switch (this) {
+    AppLanguage.id => 'Bahasa Indonesia',
+    AppLanguage.en => 'English',
+  };
+
+  String get flag => switch (this) {
+    AppLanguage.id => '🇮🇩',
+    AppLanguage.en => '🇬🇧',
+  };
+}
 
 @immutable
 class AppSettings {
@@ -18,6 +31,7 @@ class AppSettings {
     this.smartAutoPause = true,
     this.lowBandwidthMode = false,
     this.hazardProximityAlert = true,
+    this.language = AppLanguage.id,
   });
 
   final String serverUrl;
@@ -32,6 +46,7 @@ class AppSettings {
   final bool smartAutoPause;
   final bool lowBandwidthMode;
   final bool hazardProximityAlert;
+  final AppLanguage language;
 
   AppSettings copyWith({
     String? serverUrl,
@@ -46,6 +61,7 @@ class AppSettings {
     bool? smartAutoPause,
     bool? lowBandwidthMode,
     bool? hazardProximityAlert,
+    AppLanguage? language,
   }) {
     return AppSettings(
       serverUrl: serverUrl ?? this.serverUrl,
@@ -60,6 +76,7 @@ class AppSettings {
       smartAutoPause: smartAutoPause ?? this.smartAutoPause,
       lowBandwidthMode: lowBandwidthMode ?? this.lowBandwidthMode,
       hazardProximityAlert: hazardProximityAlert ?? this.hazardProximityAlert,
+      language: language ?? this.language,
     );
   }
 }

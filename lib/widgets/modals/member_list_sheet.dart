@@ -16,6 +16,7 @@ class MemberListSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final members = ref.watch(roomProvider.select((r) => r.members.values.toList()));
     final roomCode = ref.watch(roomProvider.select((r) => r.roomCode));
+    final s = ref.watch(appStringsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -43,7 +44,7 @@ class MemberListSheet extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Active Group', style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.bold)),
+                  Text(s.activeGroupTitle, style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.bold)),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
@@ -51,7 +52,7 @@ class MemberListSheet extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      '${members.length + 1} Online',
+                      s.activeOnline(members.length + 1),
                       style: GoogleFonts.inter(color: const Color(0xFF00E676), fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                   ),
@@ -97,7 +98,7 @@ class MemberListSheet extends ConsumerWidget {
                         onPressed: () {
                           HapticFeedback.lightImpact();
                           Clipboard.setData(ClipboardData(text: roomCode));
-                          CustomSnackbar.show(context, message: 'Kode Room $roomCode disalin!', type: SnackbarType.success);
+                          CustomSnackbar.show(context, message: s.roomCodeCopiedDetail(roomCode), type: SnackbarType.success);
                         },
                       ),
                       IconButton(
@@ -108,8 +109,8 @@ class MemberListSheet extends ConsumerWidget {
                           HapticFeedback.lightImpact();
                           SharePlus.instance.share(
                             ShareParams(
-                              text: 'Gabung room Live Tracker saya dengan kode: $roomCode',
-                              subject: 'Undangan Room Live Tracker',
+                              text: s.shareRoomInvite(roomCode),
+                              subject: s.shareRoomSubject,
                             ),
                           );
                         },
@@ -121,9 +122,9 @@ class MemberListSheet extends ConsumerWidget {
               ],
               
               if (members.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 32),
-                  child: Center(child: Text('You are the only member in this room.')),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  child: Center(child: Text(s.youAreOnlyMember)),
                 )
               else
                 Flexible(
@@ -270,7 +271,7 @@ class MemberListSheet extends ConsumerWidget {
                   Navigator.pop(context);
                 },
                 icon: const Icon(Icons.exit_to_app),
-                label: Text('LEAVE ROOM', style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                label: Text(s.leaveRoomButton, style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1)),
               ),
             ],
           ),

@@ -89,6 +89,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
   @override
   Widget build(BuildContext context) {
     final mapStyle = ref.watch(mapStyleProvider);
+    final s = ref.watch(appStringsProvider);
     
     // Auto-centering on first fix and auto-follow camera navigation
     ref.listen(locationStreamProvider, (prev, next) {
@@ -111,7 +112,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                 if (context.mounted) {
                   CustomSnackbar.show(
                     context,
-                    message: '⚡ Smart Battery Guard: Baterai <= 20%, mode hemat data aktif otomatis!',
+                    message: s.smartBatteryGuardTriggered,
                     type: SnackbarType.warning,
                   );
                 }
@@ -554,7 +555,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                err.isNotEmpty ? err : 'GPS tidak aktif atau izin ditolak',
+                                err.isNotEmpty ? err : s.gpsErrorDefault,
                                 style: GoogleFonts.inter(
                                   color: Colors.white,
                                   fontSize: 12,
@@ -574,7 +575,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                               onPressed: () {
                                 ref.invalidate(locationStreamProvider);
                               },
-                              child: const Text('COBA LAGI', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                              child: Text(s.retry, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ),
@@ -617,8 +618,8 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                             Expanded(
                               child: Text(
                                 isReconnecting
-                                    ? 'Sinyal terputus • Menghubungkan ulang ke konvoi...'
-                                    : 'Mode Konvoi Terputus (Offline)',
+                                    ? s.reconnectingText
+                                    : s.offlineModeText,
                                 style: GoogleFonts.inter(
                                   color: Colors.white,
                                   fontSize: 12,
@@ -639,7 +640,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                                 onPressed: () {
                                   ref.read(roomProvider.notifier).reconnect();
                                 },
-                                child: const Text('RECONNECT', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                child: Text(s.reconnect, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                               ),
                           ],
                         ),
@@ -674,7 +675,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Menyimpan $queueCount koordinat offline • Siap auto-sync',
+                              s.offlineQueueText(queueCount),
                               style: GoogleFonts.inter(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
@@ -720,19 +721,19 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                               const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 22),
                               const SizedBox(width: 10),
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '🚨 SOS DARURAT DARI ${activeSos.userId.toUpperCase()}',
-                                      style: GoogleFonts.inter(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 0.5,
-                                      ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    s.emergencySosFrom(activeSos.userId.toUpperCase()),
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
                                     ),
+                                  ),
                                     Text(
                                       activeSos.note,
                                       style: GoogleFonts.inter(
@@ -823,7 +824,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                                     Row(
                                       children: [
                                         Text(
-                                          'TACTICAL PING: ${activePing.callerDisplayName.toUpperCase()}',
+                                          s.tacticalPingFrom(activePing.callerDisplayName.toUpperCase()),
                                           style: GoogleFonts.inter(
                                             color: cueColor,
                                             fontSize: 11,
@@ -899,7 +900,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      'PERINGATAN BAHAYA DI DEPAN (${hazard.formattedDistance})',
+                                      s.hazardWarningAhead(hazard.formattedDistance),
                                       style: GoogleFonts.inter(
                                         color: Colors.white,
                                         fontSize: 11,
@@ -959,7 +960,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                             const Icon(Icons.fmd_bad_outlined, color: Colors.white, size: 16),
                             const SizedBox(width: 8),
                             Text(
-                              'Terpisah dari konvoi (~${separation.distanceMeters.toStringAsFixed(0)} m)',
+                              s.separatedFromConvoy(separation.distanceMeters.toStringAsFixed(0)),
                               style: GoogleFonts.inter(
                                 color: Colors.white,
                                 fontSize: 11,
@@ -1028,14 +1029,14 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                             ref.read(autoFollowProvider.notifier).state = true;
                           }
                         },
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.gps_fixed, size: 14, color: AppTheme.primaryCyan),
-                            SizedBox(width: 8),
+                            const Icon(Icons.gps_fixed, size: 14, color: AppTheme.primaryCyan),
+                            const SizedBox(width: 8),
                             Text(
-                              'Ketuk untuk ikuti lokasi otomatis',
-                              style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600),
+                              s.tapToAutoFollow,
+                              style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600),
                             ),
                           ],
                         ),
@@ -1085,6 +1086,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
   Widget _buildBacktrackPill(BacktrackState backtrack, WidgetRef ref) {
     final isOffTrail = backtrack.isOffTrail;
     final pillColor = isOffTrail ? AppTheme.dangerRed : AppTheme.accentOrange;
+    final s = ref.watch(appStringsProvider);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -1104,17 +1106,17 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
         children: [
           Icon(Icons.undo_rounded, color: pillColor, size: 16),
           const SizedBox(width: 8),
-            Text(
-              isOffTrail
-                  ? 'OFF-TRAIL (${backtrack.crossTrackDeviationMeters.toStringAsFixed(0)}m) • SISA: ${backtrack.formattedDistanceToOrigin}'
-                  : 'BACKTRACK KE AWAL • SISA: ${backtrack.formattedDistanceToOrigin}',
-              style: GoogleFonts.inter(
-                color: pillColor,
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
+          Text(
+            isOffTrail
+                ? s.offTrailRemaining(backtrack.crossTrackDeviationMeters.toStringAsFixed(0), backtrack.formattedDistanceToOrigin)
+                : s.backtrackRemaining(backtrack.formattedDistanceToOrigin),
+            style: GoogleFonts.inter(
+              color: pillColor,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
             ),
+          ),
           const SizedBox(width: 8),
           InkWell(
             onTap: () {
@@ -1129,6 +1131,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
   }
 
   Widget _buildTargetPill(LatLng target, String? label, Position? myPos, WidgetRef ref) {
+    final s = ref.watch(appStringsProvider);
     String distStr = '';
     if (myPos != null) {
       final d = const Distance().as(
@@ -1158,7 +1161,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
           const Icon(Icons.navigation_rounded, color: AppTheme.warningAmber, size: 16),
           const SizedBox(width: 8),
           Text(
-            'TARGET: ${label ?? "POI"} • $distStr',
+            s.targetVector(label ?? "POI", distStr),
             style: GoogleFonts.inter(
               color: AppTheme.warningAmber,
               fontSize: 11,

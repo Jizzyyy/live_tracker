@@ -55,11 +55,12 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
 
   Future<void> _handleStop(BuildContext context, WidgetRef ref) async {
     HapticFeedback.heavyImpact();
+    final s = ref.read(appStringsProvider);
     final saved = await ref.read(tripSessionProvider.notifier).stopSession();
     if (context.mounted) {
       CustomSnackbar.show(
         context,
-        message: saved ? 'Rute tersimpan di riwayat!' : 'Rute terlalu pendek untuk disimpan (<10m).',
+        message: saved ? s.routeSaved : s.routeTooShort,
         type: saved ? SnackbarType.success : SnackbarType.warning,
       );
     }
@@ -68,6 +69,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final s = ref.watch(appStringsProvider);
     final isDark = theme.brightness == Brightness.dark;
 
     return RepaintBoundary(
@@ -133,7 +135,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                           Row(
                             children: [
                               Text(
-                                'SPEED',
+                                s.speedLabel,
                                 style: GoogleFonts.inter(
                                   fontSize: 10,
                                   letterSpacing: 2,
@@ -168,7 +170,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
-                                          'AUTO PAUSED',
+                                          s.autoPaused,
                                           style: GoogleFonts.inter(
                                             color: const Color(0xFFFFB300),
                                             fontSize: 9,
@@ -261,7 +263,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'GROUP TELEMETRY',
+                                s.groupTelemetry,
                                 style: GoogleFonts.inter(
                                   fontSize: 11,
                                   letterSpacing: 1.5,
@@ -273,7 +275,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                 builder: (context, ref, _) {
                                   final count = ref.watch(roomProvider.select((r) => r.members.length));
                                   return Text(
-                                    '$count Members Active',
+                                    s.membersActive(count),
                                     style: GoogleFonts.inter(
                                       fontSize: 11,
                                       color: theme.colorScheme.primary,
@@ -292,7 +294,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                 return Padding(
                                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                                   child: Text(
-                                    'No group members in room. Create or join a room to sync.',
+                                    s.noMembersInRoom,
                                     style: GoogleFonts.inter(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12),
                                   ),
                                 );
@@ -438,7 +440,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                           },
                           icon: const Icon(Icons.play_arrow_rounded, size: 24),
                           label: Text(
-                            'START TRACKING',
+                            s.startTracking,
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.5,
@@ -466,7 +468,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                               },
                               icon: const Icon(Icons.pause_rounded, size: 20),
                               label: Text(
-                                'JEDA',
+                                s.pause,
                                 style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1),
                               ),
                             ),
@@ -485,7 +487,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                               onPressed: () => _handleStop(context, ref),
                               icon: const Icon(Icons.stop_rounded, size: 20),
                               label: Text(
-                                'SELESAI',
+                                s.finish,
                                 style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1),
                               ),
                             ),
@@ -513,7 +515,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                             },
                             icon: const Icon(Icons.play_arrow_rounded, size: 20),
                             label: Text(
-                              'LANJUTKAN',
+                              s.resume,
                               style: GoogleFonts.inter(fontWeight: FontWeight.w800, letterSpacing: 1),
                             ),
                           ),
@@ -531,7 +533,7 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                             onPressed: () => _handleStop(context, ref),
                             icon: const Icon(Icons.stop_rounded, size: 20),
                             label: Text(
-                              'SELESAI',
+                              s.finish,
                               style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1),
                             ),
                           ),

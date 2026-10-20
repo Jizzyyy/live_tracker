@@ -36,6 +36,7 @@ class _SosModalSheetState extends ConsumerState<SosModalSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final s = ref.watch(appStringsProvider);
     final activeSos = ref.watch(roomProvider.select((r) => r.activeSos));
     final inRoom = ref.watch(roomProvider.select((r) => r.roomCode != null));
 
@@ -79,7 +80,7 @@ class _SosModalSheetState extends ConsumerState<SosModalSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'EMERGENCY SOS BEACON',
+                          s.emergencySosTitle,
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -88,7 +89,7 @@ class _SosModalSheetState extends ConsumerState<SosModalSheet> {
                           ),
                         ),
                         Text(
-                          inRoom ? 'Siarkan sinyal darurat ke seluruh anggota room' : 'Siaran darurat mandiri / lokal',
+                          inRoom ? s.emergencySosSubtitleRoom : s.emergencySosSubtitleSolo,
                           style: GoogleFonts.inter(
                             fontSize: 11,
                             color: isDark ? Colors.white60 : Colors.black54,
@@ -147,79 +148,79 @@ class _SosModalSheetState extends ConsumerState<SosModalSheet> {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
-                    icon: const Icon(Icons.check_circle_outline, size: 20),
-                    label: const Text('CABUT / MATIKAN SINYAL SOS', style: TextStyle(fontWeight: FontWeight.bold)),
-                    onPressed: () {
-                      HapticFeedback.mediumImpact();
-                      ref.read(roomProvider.notifier).dismissSos();
-                      Navigator.pop(context);
-                    },
+                      icon: const Icon(Icons.check_circle_outline, size: 20),
+                      label: Text(s.dismissSosButton, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        ref.read(roomProvider.notifier).dismissSos();
+                        Navigator.pop(context);
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-              ],
+                  const SizedBox(height: 12),
+                ],
 
-              Text(
-                'PILIH KATEGORI DARURAT',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  letterSpacing: 1.0,
-                  color: isDark ? Colors.white60 : Colors.black54,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _presets.map((preset) {
-                  final isSelected = _selectedPreset == preset;
-                  return ChoiceChip(
-                    label: Text(preset),
-                    selected: isSelected,
-                    selectedColor: AppTheme.dangerRed.withValues(alpha: 0.25),
-                    side: BorderSide(
-                      color: isSelected ? AppTheme.dangerRed : (isDark ? Colors.white12 : Colors.black12),
-                    ),
-                    labelStyle: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? AppTheme.dangerRed : (isDark ? Colors.white70 : Colors.black87),
-                    ),
-                    onSelected: (val) {
-                      if (val) setState(() => _selectedPreset = preset);
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _noteController,
-                style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 13),
-                decoration: InputDecoration(
-                  hintText: 'Catatan tambahan opsional...',
-                  hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 12),
-                  filled: true,
-                  fillColor: isDark ? const Color(0xFF1E232D) : const Color(0xFFF1F5F9),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF1744),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                Text(
+                  s.selectEmergencyCategory,
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    letterSpacing: 1.0,
+                    color: isDark ? Colors.white60 : Colors.black54,
+                    fontWeight: FontWeight.bold,
                   ),
-                  icon: const Icon(Icons.warning_rounded, size: 22),
-                  label: Text(
-                    'SIARKAN SINYAL SOS SEKARANG',
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _presets.map((preset) {
+                    final isSelected = _selectedPreset == preset;
+                    return ChoiceChip(
+                      label: Text(preset),
+                      selected: isSelected,
+                      selectedColor: AppTheme.dangerRed.withValues(alpha: 0.25),
+                      side: BorderSide(
+                        color: isSelected ? AppTheme.dangerRed : (isDark ? Colors.white12 : Colors.black12),
+                      ),
+                      labelStyle: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected ? AppTheme.dangerRed : (isDark ? Colors.white70 : Colors.black87),
+                      ),
+                      onSelected: (val) {
+                        if (val) setState(() => _selectedPreset = preset);
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _noteController,
+                  style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: s.additionalNotesOptional,
+                    hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 12),
+                    filled: true,
+                    fillColor: isDark ? const Color(0xFF1E232D) : const Color(0xFFF1F5F9),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF1744),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    icon: const Icon(Icons.warning_rounded, size: 22),
+                    label: Text(
+                      s.sendSosButton,
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                    ),
                   onPressed: () {
                     SoundManager.playEmergencyAlarm();
                     final pos = ref.read(locationStreamProvider).valueOrNull;

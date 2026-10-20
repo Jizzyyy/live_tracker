@@ -61,6 +61,7 @@ class QuickPingSelectorSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final s = ref.watch(appStringsProvider);
     final inRoom = ref.watch(roomProvider.select((r) => r.roomCode != null));
 
     return SafeArea(
@@ -99,7 +100,7 @@ class QuickPingSelectorSheet extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'TACTICAL QUICK PINGS',
+                          s.tacticalPingsTitle,
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -109,8 +110,8 @@ class QuickPingSelectorSheet extends ConsumerWidget {
                         ),
                         Text(
                           inRoom
-                              ? 'Kirim instruksi taktis instan ke seluruh konvoi'
-                              : 'Masuk room konvoi untuk menyiarkan pesan ke rekan',
+                              ? s.tacticalPingsSubtitleRoom
+                              : s.tacticalPingsSubtitleSolo,
                           style: GoogleFonts.inter(
                             fontSize: 11,
                             color: isDark ? Colors.white60 : Colors.black54,
@@ -150,8 +151,8 @@ class QuickPingSelectorSheet extends ConsumerWidget {
                       CustomSnackbar.show(
                         context,
                         message: inRoom
-                            ? 'Pesan taktis "${item.title}" disiarkan ke konvoi!'
-                            : 'Pesan taktis "${item.title}" diaktifkan (Mode Solo).',
+                            ? s.tacticalPingBroadcasted(item.title)
+                            : s.tacticalPingActivatedSolo(item.title),
                         type: SnackbarType.success,
                       );
                     },

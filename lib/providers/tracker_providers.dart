@@ -12,10 +12,12 @@ import '../src/core/services/location_service.dart';
 import '../src/core/services/websocket_service.dart';
 import '../src/core/constants.dart';
 import '../utils/trail_backtracker.dart';
+import '../l10n/app_strings.dart';
 import 'history_providers.dart';
 
 export 'history_providers.dart';
 export 'convoy_providers.dart';
+export '../l10n/app_strings.dart';
 
 // --- Shared Prefs ---
 final sharedPrefsProvider = Provider<SharedPreferences>((ref) => throw UnimplementedError());
@@ -38,6 +40,10 @@ class SettingsNotifier extends Notifier<AppSettings> {
       smartAutoPause: prefs.getBool('smartAutoPause') ?? true,
       lowBandwidthMode: prefs.getBool('lowBandwidthMode') ?? false,
       hazardProximityAlert: prefs.getBool('hazardProximityAlert') ?? true,
+      language: AppLanguage.values.firstWhere(
+        (l) => l.name == prefs.getString('language'),
+        orElse: () => AppLanguage.id,
+      ),
     );
   }
   void updateSettings(AppSettings s) {
@@ -55,9 +61,15 @@ class SettingsNotifier extends Notifier<AppSettings> {
     prefs.setBool('smartAutoPause', s.smartAutoPause);
     prefs.setBool('lowBandwidthMode', s.lowBandwidthMode);
     prefs.setBool('hazardProximityAlert', s.hazardProximityAlert);
+    prefs.setString('language', s.language.name);
   }
 }
 final appSettingsProvider = NotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);
+
+final appStringsProvider = Provider<AppStrings>((ref) {
+  final lang = ref.watch(appSettingsProvider.select((s) => s.language));
+  return AppStrings(lang);
+});
 
 // --- Map Styles ---
 List<MapStyleOption> getAvailableMapStyles([String googleApiKey = '', String cartoApiKey = '']) {

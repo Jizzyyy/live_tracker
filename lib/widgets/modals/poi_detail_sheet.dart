@@ -35,6 +35,7 @@ class PoiDetailSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final s = ref.watch(appStringsProvider);
     final isDark = theme.brightness == Brightness.dark;
 
     final posAsync = ref.watch(locationStreamProvider);
@@ -141,7 +142,7 @@ class PoiDetailSheet extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'KOORDINAT',
+                            s.coordinatesLabel,
                             style: GoogleFonts.inter(
                               fontSize: 10,
                               letterSpacing: 1.0,
@@ -164,7 +165,7 @@ class PoiDetailSheet extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              'JARAK',
+                              s.distanceLabel,
                               style: GoogleFonts.inter(
                                 fontSize: 10,
                                 letterSpacing: 1.0,
@@ -197,7 +198,7 @@ class PoiDetailSheet extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'BEARING / ARAH',
+                                s.bearingLabel,
                                 style: GoogleFonts.inter(
                                   fontSize: 10,
                                   letterSpacing: 1.0,
@@ -227,7 +228,7 @@ class PoiDetailSheet extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               Text(
-                                'ESTIMASI TIBA (ETA)',
+                                s.etaLabel,
                                 style: GoogleFonts.inter(
                                   fontSize: 10,
                                   letterSpacing: 1.0,
@@ -269,7 +270,7 @@ class PoiDetailSheet extends ConsumerWidget {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
                 icon: const Icon(Icons.navigation_rounded, size: 18),
-                label: const Text('KUNCI TARGET VEKTOR PETA', style: TextStyle(fontWeight: FontWeight.bold)),
+                label: Text(s.lockTargetVectorButton, style: const TextStyle(fontWeight: FontWeight.bold)),
                 onPressed: () {
                   HapticFeedback.mediumImpact();
                   ref.read(navigationTargetProvider.notifier).state = LatLng(poi.latitude, poi.longitude);
@@ -289,7 +290,7 @@ class PoiDetailSheet extends ConsumerWidget {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
                 icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                label: const Text('HAPUS PIN TANDANGAN INI', style: TextStyle(fontWeight: FontWeight.bold)),
+                label: Text(s.deletePoiButton, style: const TextStyle(fontWeight: FontWeight.bold)),
                 onPressed: () {
                   HapticFeedback.lightImpact();
                   ref.read(roomProvider.notifier).deletePoi(poi.id);

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/trip_history_model.dart';
+import '../providers/tracker_providers.dart';
 
-class ElevationChart extends StatefulWidget {
+class ElevationChart extends ConsumerStatefulWidget {
   final CompletedTrip trip;
   final bool isDark;
   final double? externalCursorFraction;
@@ -15,10 +17,10 @@ class ElevationChart extends StatefulWidget {
   });
 
   @override
-  State<ElevationChart> createState() => _ElevationChartState();
+  ConsumerState<ElevationChart> createState() => _ElevationChartState();
 }
 
-class _ElevationChartState extends State<ElevationChart> {
+class _ElevationChartState extends ConsumerState<ElevationChart> {
   double? _selectedXFraction;
   late List<double> _altitudes;
   double _minAlt = 0.0;
@@ -54,12 +56,13 @@ class _ElevationChartState extends State<ElevationChart> {
 
   @override
   Widget build(BuildContext context) {
+    final s = ref.watch(appStringsProvider);
     if (!_hasValidData) {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
         alignment: Alignment.center,
         child: Text(
-          'Data profil elevasi tidak tersedia untuk rute ini',
+          s.noElevationData,
           style: GoogleFonts.inter(
             fontSize: 12,
             color: widget.isDark ? Colors.white38 : Colors.black38,
@@ -90,7 +93,7 @@ class _ElevationChartState extends State<ElevationChart> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'ELEVATION PROFILE',
+              s.elevationProfile,
               style: GoogleFonts.inter(
                 fontSize: 11,
                 letterSpacing: 1.5,
@@ -168,14 +171,14 @@ class _ElevationChartState extends State<ElevationChart> {
           children: [
             _Badge(
               icon: Icons.trending_up_rounded,
-              label: 'GAIN',
+              label: s.gain,
               value: widget.trip.formattedElevationGain,
               color: const Color(0xFF00E676),
               isDark: widget.isDark,
             ),
             _Badge(
               icon: Icons.trending_down_rounded,
-              label: 'LOSS',
+              label: s.loss,
               value: widget.trip.formattedElevationLoss,
               color: const Color(0xFFFF5252),
               isDark: widget.isDark,

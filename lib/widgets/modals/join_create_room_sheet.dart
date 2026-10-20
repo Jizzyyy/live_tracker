@@ -26,6 +26,7 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
   @override
   Widget build(BuildContext context) {
     final isLoading = ref.watch(roomProvider.select((r) => r.status == TrackingConnectionStatus.reconnecting));
+    final s = ref.watch(appStringsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final accentColor = isDark ? const Color(0xFF00E5FF) : Theme.of(context).colorScheme.primary;
     final btnForegroundColor = isDark ? Colors.black : Colors.white;
@@ -36,7 +37,7 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
         if (next.status == TrackingConnectionStatus.connected &&
             next.roomCode != null &&
             prev?.roomCode == null) {
-          CustomSnackbar.show(context, message: 'Berhasil masuk ke Room ${next.roomCode}', type: SnackbarType.success);
+          CustomSnackbar.show(context, message: s.enteredRoomSuccess(next.roomCode!), type: SnackbarType.success);
           Navigator.pop(context);
         }
       },
@@ -71,7 +72,7 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text('Group Tracking', style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                  Text(s.joinCreateRoomTitle, style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
                   const SizedBox(height: 24),
                   
                   FilledButton.icon(
@@ -83,16 +84,16 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
                     ),
                     onPressed: isLoading ? null : () => ref.read(roomProvider.notifier).createRoom(),
                     icon: const Icon(Icons.add_circle_outline),
-                    label: Text('BUAT ROOM BARU', style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                    label: Text(s.createNewRoomButton, style: GoogleFonts.inter(fontWeight: FontWeight.bold, letterSpacing: 1)),
                   ),
                   
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Row(
                       children: [
-                        Expanded(child: Divider(color: Colors.white24)),
-                        Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('ATAU', style: TextStyle(color: Colors.grey))),
-                        Expanded(child: Divider(color: Colors.white24)),
+                        const Expanded(child: Divider(color: Colors.white24)),
+                        Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Text(s.orEnterCode, style: const TextStyle(color: Colors.grey))),
+                        const Expanded(child: Divider(color: Colors.white24)),
                       ],
                     ),
                   ),
@@ -104,8 +105,8 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
                     enabled: !isLoading,
                     decoration: InputDecoration(
                       counterText: '',
-                      labelText: 'Kode Room',
-                      hintText: 'Misal: X8G9PQ',
+                      labelText: s.roomCodeFieldLabel,
+                      hintText: s.roomCodeFieldHint,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                       filled: true,
                       fillColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
@@ -132,11 +133,11 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
                       if (code.length >= 6) {
                         ref.read(roomProvider.notifier).joinRoom(code);
                       } else {
-                        CustomSnackbar.show(context, message: 'Kode room harus 6 karakter', type: SnackbarType.error);
+                        CustomSnackbar.show(context, message: s.roomCodeLengthError, type: SnackbarType.error);
                       }
                     },
                     icon: Icon(Icons.login, color: accentColor),
-                    label: Text('GABUNG ROOM', style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: accentColor, letterSpacing: 1)),
+                    label: Text(s.joinRoomButton, style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: accentColor, letterSpacing: 1)),
                   ),
                 ],
               ),
