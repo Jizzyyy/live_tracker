@@ -120,15 +120,15 @@ class _TacticalChatSheetState extends ConsumerState<TacticalChatSheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'TACTICAL ROOM CHAT',
-                            style: GoogleFonts.shareTechMono(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.5,
-                              color: AppTheme.primaryCyan,
-                            ),
+                        Text(
+                          'TACTICAL ROOM CHAT',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                            color: AppTheme.primaryCyan,
                           ),
+                        ),
                           Text(
                             roomCode != null
                                 ? 'Room $roomCode • ${messages.length} pesan'
@@ -310,7 +310,7 @@ class _ChatBubble extends StatelessWidget {
               backgroundColor: AppTheme.darkCard,
               child: Text(
                 message.callerDisplayName.substring(0, 1).toUpperCase(),
-                style: GoogleFonts.shareTechMono(
+                style: GoogleFonts.inter(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.primaryCyan,
@@ -345,7 +345,7 @@ class _ChatBubble extends StatelessWidget {
                   if (!isMe)
                     Text(
                       message.callerDisplayName,
-                      style: GoogleFonts.shareTechMono(
+                      style: GoogleFonts.inter(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.primaryCyan,
@@ -362,9 +362,10 @@ class _ChatBubble extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     message.formattedTime,
-                    style: GoogleFonts.shareTechMono(
+                    style: GoogleFonts.inter(
                       fontSize: 9,
                       color: isMe ? Colors.black54 : (isDark ? Colors.white38 : Colors.black38),
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
                 ],

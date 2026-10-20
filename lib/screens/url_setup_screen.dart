@@ -67,7 +67,7 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                   const SizedBox(height: 24),
                   Text(
                     'SERVER UPLINK',
-                    style: GoogleFonts.shareTechMono(
+                    style: GoogleFonts.inter(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2,
@@ -86,11 +86,12 @@ class _UrlSetupScreenState extends ConsumerState<UrlSetupScreen> {
                   const SizedBox(height: 32),
                   TextField(
                     controller: _urlCtrl,
-                    style: GoogleFonts.jetBrainsMono(
+                    style: GoogleFonts.inter(
                       color: isDark
                           ? const Color(0xFF00E5FF)
                           : const Color(0xFF0284C7),
                       fontWeight: FontWeight.w600,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                     decoration: InputDecoration(
                       labelText: 'WebSocket URL',

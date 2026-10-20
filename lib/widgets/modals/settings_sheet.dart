@@ -145,7 +145,7 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                             },
                           ),
                   ),
-                  style: GoogleFonts.shareTechMono(fontSize: 14),
+                  style: GoogleFonts.inter(fontSize: 14, fontFeatures: const [FontFeature.tabularFigures()]),
                 ),
                 const SizedBox(height: 16),
                 
@@ -174,7 +174,7 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                       },
                     ),
                   ),
-                  style: GoogleFonts.shareTechMono(fontSize: 14),
+                  style: GoogleFonts.inter(fontSize: 14, fontFeatures: const [FontFeature.tabularFigures()]),
                 ),
                 const SizedBox(height: 16),
                 
@@ -203,7 +203,7 @@ class _SettingsSheetState extends ConsumerState<SettingsSheet> {
                       },
                     ),
                   ),
-                  style: GoogleFonts.shareTechMono(fontSize: 14),
+                  style: GoogleFonts.inter(fontSize: 14, fontFeatures: const [FontFeature.tabularFigures()]),
                 ),
                 const SizedBox(height: 16),
                 

@@ -111,7 +111,13 @@ class _JoinCreateRoomSheetState extends ConsumerState<JoinCreateRoomSheet> {
                       fillColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
                       prefixIcon: const Icon(Icons.meeting_room_outlined),
                     ),
-                    style: GoogleFonts.jetBrainsMono(fontSize: 18, fontWeight: FontWeight.bold, color: accentColor),
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2.0,
+                      color: accentColor,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
                   ),
                   const SizedBox(height: 16),
                   

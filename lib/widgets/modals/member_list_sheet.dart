@@ -73,18 +73,19 @@ class MemberListSheet extends ConsumerWidget {
                       const SizedBox(width: 8),
                       Text(
                         'ROOM: ',
-                        style: GoogleFonts.shareTechMono(
+                        style: GoogleFonts.inter(
                           fontSize: 11,
-                          letterSpacing: 1.5,
+                          letterSpacing: 1.0,
                           color: isDark ? Colors.white60 : Colors.black54,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         roomCode,
-                        style: GoogleFonts.jetBrainsMono(
+                        style: GoogleFonts.inter(
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.0,
                           color: isDark ? AppTheme.primaryCyan : colorScheme.primary,
                         ),
                       ),
@@ -162,7 +163,7 @@ class MemberListSheet extends ConsumerWidget {
                           backgroundColor: isDark ? AppTheme.darkSurface : colorScheme.primaryContainer,
                           child: Text(
                             initialLetter,
-                            style: GoogleFonts.jetBrainsMono(
+                            style: GoogleFonts.inter(
                               color: isDark ? AppTheme.primaryCyan : colorScheme.primary, 
                               fontWeight: FontWeight.bold,
                             ),
@@ -189,9 +190,10 @@ class MemberListSheet extends ConsumerWidget {
                             const SizedBox(width: 4),
                             Text(
                               isFresh ? 'LIVE' : '${secondsAgo}s',
-                              style: GoogleFonts.shareTechMono(
+                              style: GoogleFonts.inter(
                                 fontSize: 10,
                                 color: isFresh ? const Color(0xFF00E676) : Colors.grey,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
@@ -200,12 +202,27 @@ class MemberListSheet extends ConsumerWidget {
                           children: [
                             const Icon(Icons.speed, size: 12, color: Colors.grey),
                             const SizedBox(width: 4),
-                            Text('${(m.speedKmh ?? 0).toStringAsFixed(1)} km/h', style: GoogleFonts.jetBrainsMono(color: Colors.grey, fontSize: 12)),
+                            Text(
+                              '${(m.speedKmh ?? 0).toStringAsFixed(1)} km/h',
+                              style: GoogleFonts.inter(
+                                color: Colors.grey,
+                                fontSize: 12,
+                                fontFeatures: const [FontFeature.tabularFigures()],
+                              ),
+                            ),
                             if (distStr != null) ...[
                               const SizedBox(width: 8),
                               const Icon(Icons.near_me_outlined, size: 12, color: Colors.grey),
                               const SizedBox(width: 2),
-                              Text(distStr, style: GoogleFonts.jetBrainsMono(color: isDark ? AppTheme.primaryCyan : colorScheme.primary, fontSize: 11, fontWeight: FontWeight.bold)),
+                              Text(
+                                distStr,
+                                style: GoogleFonts.inter(
+                                  color: isDark ? AppTheme.primaryCyan : colorScheme.primary,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  fontFeatures: const [FontFeature.tabularFigures()],
+                                ),
+                              ),
                             ],
                             if (batteryIcon != null && m.batteryPercent != null) ...[
                               const SizedBox(width: 8),
@@ -217,9 +234,11 @@ class MemberListSheet extends ConsumerWidget {
                               const SizedBox(width: 2),
                               Text(
                                 '${m.batteryPercent}%',
-                                style: GoogleFonts.jetBrainsMono(
+                                style: GoogleFonts.inter(
                                   color: m.batteryPercent! < 20 ? AppTheme.dangerRed : Colors.grey,
                                   fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  fontFeatures: const [FontFeature.tabularFigures()],
                                 ),
                               ),
                             ],

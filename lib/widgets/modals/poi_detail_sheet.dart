@@ -142,15 +142,20 @@ class PoiDetailSheet extends ConsumerWidget {
                         children: [
                           Text(
                             'KOORDINAT',
-                            style: GoogleFonts.shareTechMono(
+                            style: GoogleFonts.inter(
                               fontSize: 10,
-                              letterSpacing: 1.5,
+                              letterSpacing: 1.0,
+                              fontWeight: FontWeight.bold,
                               color: isDark ? Colors.white54 : Colors.black45,
                             ),
                           ),
                           Text(
                             '${poi.latitude.toStringAsFixed(5)}, ${poi.longitude.toStringAsFixed(5)}',
-                            style: GoogleFonts.jetBrainsMono(fontSize: 12, fontWeight: FontWeight.w600),
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              fontFeatures: const [FontFeature.tabularFigures()],
+                            ),
                           ),
                         ],
                       ),
@@ -160,9 +165,10 @@ class PoiDetailSheet extends ConsumerWidget {
                           children: [
                             Text(
                               'JARAK',
-                              style: GoogleFonts.shareTechMono(
+                              style: GoogleFonts.inter(
                                 fontSize: 10,
-                                letterSpacing: 1.5,
+                                letterSpacing: 1.0,
+                                fontWeight: FontWeight.bold,
                                 color: isDark ? Colors.white54 : Colors.black45,
                               ),
                             ),
@@ -170,10 +176,11 @@ class PoiDetailSheet extends ConsumerWidget {
                               distMeters < 1000
                                   ? '${distMeters.toStringAsFixed(0)} m'
                                   : '${(distMeters / 1000).toStringAsFixed(2)} km',
-                              style: GoogleFonts.jetBrainsMono(
+                              style: GoogleFonts.inter(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: categoryConfig.color,
+                                fontFeatures: const [FontFeature.tabularFigures()],
                               ),
                             ),
                           ],
@@ -191,9 +198,10 @@ class PoiDetailSheet extends ConsumerWidget {
                             children: [
                               Text(
                                 'BEARING / ARAH',
-                                style: GoogleFonts.shareTechMono(
+                                style: GoogleFonts.inter(
                                   fontSize: 10,
-                                  letterSpacing: 1.5,
+                                  letterSpacing: 1.0,
+                                  fontWeight: FontWeight.bold,
                                   color: isDark ? Colors.white54 : Colors.black45,
                                 ),
                               ),
@@ -203,10 +211,11 @@ class PoiDetailSheet extends ConsumerWidget {
                                   const SizedBox(width: 4),
                                   Text(
                                     '${bearingDeg.toStringAsFixed(0)}° $cardinal',
-                                    style: GoogleFonts.jetBrainsMono(
+                                    style: GoogleFonts.inter(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
                                       color: isDark ? Colors.white : Colors.black87,
+                                      fontFeatures: const [FontFeature.tabularFigures()],
                                     ),
                                   ),
                                 ],
@@ -219,9 +228,10 @@ class PoiDetailSheet extends ConsumerWidget {
                             children: [
                               Text(
                                 'ESTIMASI TIBA (ETA)',
-                                style: GoogleFonts.shareTechMono(
+                                style: GoogleFonts.inter(
                                   fontSize: 10,
-                                  letterSpacing: 1.5,
+                                  letterSpacing: 1.0,
+                                  fontWeight: FontWeight.bold,
                                   color: isDark ? Colors.white54 : Colors.black45,
                                 ),
                               ),
@@ -231,10 +241,11 @@ class PoiDetailSheet extends ConsumerWidget {
                                   const SizedBox(width: 4),
                                   Text(
                                     etaStr,
-                                    style: GoogleFonts.jetBrainsMono(
+                                    style: GoogleFonts.inter(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
                                       color: const Color(0xFF00E676),
+                                      fontFeatures: const [FontFeature.tabularFigures()],
                                     ),
                                   ),
                                 ],

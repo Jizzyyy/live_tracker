@@ -675,7 +675,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                             const SizedBox(width: 8),
                             Text(
                               'Menyimpan $queueCount koordinat offline • Siap auto-sync',
-                              style: GoogleFonts.shareTechMono(
+                              style: GoogleFonts.inter(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                                 color: AppTheme.primaryCyan,
@@ -726,11 +726,11 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                                   children: [
                                     Text(
                                       '🚨 SOS DARURAT DARI ${activeSos.userId.toUpperCase()}',
-                                      style: GoogleFonts.shareTechMono(
+                                      style: GoogleFonts.inter(
                                         color: Colors.white,
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
-                                        letterSpacing: 1,
+                                        letterSpacing: 0.5,
                                       ),
                                     ),
                                     Text(
@@ -824,11 +824,11 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                                       children: [
                                         Text(
                                           'TACTICAL PING: ${activePing.callerDisplayName.toUpperCase()}',
-                                          style: GoogleFonts.shareTechMono(
+                                          style: GoogleFonts.inter(
                                             color: cueColor,
                                             fontSize: 11,
                                             fontWeight: FontWeight.bold,
-                                            letterSpacing: 1,
+                                            letterSpacing: 0.5,
                                           ),
                                         ),
                                       ],
@@ -900,11 +900,11 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                                   children: [
                                     Text(
                                       'PERINGATAN BAHAYA DI DEPAN (${hazard.formattedDistance})',
-                                      style: GoogleFonts.shareTechMono(
+                                      style: GoogleFonts.inter(
                                         color: Colors.white,
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
-                                        letterSpacing: 0.8,
+                                        letterSpacing: 0.5,
                                       ),
                                     ),
                                     Text(
@@ -1104,17 +1104,17 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
         children: [
           Icon(Icons.undo_rounded, color: pillColor, size: 16),
           const SizedBox(width: 8),
-          Text(
-            isOffTrail
-                ? 'OFF-TRAIL (${backtrack.crossTrackDeviationMeters.toStringAsFixed(0)}m) • SISA: ${backtrack.formattedDistanceToOrigin}'
-                : 'BACKTRACK KE AWAL • SISA: ${backtrack.formattedDistanceToOrigin}',
-            style: GoogleFonts.shareTechMono(
-              color: pillColor,
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.8,
+            Text(
+              isOffTrail
+                  ? 'OFF-TRAIL (${backtrack.crossTrackDeviationMeters.toStringAsFixed(0)}m) • SISA: ${backtrack.formattedDistanceToOrigin}'
+                  : 'BACKTRACK KE AWAL • SISA: ${backtrack.formattedDistanceToOrigin}',
+              style: GoogleFonts.inter(
+                color: pillColor,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
             ),
-          ),
           const SizedBox(width: 8),
           InkWell(
             onTap: () {
@@ -1159,11 +1159,11 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
           const SizedBox(width: 8),
           Text(
             'TARGET: ${label ?? "POI"} • $distStr',
-            style: GoogleFonts.shareTechMono(
+            style: GoogleFonts.inter(
               color: AppTheme.warningAmber,
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              letterSpacing: 0.8,
+              letterSpacing: 0.5,
             ),
           ),
           const SizedBox(width: 8),

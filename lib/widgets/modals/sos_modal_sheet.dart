@@ -80,10 +80,10 @@ class _SosModalSheetState extends ConsumerState<SosModalSheet> {
                       children: [
                         Text(
                           'EMERGENCY SOS BEACON',
-                          style: GoogleFonts.shareTechMono(
+                          style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 2,
+                            letterSpacing: 1.5,
                             color: AppTheme.dangerRed,
                           ),
                         ),
@@ -161,9 +161,9 @@ class _SosModalSheetState extends ConsumerState<SosModalSheet> {
 
               Text(
                 'PILIH KATEGORI DARURAT',
-                style: GoogleFonts.shareTechMono(
+                style: GoogleFonts.inter(
                   fontSize: 10,
-                  letterSpacing: 1.5,
+                  letterSpacing: 1.0,
                   color: isDark ? Colors.white60 : Colors.black54,
                   fontWeight: FontWeight.bold,
                 ),

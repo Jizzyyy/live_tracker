@@ -169,11 +169,11 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                         const SizedBox(width: 4),
                                         Text(
                                           'AUTO PAUSED',
-                                          style: GoogleFonts.shareTechMono(
+                                          style: GoogleFonts.inter(
                                             color: const Color(0xFFFFB300),
                                             fontSize: 9,
                                             fontWeight: FontWeight.bold,
-                                            letterSpacing: 0.8,
+                                            letterSpacing: 0.5,
                                           ),
                                         ),
                                       ],
@@ -262,9 +262,10 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                             children: [
                               Text(
                                 'GROUP TELEMETRY',
-                                style: GoogleFonts.shareTechMono(
+                                style: GoogleFonts.inter(
                                   fontSize: 11,
-                                  letterSpacing: 2,
+                                  letterSpacing: 1.5,
+                                  fontWeight: FontWeight.bold,
                                   color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                                 ),
                               ),
@@ -353,7 +354,11 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                                     if (distStr.isNotEmpty)
                                                       Text(
                                                         distStr,
-                                                        style: GoogleFonts.shareTechMono(fontSize: 10, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                                                        style: GoogleFonts.inter(
+                                                          fontSize: 10,
+                                                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                                          fontFeatures: const [FontFeature.tabularFigures()],
+                                                        ),
                                                       ),
                                                   ],
                                                 ),
@@ -367,13 +372,22 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                                 const SizedBox(width: 3),
                                                 Text(
                                                   '${m.batteryPercent}%',
-                                                  style: GoogleFonts.shareTechMono(fontSize: 10, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 10,
+                                                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                                    fontFeatures: const [FontFeature.tabularFigures()],
+                                                  ),
                                                 ),
                                                 const SizedBox(width: 8),
                                               ],
                                               Text(
                                                 '${(m.speedKmh ?? 0).toStringAsFixed(1)} km/h',
-                                                style: GoogleFonts.jetBrainsMono(fontSize: 12, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withValues(alpha: 0.8)),
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                                                  fontFeatures: const [FontFeature.tabularFigures()],
+                                                ),
                                               ),
                                               const SizedBox(width: 6),
                                               Icon(

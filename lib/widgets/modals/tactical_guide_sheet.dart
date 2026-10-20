@@ -54,7 +54,7 @@ class TacticalGuideSheet extends StatelessWidget {
                       children: [
                         Text(
                           'PANDUAN TAKTIS KONVOI',
-                          style: GoogleFonts.shareTechMono(
+                          style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.5,

@@ -128,9 +128,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
 
               Text(
                 'LIVE TRACKER',
-                style: GoogleFonts.shareTechMono(
+                style: GoogleFonts.inter(
                   fontSize: 26,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w900,
                   letterSpacing: 4,
                   color: Colors.white,
                 ),
@@ -188,7 +188,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
                 child: Text(
                   _statusText,
                   key: ValueKey(_statusText),
-                  style: GoogleFonts.shareTechMono(
+                  style: GoogleFonts.inter(
                     fontSize: 11,
                     letterSpacing: 0.8,
                     color: Colors.white60,
@@ -199,8 +199,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
               const SizedBox(height: 48),
               Text(
                 'CREATED BY KADHAFIINL',
-                style: GoogleFonts.shareTechMono(
+                style: GoogleFonts.inter(
                   fontSize: 10,
+                  fontWeight: FontWeight.w600,
                   letterSpacing: 3,
                   color: Colors.white30,
                 ),

@@ -75,7 +75,12 @@ class AppTheme {
         titleMedium: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16),
         bodyLarge: GoogleFonts.inter(color: Colors.white, fontSize: 16),
         bodyMedium: GoogleFonts.inter(color: Colors.white70, fontSize: 14),
-        labelSmall: GoogleFonts.jetBrainsMono(color: Colors.white60, fontSize: 11, letterSpacing: 1.2),
+        labelSmall: GoogleFonts.inter(
+          color: Colors.white60,
+          fontSize: 11,
+          letterSpacing: 1.2,
+          fontFeatures: const [FontFeature.tabularFigures()],
+        ),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -107,7 +112,12 @@ class AppTheme {
         titleMedium: GoogleFonts.inter(color: textDark, fontWeight: FontWeight.w600, fontSize: 16),
         bodyLarge: GoogleFonts.inter(color: textDark, fontSize: 16),
         bodyMedium: GoogleFonts.inter(color: const Color(0xFF4A5568), fontSize: 14),
-        labelSmall: GoogleFonts.jetBrainsMono(color: const Color(0xFF718096), fontSize: 11, letterSpacing: 1.2),
+        labelSmall: GoogleFonts.inter(
+          color: const Color(0xFF718096),
+          fontSize: 11,
+          letterSpacing: 1.2,
+          fontFeatures: const [FontFeature.tabularFigures()],
+        ),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -122,30 +132,32 @@ class AppTheme {
 }
 
 class AppTextStyles {
-  // HUD & Telemetry Labels (ShareTechMono)
+  // HUD & Telemetry Labels (Inter with tabular figures & tracking)
   static TextStyle hudLabel({
     double fontSize = 11,
     Color? color,
-    double letterSpacing = 1.5,
+    double letterSpacing = 1.2,
     FontWeight fontWeight = FontWeight.bold,
   }) =>
-      GoogleFonts.shareTechMono(
+      GoogleFonts.inter(
         fontSize: fontSize,
         color: color,
         letterSpacing: letterSpacing,
         fontWeight: fontWeight,
+        fontFeatures: const [FontFeature.tabularFigures()],
       );
 
-  // Digital Monospaced Metrics (JetBrainsMono)
+  // Digital Tabular Metrics (Inter with tabular figures)
   static TextStyle monoMetric({
     double fontSize = 14,
     Color? color,
     FontWeight fontWeight = FontWeight.bold,
   }) =>
-      GoogleFonts.jetBrainsMono(
+      GoogleFonts.inter(
         fontSize: fontSize,
         color: color,
         fontWeight: fontWeight,
+        fontFeatures: const [FontFeature.tabularFigures()],
       );
 
   // Clean UI Titles & Body (Inter)

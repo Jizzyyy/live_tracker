@@ -113,7 +113,7 @@ class _SosBeaconMarkerState extends State<SosBeaconMarker> with SingleTickerProv
                     ),
                     child: Text(
                       'SOS',
-                      style: GoogleFonts.shareTechMono(
+                      style: GoogleFonts.inter(
                         fontSize: 9,
                         fontWeight: FontWeight.w900,
                         color: Colors.white,

@@ -100,10 +100,10 @@ class QuickPingSelectorSheet extends ConsumerWidget {
                       children: [
                         Text(
                           'TACTICAL QUICK PINGS',
-                          style: GoogleFonts.shareTechMono(
+                          style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 2,
+                            letterSpacing: 1.5,
                             color: AppTheme.primaryCyan,
                           ),
                         ),

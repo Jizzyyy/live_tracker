@@ -110,11 +110,11 @@ class TripShareCard extends StatelessWidget {
                         trip.customTitle != null && trip.customTitle!.trim().isNotEmpty
                             ? trip.customTitle!.trim().toUpperCase()
                             : 'LIVE TRACKER',
-                        style: GoogleFonts.shareTechMono(
+                        style: GoogleFonts.inter(
                           color: textHeader,
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 2,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.5,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -288,9 +288,10 @@ class TripShareCard extends StatelessWidget {
               child: Center(
                 child: Text(
                   'CREATED BY KADHAFIINL',
-                  style: GoogleFonts.shareTechMono(
+                  style: GoogleFonts.inter(
                     fontSize: 9,
-                    letterSpacing: 3,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 2.5,
                     color: footerText,
                   ),
                 ),
@@ -312,7 +313,7 @@ class _StatColumn extends StatelessWidget {
   const _StatColumn({
     required this.label, 
     required this.value, 
-    required this.color,
+    required this.color, 
     required this.isDark,
   });
 
@@ -322,9 +323,9 @@ class _StatColumn extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.shareTechMono(
+          style: GoogleFonts.inter(
             fontSize: 10, 
-            letterSpacing: 2, 
+            letterSpacing: 1.5, 
             color: isDark ? Colors.white60 : const Color(0xFF64748B),
             fontWeight: FontWeight.bold,
           ),
@@ -332,7 +333,7 @@ class _StatColumn extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           value,
-          style: GoogleFonts.jetBrainsMono(
+          style: GoogleFonts.inter(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: color,

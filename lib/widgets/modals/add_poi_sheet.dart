@@ -74,18 +74,19 @@ class _AddPoiSheetState extends ConsumerState<AddPoiSheet> {
                       children: [
                         Text(
                           'SHARED TACTICAL POI',
-                          style: GoogleFonts.shareTechMono(
+                          style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 2,
+                            letterSpacing: 1.5,
                             color: AppTheme.primaryCyan,
                           ),
                         ),
                         Text(
                           '${widget.point.latitude.toStringAsFixed(5)}, ${widget.point.longitude.toStringAsFixed(5)}',
-                          style: GoogleFonts.jetBrainsMono(
+                          style: GoogleFonts.inter(
                             fontSize: 11,
                             color: isDark ? Colors.white60 : Colors.black54,
+                            fontFeatures: const [FontFeature.tabularFigures()],
                           ),
                         ),
                       ],
@@ -97,9 +98,9 @@ class _AddPoiSheetState extends ConsumerState<AddPoiSheet> {
 
               Text(
                 'KATEGORI TITIK',
-                style: GoogleFonts.shareTechMono(
+                style: GoogleFonts.inter(
                   fontSize: 10,
-                  letterSpacing: 1.5,
+                  letterSpacing: 1.0,
                   color: isDark ? Colors.white60 : Colors.black54,
                   fontWeight: FontWeight.bold,
                 ),
@@ -118,9 +119,9 @@ class _AddPoiSheetState extends ConsumerState<AddPoiSheet> {
               const SizedBox(height: 16),
               Text(
                 'NAMA / DESKRIPSI TITIK',
-                style: GoogleFonts.shareTechMono(
+                style: GoogleFonts.inter(
                   fontSize: 10,
-                  letterSpacing: 1.5,
+                  letterSpacing: 1.0,
                   color: isDark ? Colors.white60 : Colors.black54,
                   fontWeight: FontWeight.bold,
                 ),

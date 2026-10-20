@@ -89,9 +89,9 @@ class TripHistoryScreen extends ConsumerWidget {
                         children: [
                           Text(
                             'LIFETIME TOTALS',
-                            style: GoogleFonts.shareTechMono(
+                            style: GoogleFonts.inter(
                               fontSize: 10,
-                              letterSpacing: 2,
+                              letterSpacing: 1.5,
                               color: isDark ? Colors.white60 : const Color(0xFF64748B),
                               fontWeight: FontWeight.bold,
                             ),
@@ -104,42 +104,45 @@ class TripHistoryScreen extends ConsumerWidget {
                                 children: [
                                   Text(
                                     distKm < 10 ? '${distKm.toStringAsFixed(2)} km' : '${distKm.toStringAsFixed(1)} km',
-                                    style: GoogleFonts.jetBrainsMono(
+                                    style: GoogleFonts.inter(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: isDark ? const Color(0xFF00E676) : const Color(0xFF059669),
+                                      fontFeatures: const [FontFeature.tabularFigures()],
                                     ),
                                   ),
                                   const SizedBox(height: 2),
-                                  Text('JARAK', style: GoogleFonts.shareTechMono(fontSize: 10, color: Colors.grey)),
+                                  Text('JARAK', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
                                 ],
                               ),
                               Column(
                                 children: [
                                   Text(
                                     '${totalHours}h',
-                                    style: GoogleFonts.jetBrainsMono(
+                                    style: GoogleFonts.inter(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
+                                      fontFeatures: const [FontFeature.tabularFigures()],
                                     ),
                                   ),
                                   const SizedBox(height: 2),
-                                  Text('DURASI', style: GoogleFonts.shareTechMono(fontSize: 10, color: Colors.grey)),
+                                  Text('DURASI', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
                                 ],
                               ),
                               Column(
                                 children: [
                                   Text(
                                     '${rawTrips.length}',
-                                    style: GoogleFonts.jetBrainsMono(
+                                    style: GoogleFonts.inter(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                       color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                                      fontFeatures: const [FontFeature.tabularFigures()],
                                     ),
                                   ),
                                   const SizedBox(height: 2),
-                                  Text('SESI', style: GoogleFonts.shareTechMono(fontSize: 10, color: Colors.grey)),
+                                  Text('SESI', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
                                 ],
                               ),
                             ],
@@ -153,9 +156,9 @@ class TripHistoryScreen extends ConsumerWidget {
                               children: [
                                 Text(
                                   'URUTKAN: ',
-                                  style: GoogleFonts.shareTechMono(
+                                  style: GoogleFonts.inter(
                                     fontSize: 9,
-                                    letterSpacing: 1.5,
+                                    letterSpacing: 1.0,
                                     color: isDark ? Colors.white54 : Colors.black45,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -245,10 +248,11 @@ class TripHistoryScreen extends ConsumerWidget {
                                   ),
                                   child: Text(
                                     trip.formattedTimeRange.split(' ')[0],
-                                    style: GoogleFonts.jetBrainsMono(
+                                    style: GoogleFonts.inter(
                                       fontSize: 11, 
                                       color: isDark ? Colors.white70 : const Color(0xFF4A5568),
                                       fontWeight: FontWeight.w600,
+                                      fontFeatures: const [FontFeature.tabularFigures()],
                                     ),
                                   ),
                                 ),
@@ -282,17 +286,19 @@ class TripHistoryScreen extends ConsumerWidget {
                               children: [
                                 Text(
                                   'Pace: ${trip.formattedPace}',
-                                  style: GoogleFonts.jetBrainsMono(
+                                  style: GoogleFonts.inter(
                                     fontSize: 11, 
                                     color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7),
                                     fontWeight: FontWeight.w600,
+                                    fontFeatures: const [FontFeature.tabularFigures()],
                                   ),
                                 ),
                                 Text(
                                   '${trip.routePoints.length} pts',
-                                  style: GoogleFonts.jetBrainsMono(
+                                  style: GoogleFonts.inter(
                                     fontSize: 11, 
                                     color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                                    fontFeatures: const [FontFeature.tabularFigures()],
                                   ),
                                 ),
                               ],
@@ -400,7 +406,15 @@ class _StatChip extends StatelessWidget {
       children: [
         Icon(icon, size: 14, color: color),
         const SizedBox(width: 4),
-        Text(value, style: GoogleFonts.jetBrainsMono(fontSize: 13, fontWeight: FontWeight.bold, color: color)),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: color,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
       ],
     );
   }

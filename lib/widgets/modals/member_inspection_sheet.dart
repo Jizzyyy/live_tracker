@@ -60,10 +60,10 @@ class MemberInspectionSheet extends ConsumerWidget {
                   backgroundColor: isDark ? AppTheme.darkSurface : colorScheme.primaryContainer,
                   child: Text(
                     displayName.substring(0, 1).toUpperCase(),
-                    style: GoogleFonts.jetBrainsMono(
+                    style: GoogleFonts.inter(
                       color: isDark ? AppTheme.primaryCyan : colorScheme.primary,
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
@@ -103,7 +103,7 @@ class MemberInspectionSheet extends ConsumerWidget {
                                 const SizedBox(width: 4),
                                 Text(
                                   isStale ? 'STALE' : 'ONLINE',
-                                  style: GoogleFonts.shareTechMono(
+                                  style: GoogleFonts.inter(
                                     fontSize: 10,
                                     color: isStale ? Colors.grey : const Color(0xFF00E676),
                                     fontWeight: FontWeight.bold,
@@ -198,12 +198,17 @@ class _MetricItem extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.shareTechMono(fontSize: 10, letterSpacing: 1.5, color: Colors.grey),
+          style: GoogleFonts.inter(fontSize: 10, letterSpacing: 1.0, color: Colors.grey, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: GoogleFonts.jetBrainsMono(fontSize: 15, fontWeight: FontWeight.bold, color: color),
+          style: GoogleFonts.inter(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: color,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
         ),
       ],
     );

@@ -206,7 +206,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                       children: [
                         Text(
                           'TEMA KARTU:',
-                          style: GoogleFonts.shareTechMono(color: Colors.white70, fontSize: 11, letterSpacing: 1),
+                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
                         ),
                         const SizedBox(width: 12),
                         ChoiceChip(
@@ -595,82 +595,83 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                               : (isDark ? Colors.white38 : Colors.black38),
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          'HEATMAP',
-                          style: GoogleFonts.shareTechMono(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: _showSpeedHeatmap
-                                ? (isDark ? Colors.white : Colors.black87)
-                                : (isDark ? Colors.white38 : Colors.black38),
+                                Text(
+                                  'HEATMAP',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                    color: _showSpeedHeatmap
+                                        ? (isDark ? Colors.white : Colors.black87)
+                                        : (isDark ? Colors.white38 : Colors.black38),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              // Map Style Selector
-              PremiumGlass(
-                borderRadius: BorderRadius.circular(16),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<MapStyleOption>(
-                    value: _selectedMapStyle,
-                    dropdownColor: isDark ? const Color(0xFF12151B) : Colors.white,
-                    icon: Icon(
-                      Icons.layers_outlined, 
-                      color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7), 
-                      size: 18,
-                    ),
-                    style: GoogleFonts.inter(
-                      color: isDark ? Colors.white : const Color(0xFF0D1117), 
-                      fontSize: 12, 
-                      fontWeight: FontWeight.w600,
-                    ),
-                    items: ref.watch(mapStyleListProvider).map((style) {
-                      return DropdownMenuItem(
-                        value: style,
-                        child: Text(
-                          style.name,
-                          style: TextStyle(
-                            color: isDark ? Colors.white : const Color(0xFF0D1117),
+                      ),
+                      const SizedBox(width: 8),
+                      // Map Style Selector
+                      PremiumGlass(
+                        borderRadius: BorderRadius.circular(16),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<MapStyleOption>(
+                            value: _selectedMapStyle,
+                            dropdownColor: isDark ? const Color(0xFF12151B) : Colors.white,
+                            icon: Icon(
+                              Icons.layers_outlined, 
+                              color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7), 
+                              size: 18,
+                            ),
+                            style: GoogleFonts.inter(
+                              color: isDark ? Colors.white : const Color(0xFF0D1117), 
+                              fontSize: 12, 
+                              fontWeight: FontWeight.w600,
+                            ),
+                            items: ref.watch(mapStyleListProvider).map((style) {
+                              return DropdownMenuItem(
+                                value: style,
+                                child: Text(
+                                  style.name,
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : const Color(0xFF0D1117),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (newStyle) {
+                              if (newStyle != null) setState(() => _selectedMapStyle = newStyle);
+                            },
                           ),
                         ),
-                      );
-                    }).toList(),
-                    onChanged: (newStyle) {
-                      if (newStyle != null) setState(() => _selectedMapStyle = newStyle);
-                    },
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
 
-        // Speed Heatmap Legend Card Overlay
-        if (_showSpeedHeatmap && _currentTrip.routePoints.length >= 2)
-          Positioned(
-            top: 60,
-            right: 12,
-            child: PremiumGlass(
-              borderRadius: BorderRadius.circular(14),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'SPEED SPECTRUM',
-                    style: GoogleFonts.shareTechMono(
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
-                      color: isDark ? Colors.white60 : Colors.black54,
-                    ),
-                  ),
+                // Speed Heatmap Legend Card Overlay
+                if (_showSpeedHeatmap && _currentTrip.routePoints.length >= 2)
+                  Positioned(
+                    top: 60,
+                    right: 12,
+                    child: PremiumGlass(
+                      borderRadius: BorderRadius.circular(14),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'SPEED SPECTRUM',
+                            style: GoogleFonts.inter(
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                              color: isDark ? Colors.white60 : Colors.black54,
+                            ),
+                          ),
                   const SizedBox(height: 4),
                   _HeatmapLegendRow(
                     color: SpeedHeatmapSegmenter.tierSlowColor,
@@ -727,10 +728,11 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                     const SizedBox(width: 4),
                     Text(
                       spd,
-                      style: GoogleFonts.jetBrainsMono(
+                      style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: isDark ? Colors.white : Colors.black87,
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -738,18 +740,21 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                     const SizedBox(width: 4),
                     Text(
                       alt,
-                      style: GoogleFonts.jetBrainsMono(
+                      style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: isDark ? Colors.white : Colors.black87,
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       '$m:$s',
-                      style: GoogleFonts.shareTechMono(
+                      style: GoogleFonts.inter(
                         fontSize: 11,
+                        fontWeight: FontWeight.w600,
                         color: isDark ? Colors.white60 : Colors.black54,
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                   ],
@@ -826,10 +831,11 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                         ),
                         child: Text(
                           speedLabel,
-                          style: GoogleFonts.shareTechMono(
+                          style: GoogleFonts.inter(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                             color: isDark ? const Color(0xFFFFD600) : const Color(0xFFD97706),
+                            fontFeatures: const [FontFeature.tabularFigures()],
                           ),
                         ),
                       ),
@@ -862,9 +868,9 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
               children: [
                 Text(
                   'TRIP METRICS',
-                  style: GoogleFonts.shareTechMono(
+                  style: GoogleFonts.inter(
                     fontSize: 11,
-                    letterSpacing: 2,
+                    letterSpacing: 1.5,
                     color: isDark ? Colors.white60 : const Color(0xFF64748B),
                     fontWeight: FontWeight.bold,
                   ),
@@ -1003,19 +1009,20 @@ class _SplitsTable extends StatelessWidget {
           children: [
             Text(
               'KILOMETER SPLITS',
-              style: GoogleFonts.shareTechMono(
+              style: GoogleFonts.inter(
                 fontSize: 11,
-                letterSpacing: 2,
+                letterSpacing: 1.5,
                 color: isDark ? Colors.white60 : const Color(0xFF64748B),
                 fontWeight: FontWeight.bold,
               ),
             ),
             Text(
               '${splits.length} KM',
-              style: GoogleFonts.jetBrainsMono(
+              style: GoogleFonts.inter(
                 fontSize: 11,
                 color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
                 fontWeight: FontWeight.bold,
+                fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
           ],
@@ -1033,10 +1040,10 @@ class _SplitsTable extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 child: Row(
                   children: [
-                    Expanded(flex: 2, child: Text('KM', style: GoogleFonts.shareTechMono(fontSize: 10, color: Colors.grey))),
-                    Expanded(flex: 3, child: Text('PACE', style: GoogleFonts.shareTechMono(fontSize: 10, color: Colors.grey))),
-                    Expanded(flex: 3, child: Text('ELEVASI', style: GoogleFonts.shareTechMono(fontSize: 10, color: Colors.grey))),
-                    Expanded(flex: 3, child: Text('KECEPATAN', textAlign: TextAlign.right, style: GoogleFonts.shareTechMono(fontSize: 10, color: Colors.grey))),
+                    Expanded(flex: 2, child: Text('KM', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                    Expanded(flex: 3, child: Text('PACE', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                    Expanded(flex: 3, child: Text('ELEVASI', style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
+                    Expanded(flex: 3, child: Text('KECEPATAN', textAlign: TextAlign.right, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey))),
                   ],
                 ),
               ),
@@ -1049,24 +1056,35 @@ class _SplitsTable extends StatelessWidget {
                       flex: 2,
                       child: Text(
                         '${s.kilometer}',
-                        style: GoogleFonts.jetBrainsMono(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? Colors.white : Colors.black87),
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
                       ),
                     ),
                     Expanded(
                       flex: 3,
                       child: Text(
                         s.formattedPace,
-                        style: GoogleFonts.jetBrainsMono(fontSize: 12, color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7), fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                          fontWeight: FontWeight.w600,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
                       ),
                     ),
                     Expanded(
                       flex: 3,
                       child: Text(
                         s.formattedElevation,
-                        style: GoogleFonts.jetBrainsMono(
+                        style: GoogleFonts.inter(
                           fontSize: 12,
                           color: s.elevationChangeMeters >= 0 ? const Color(0xFF00E676) : const Color(0xFFFF5252),
                           fontWeight: FontWeight.w600,
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                     ),
@@ -1075,7 +1093,11 @@ class _SplitsTable extends StatelessWidget {
                       child: Text(
                         '${s.avgSpeedKmh.toStringAsFixed(1)} km/h',
                         textAlign: TextAlign.right,
-                        style: GoogleFonts.jetBrainsMono(fontSize: 12, color: isDark ? Colors.white70 : Colors.black54),
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
                       ),
                     ),
                   ],
@@ -1104,9 +1126,9 @@ class _TelemetryTile extends StatelessWidget {
       children: [
         Text(
           label, 
-          style: GoogleFonts.shareTechMono(
+          style: GoogleFonts.inter(
             fontSize: 10, 
-            letterSpacing: 2, 
+            letterSpacing: 1.5, 
             color: isDark ? Colors.white60 : const Color(0xFF64748B),
             fontWeight: FontWeight.bold,
           ),
@@ -1114,10 +1136,11 @@ class _TelemetryTile extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           value,
-          style: GoogleFonts.jetBrainsMono(
+          style: GoogleFonts.inter(
             fontSize: 18, 
             fontWeight: FontWeight.bold, 
             color: color,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ],
@@ -1152,10 +1175,11 @@ class _HeatmapLegendRow extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: GoogleFonts.shareTechMono(
-            fontSize: 8.5,
+          style: GoogleFonts.inter(
+            fontSize: 9,
             fontWeight: FontWeight.bold,
             color: isDark ? Colors.white70 : Colors.black87,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ],

@@ -91,9 +91,9 @@ class _ElevationChartState extends State<ElevationChart> {
           children: [
             Text(
               'ELEVATION PROFILE',
-              style: GoogleFonts.shareTechMono(
+              style: GoogleFonts.inter(
                 fontSize: 11,
-                letterSpacing: 2,
+                letterSpacing: 1.5,
                 color: widget.isDark ? Colors.white60 : const Color(0xFF64748B),
                 fontWeight: FontWeight.bold,
               ),
@@ -101,18 +101,21 @@ class _ElevationChartState extends State<ElevationChart> {
             if (selectedAlt != null && selectedDistKm != null)
               Text(
                 'KM ${selectedDistKm.toStringAsFixed(2)} • ${selectedAlt.toStringAsFixed(1)} m',
-                style: GoogleFonts.jetBrainsMono(
+                style: GoogleFonts.inter(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: widget.isDark ? const Color(0xFF00E5FF) : const Color(0xFF0284C7),
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               )
             else
               Text(
                 '${widget.trip.formattedMinAltitude} / ${widget.trip.formattedMaxAltitude}',
-                style: GoogleFonts.jetBrainsMono(
+                style: GoogleFonts.inter(
                   fontSize: 11,
+                  fontWeight: FontWeight.w600,
                   color: widget.isDark ? Colors.white54 : const Color(0xFF64748B),
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
           ],
@@ -225,9 +228,9 @@ class _Badge extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               label,
-              style: GoogleFonts.shareTechMono(
+              style: GoogleFonts.inter(
                 fontSize: 9,
-                letterSpacing: 1.5,
+                letterSpacing: 1.0,
                 color: isDark ? Colors.white54 : const Color(0xFF64748B),
                 fontWeight: FontWeight.bold,
               ),
@@ -237,10 +240,11 @@ class _Badge extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           value,
-          style: GoogleFonts.jetBrainsMono(
+          style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: FontWeight.bold,
             color: color,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ],
