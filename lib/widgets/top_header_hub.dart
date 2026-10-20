@@ -67,11 +67,10 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                             _PulseDot(status: status),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.center,
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                physics: const BouncingScrollPhysics(),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                   children: [
                                     _ActionButton(
                                       icon: Icons.map_outlined,
@@ -198,7 +197,7 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 8),
                             _ActionButton(
                               icon: Icons.close_rounded,
                               onTap: () {
@@ -316,32 +315,106 @@ class _TopHeaderHubState extends ConsumerState<TopHeaderHub> {
 
   void _showMapStyleSheet(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final mapStyles = ref.watch(mapStyleListProvider);
+    final currentStyleId = ref.watch(mapStyleProvider.select((s) => s.id));
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => PremiumGlass(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Map Style & Engine', style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface)),
-              const SizedBox(height: 16),
-              ...mapStyles.map((style) {
-                final isSelected = ref.watch(mapStyleProvider).id == style.id;
-                return ListTile(
-                  title: Text(style.name, style: GoogleFonts.inter(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: theme.colorScheme.onSurface)),
-                  subtitle: Text(style.attribution, style: GoogleFonts.inter(fontSize: 11, color: Colors.grey)),
-                  trailing: isSelected ? Icon(Icons.check_circle, color: theme.colorScheme.primary) : null,
-                  onTap: () {
-                    ref.read(mapStyleProvider.notifier).state = style;
-                    Navigator.pop(ctx);
-                  },
-                );
-              }),
-            ],
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.72,
+          ),
+          child: PremiumGlass(
+            borderRadius: AppTheme.borderRadiusSheet,
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 14),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white24 : Colors.black12,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryCyan.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.layers_outlined, color: AppTheme.primaryCyan, size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Map Style & Engine',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, size: 20),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Divider(height: 1, color: isDark ? Colors.white10 : Colors.black12),
+                const SizedBox(height: 4),
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.only(bottom: 16),
+                    itemCount: mapStyles.length,
+                    separatorBuilder: (_, _) => Divider(height: 1, color: isDark ? Colors.white10 : Colors.black12),
+                    itemBuilder: (context, index) {
+                      final style = mapStyles[index];
+                      final isSelected = currentStyleId == style.id;
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        title: Text(
+                          style.name,
+                          style: GoogleFonts.inter(
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            color: isSelected ? AppTheme.primaryCyan : theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        subtitle: Text(
+                          style.attribution,
+                          style: GoogleFonts.inter(fontSize: 11, color: Colors.grey),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: isSelected
+                            ? const Icon(Icons.check_circle_rounded, color: AppTheme.primaryCyan, size: 22)
+                            : null,
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          ref.read(mapStyleProvider.notifier).state = style;
+                          Navigator.pop(ctx);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -505,6 +578,9 @@ class _ActionButton extends StatelessWidget {
   final Color? iconColor;
   final Color? backgroundColor;
 
+  static const double buttonSize = 44.0;
+  static const double iconSize = 22.0;
+
   const _ActionButton({
     required this.icon,
     required this.onTap,
@@ -518,8 +594,10 @@ class _ActionButton extends StatelessWidget {
     final theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Container(
-        width: 40, height: 40,
+        width: buttonSize,
+        height: buttonSize,
         decoration: BoxDecoration(
           color: backgroundColor ?? theme.colorScheme.surface.withValues(alpha: 0.3),
           shape: BoxShape.circle,
@@ -527,16 +605,17 @@ class _ActionButton extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Icon(icon, size: 20, color: iconColor ?? theme.colorScheme.onSurface),
+            Icon(icon, size: iconSize, color: iconColor ?? theme.colorScheme.onSurface),
             if (badgeCount != null && badgeCount! > 0)
               Positioned(
-                top: 6, right: 6,
+                top: 4,
+                right: 4,
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(color: theme.colorScheme.primary, shape: BoxShape.circle),
                   child: Text(
                     badgeCount.toString(),
-                    style: TextStyle(fontSize: 10, color: theme.colorScheme.onPrimary, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 9, color: theme.colorScheme.onPrimary, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
