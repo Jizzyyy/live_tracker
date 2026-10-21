@@ -33,17 +33,20 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
   MapStyleOption _selectedMapStyle = availableMapStyles.first;
   bool _isExporting = false;
   bool _showSpeedHeatmap = true;
+  bool _autoFollowPlayback = false;
   late CompletedTrip _currentTrip;
   late final RoutePlaybackController _playbackController;
   late final List<LatLng> _cachedPoints;
   late final LatLngBounds _cachedBounds;
   late final List<Polyline> _cachedHeatmapPolylines;
+  final MapController _mapController = MapController();
 
   @override
   void initState() {
     super.initState();
     _currentTrip = widget.trip;
     _playbackController = RoutePlaybackController(trip: widget.trip);
+    _playbackController.addListener(_onPlaybackTick);
     _cachedPoints = _currentTrip.routePoints.map((p) => LatLng(p.latitude, p.longitude)).toList();
     _cachedBounds = calculateSafeBounds(_cachedPoints);
     _cachedHeatmapPolylines = _currentTrip.routePoints.length >= 2
@@ -57,8 +60,18 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
         : const [];
   }
 
+  void _onPlaybackTick() {
+    if (_playbackController.isPlaying && _autoFollowPlayback) {
+      final pt = _playbackController.currentPoint;
+      if (pt != null) {
+        _mapController.move(LatLng(pt.latitude, pt.longitude), _mapController.camera.zoom);
+      }
+    }
+  }
+
   @override
   void dispose() {
+    _playbackController.removeListener(_onPlaybackTick);
     _playbackController.dispose();
     super.dispose();
   }
@@ -479,6 +492,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
               ? const BorderRadius.horizontal(right: Radius.circular(28))
               : const BorderRadius.vertical(bottom: Radius.circular(28)),
           child: FlutterMap(
+            mapController: _mapController,
             options: MapOptions(
               initialCameraFit: CameraFit.bounds(
                 bounds: bounds,
@@ -534,6 +548,7 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                         point: LatLng(pt.latitude, pt.longitude),
                         width: 44,
                         height: 44,
+                        rotate: true,
                         child: Transform.rotate(
                           angle: heading * 3.1415926535 / 180.0,
                           child: Container(
@@ -819,6 +834,27 @@ class _TripDetailScreenState extends ConsumerState<TripDetailScreen> {
                           },
                         ),
                       ),
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton(
+                      icon: Icon(
+                        _autoFollowPlayback ? Icons.my_location_rounded : Icons.location_searching_rounded,
+                        size: 20,
+                        color: _autoFollowPlayback ? const Color(0xFF00E5FF) : (isDark ? Colors.white38 : Colors.black38),
+                      ),
+                      tooltip: 'Auto-Follow',
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        setState(() => _autoFollowPlayback = !_autoFollowPlayback);
+                        if (_autoFollowPlayback) {
+                          final pt = _playbackController.currentPoint;
+                          if (pt != null) {
+                            _mapController.move(LatLng(pt.latitude, pt.longitude), _mapController.camera.zoom);
+                          }
+                        }
+                      },
                     ),
                     const SizedBox(width: 4),
                     InkWell(
