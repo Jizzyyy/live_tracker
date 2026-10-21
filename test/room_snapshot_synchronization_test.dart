@@ -71,7 +71,7 @@ void main() {
 
       final hydratedState = initial.copyWith(
         status: TrackingConnectionStatus.connected,
-        roomCode: serverJoinedPayload['roomCode'] as String,
+        roomCode: () => serverJoinedPayload['roomCode'] as String,
         members: members,
         pois: pois,
         activeSos: () => activeSos,
@@ -112,6 +112,47 @@ void main() {
 
       final disconnected = reconnecting.copyWith(status: TrackingConnectionStatus.disconnected);
       expect(disconnected.status, TrackingConnectionStatus.disconnected);
+    });
+
+    test('Leaving room clears room artifacts while preserving connected status', () {
+      final inRoomState = RoomState(
+        status: TrackingConnectionStatus.connected,
+        roomCode: 'X8G9PQ',
+        members: {
+          'user_2': MemberLocation(
+            id: 'user_2',
+            latitude: -6.2,
+            longitude: 106.8,
+            lastUpdated: DateTime.now(),
+          ),
+        },
+        chatMessages: [
+          ChatMessage(
+            id: 'msg_1',
+            userId: 'user_2',
+            text: 'Halo!',
+            timestamp: DateTime.now(),
+          ),
+        ],
+        unreadChatCount: 1,
+      );
+
+      final leftState = inRoomState.copyWith(
+        status: TrackingConnectionStatus.connected,
+        roomCode: () => null,
+        members: {},
+        activeSos: () => null,
+        pois: {},
+        activePing: () => null,
+        chatMessages: [],
+        unreadChatCount: 0,
+      );
+
+      expect(leftState.status, TrackingConnectionStatus.connected);
+      expect(leftState.roomCode, isNull);
+      expect(leftState.members, isEmpty);
+      expect(leftState.chatMessages, isEmpty);
+      expect(leftState.unreadChatCount, 0);
     });
   });
 }

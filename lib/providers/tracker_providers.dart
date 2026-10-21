@@ -204,7 +204,7 @@ class RoomState {
 
   RoomState copyWith({
     TrackingConnectionStatus? status,
-    String? roomCode,
+    String? Function()? roomCode,
     Map<String, MemberLocation>? members,
     SosAlert? Function()? activeSos,
     Map<String, SharedPoi>? pois,
@@ -216,7 +216,7 @@ class RoomState {
   }) =>
     RoomState(
       status: status ?? this.status,
-      roomCode: roomCode ?? this.roomCode,
+      roomCode: roomCode != null ? roomCode() : this.roomCode,
       members: members ?? this.members,
       activeSos: activeSos != null ? activeSos() : this.activeSos,
       pois: pois ?? this.pois,
@@ -269,19 +269,14 @@ class RoomNotifier extends Notifier<RoomState> {
     // 1. Send leave event to server
     _ws.send({'type': 'leave_room'});
     
-    // 2. Disconnect WebSocket cleanly to prevent automated ping/pong reconnects
-    _ws.disconnect();
-    _sub?.cancel();
-    _sub = null;
-
-    // 3. Reset state permanently to disconnected
-    state = const RoomState(
-      status: TrackingConnectionStatus.disconnected,
-      roomCode: null,
+    // 2. Clear room-specific session state while keeping socket connection active
+    state = state.copyWith(
+      status: _ws.isConnected ? TrackingConnectionStatus.connected : TrackingConnectionStatus.disconnected,
+      roomCode: () => null,
       members: {},
-      activeSos: null,
+      activeSos: () => null,
       pois: {},
-      activePing: null,
+      activePing: () => null,
       chatMessages: [],
       unreadChatCount: 0,
     );
@@ -457,7 +452,19 @@ class RoomNotifier extends Notifier<RoomState> {
         if (state.roomCode != null) joinRoom(state.roomCode!);
         break;
       case 'room_created':
-        state = state.copyWith(status: TrackingConnectionStatus.connected, roomCode: msg['roomCode']);
+        state = state.copyWith(status: TrackingConnectionStatus.connected, roomCode: () => msg['roomCode'] as String?);
+        break;
+      case 'room_left':
+        state = state.copyWith(
+          status: TrackingConnectionStatus.connected,
+          roomCode: () => null,
+          members: {},
+          activeSos: () => null,
+          pois: {},
+          activePing: () => null,
+          chatMessages: [],
+          unreadChatCount: 0,
+        );
         break;
       case 'room_joined':
         final roomCode = msg['roomCode'] as String?;
@@ -493,7 +500,7 @@ class RoomNotifier extends Notifier<RoomState> {
 
         state = state.copyWith(
           status: TrackingConnectionStatus.connected,
-          roomCode: roomCode,
+          roomCode: () => roomCode,
           members: initialMembers,
           pois: initialPois,
           activeSos: () => initialSos,
