@@ -126,6 +126,9 @@ class MemberLocation {
   /// True if coordinate timestamp has not been updated for more than 45 seconds
   bool get isStale => DateTime.now().difference(lastUpdated).inSeconds > 45;
 
+  /// True if member has reported non-zero GPS coordinates
+  bool get hasValidCoordinates => latitude != 0.0 || longitude != 0.0;
+
   factory MemberLocation.fromJson(Map<String, dynamic> json) {
     return MemberLocation(
       id: json['userId'] as String,

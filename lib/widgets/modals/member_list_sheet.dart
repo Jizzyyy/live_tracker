@@ -146,7 +146,9 @@ class MemberListSheet extends ConsumerWidget {
 
                       final myPos = ref.watch(locationStreamProvider).valueOrNull;
                       String? distStr;
-                      if (myPos != null) {
+                      if (!m.hasValidCoordinates) {
+                        distStr = 'Menunggu GPS...';
+                      } else if (myPos != null) {
                         final d = const Distance().as(
                           LengthUnit.Meter,
                           LatLng(myPos.latitude, myPos.longitude),

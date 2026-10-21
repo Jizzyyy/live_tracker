@@ -49,7 +49,9 @@ class ConvoyOverviewButton extends ConsumerWidget {
           }
 
           for (final m in members) {
-            allPoints.add(LatLng(m.latitude, m.longitude));
+            if (m.hasValidCoordinates) {
+              allPoints.add(LatLng(m.latitude, m.longitude));
+            }
           }
 
           if (allPoints.isEmpty) return;

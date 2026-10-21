@@ -154,5 +154,75 @@ void main() {
       expect(leftState.chatMessages, isEmpty);
       expect(leftState.unreadChatCount, 0);
     });
+
+    test('Re-hydration from snapshot flushes stale ghost members who left during disconnection', () {
+      final stateBeforeDisconnect = RoomState(
+        status: TrackingConnectionStatus.reconnecting,
+        roomCode: 'ALPHA9',
+        members: {
+          'ghost_user': MemberLocation(
+            id: 'ghost_user',
+            latitude: -6.20,
+            longitude: 106.80,
+            lastUpdated: DateTime.now(),
+          ),
+          'active_user': MemberLocation(
+            id: 'active_user',
+            latitude: -6.21,
+            longitude: 106.81,
+            lastUpdated: DateTime.now(),
+          ),
+        },
+      );
+
+      // Server snapshot only has 'active_user' because 'ghost_user' left while we were offline
+      final freshSnapshot = {
+        'members': [
+          {
+            'userId': 'active_user',
+            'lat': -6.2105,
+            'lng': 106.8105,
+            'speed': 20.0,
+            'heading': 90.0,
+            'timestamp': DateTime.now().millisecondsSinceEpoch,
+          },
+        ],
+        'pois': [],
+      };
+
+      final cleanMembers = <String, MemberLocation>{};
+      for (final m in freshSnapshot['members'] as List) {
+        final loc = MemberLocation.fromJson(m as Map<String, dynamic>);
+        cleanMembers[loc.id] = loc;
+      }
+
+      final rehydrated = stateBeforeDisconnect.copyWith(
+        status: TrackingConnectionStatus.connected,
+        roomCode: () => 'ALPHA9',
+        members: cleanMembers,
+      );
+
+      expect(rehydrated.members.containsKey('active_user'), isTrue);
+      expect(rehydrated.members.containsKey('ghost_user'), isFalse);
+      expect(rehydrated.members.length, 1);
+    });
+
+    test('MemberLocation accurately identifies valid GPS coordinates vs null island (0, 0)', () {
+      final placeholder = MemberLocation(
+        id: 'new_peer',
+        latitude: 0.0,
+        longitude: 0.0,
+        lastUpdated: DateTime.now(),
+      );
+      expect(placeholder.hasValidCoordinates, isFalse);
+
+      final located = MemberLocation(
+        id: 'new_peer',
+        latitude: -6.2000,
+        longitude: 106.8100,
+        lastUpdated: DateTime.now(),
+      );
+      expect(located.hasValidCoordinates, isTrue);
+    });
   });
 }

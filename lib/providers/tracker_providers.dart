@@ -471,9 +471,10 @@ class RoomNotifier extends Notifier<RoomState> {
         final roomCode = msg['roomCode'] as String?;
         final snapshot = msg['snapshot'] as Map<String, dynamic>?;
 
-        final initialMembers = Map<String, MemberLocation>.from(state.members);
-        final initialPois = Map<String, SharedPoi>.from(state.pois);
-        SosAlert? initialSos = state.activeSos;
+        // Fresh state from authoritative server snapshot to avoid stale ghost markers
+        final initialMembers = <String, MemberLocation>{};
+        final initialPois = <String, SharedPoi>{};
+        SosAlert? initialSos;
 
         if (snapshot != null) {
           if (snapshot['members'] is List) {
@@ -506,6 +507,20 @@ class RoomNotifier extends Notifier<RoomState> {
           pois: initialPois,
           activeSos: () => initialSos,
         );
+        break;
+      case 'member_joined':
+        final joinedUserId = msg['userId'] as String?;
+        if (joinedUserId != null && !state.members.containsKey(joinedUserId)) {
+          final placeholder = MemberLocation(
+            id: joinedUserId,
+            latitude: 0.0,
+            longitude: 0.0,
+            lastUpdated: DateTime.now(),
+          );
+          state = state.copyWith(
+            members: {...state.members, joinedUserId: placeholder},
+          );
+        }
         break;
       case 'member_position':
         try { final loc = MemberLocation.fromJson(msg); state = state.copyWith(members: {...state.members, loc.id: loc}); } catch (_) {} break;

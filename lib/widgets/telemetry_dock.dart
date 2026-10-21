@@ -312,7 +312,9 @@ class _TelemetryBottomDockState extends ConsumerState<TelemetryBottomDock> with 
                                         : 'User ${m.id}';
 
                                     String distStr = '';
-                                    if (myPos != null) {
+                                    if (!m.hasValidCoordinates) {
+                                      distStr = 'GPS...';
+                                    } else if (myPos != null) {
                                       final d = distCalc.as(
                                         LengthUnit.Meter,
                                         LatLng(myPos.latitude, myPos.longitude),

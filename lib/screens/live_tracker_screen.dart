@@ -391,7 +391,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
 
                   return RepaintBoundary(
                     child: MarkerLayer(
-                      markers: members.map((m) {
+                      markers: members.where((m) => m.hasValidCoordinates).map((m) {
                         return Marker(
                           point: LatLng(m.latitude, m.longitude),
                           width: 56,
