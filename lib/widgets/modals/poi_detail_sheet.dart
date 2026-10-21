@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,29 +7,12 @@ import '../../models/tracker_models.dart';
 import '../../providers/tracker_providers.dart';
 import '../../utils/ui_helpers.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/geo_bearing_helper.dart';
 
 class PoiDetailSheet extends ConsumerWidget {
   final SharedPoi poi;
 
   const PoiDetailSheet({super.key, required this.poi});
-
-  double _calculateBearing(LatLng start, LatLng dest) {
-    final startLat = start.latitudeInRad;
-    final startLng = start.longitudeInRad;
-    final destLat = dest.latitudeInRad;
-    final destLng = dest.longitudeInRad;
-
-    final dLng = destLng - startLng;
-    final y = sin(dLng) * cos(destLat);
-    final x = cos(startLat) * sin(destLat) - sin(startLat) * cos(destLat) * cos(dLng);
-    final initialBearing = atan2(y, x);
-    return (initialBearing * 180 / pi + 360) % 360;
-  }
-
-  String _bearingToCardinal(double bearing) {
-    const cardinals = ['U', 'TL', 'T', 'TG', 'S', 'BD', 'B', 'BL', 'U'];
-    return cardinals[((bearing + 22.5) % 360 ~/ 45)];
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -50,8 +32,8 @@ class PoiDetailSheet extends ConsumerWidget {
       final poiPos = LatLng(poi.latitude, poi.longitude);
 
       distMeters = const Distance().as(LengthUnit.Meter, myPos, poiPos);
-      bearingDeg = _calculateBearing(myPos, poiPos);
-      cardinal = _bearingToCardinal(bearingDeg);
+      bearingDeg = GeoBearingHelper.calculateBearing(myPos, poiPos);
+      cardinal = GeoBearingHelper.bearingToCardinal(bearingDeg);
 
       final speedKmh = pos.speed * 3.6;
       final effectiveSpeedMps = speedKmh > 5.0 ? pos.speed : (30.0 / 3.6); // default to 30km/h cruising pace
