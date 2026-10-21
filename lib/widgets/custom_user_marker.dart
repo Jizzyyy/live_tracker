@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/tracker_models.dart';
 import '../utils/app_theme.dart';
+import '../utils/geo_bearing_helper.dart';
 
 class CustomUserMarker extends StatefulWidget {
   final MemberLocation location;
@@ -21,11 +22,18 @@ class CustomUserMarker extends StatefulWidget {
 
 class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerProviderStateMixin {
   AnimationController? _haloCtrl;
+  double _currentTurns = 0.0;
+  bool _hasInitialTurns = false;
 
   @override
   void initState() {
     super.initState();
     _updateHalo();
+    final initialHeading = widget.location.heading;
+    if (initialHeading != null) {
+      _currentTurns = initialHeading / 360.0;
+      _hasInitialTurns = true;
+    }
   }
 
   @override
@@ -34,6 +42,20 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
     if (oldWidget.location.speedKmh != widget.location.speedKmh) {
       _updateHalo();
     }
+    if (oldWidget.location.heading != widget.location.heading && widget.location.heading != null) {
+      _updateHeading(widget.location.heading!);
+    }
+  }
+
+  void _updateHeading(double targetDeg) {
+    if (!_hasInitialTurns) {
+      _currentTurns = targetDeg / 360.0;
+      _hasInitialTurns = true;
+      return;
+    }
+    final currentDeg = _currentTurns * 360.0;
+    final delta = GeoBearingHelper.calculateShortestAngleDelta(currentDeg, targetDeg);
+    _currentTurns = (currentDeg + delta) / 360.0;
   }
 
   void _updateHalo() {
@@ -60,20 +82,22 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     final isStale = !widget.isLocalUser && widget.location.isStale;
+    final isIdle = widget.location.isIdle || isStale;
     final displayName = (widget.location.name != null && widget.location.name!.trim().isNotEmpty)
         ? widget.location.name!.trim()
         : (widget.isLocalUser ? 'YOU' : 'User ${widget.location.id}');
+    final effectiveColor = isStale ? Colors.grey : widget.color;
+    final iconData = widget.isLocalUser ? Icons.person_pin_circle_rounded : Icons.person_rounded;
 
-    Widget buildMarker(double haloIntensity) {
+    Widget buildRotatingRing(double haloIntensity) {
       return Opacity(
         opacity: isStale ? 0.45 : 1.0,
         child: CustomPaint(
           size: const Size(56, 56),
-          painter: _MarkerPainter(
-            color: isStale ? Colors.grey : widget.color,
+          painter: _RingAndChevronPainter(
+            color: effectiveColor,
             haloIntensity: isStale ? 0.0 : haloIntensity,
-            isIdle: widget.location.isIdle || isStale,
-            isLocalUser: widget.isLocalUser,
+            isIdle: isIdle,
           ),
         ),
       );
@@ -85,17 +109,30 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
         clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
+          // 1. Rotating Navigation Ring & Directional Arrow
           AnimatedRotation(
-            turns: (widget.location.heading ?? 0) / 360.0,
+            turns: _currentTurns,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
             child: _haloCtrl != null
                 ? AnimatedBuilder(
                     animation: _haloCtrl!,
-                    builder: (context, _) => buildMarker(_haloCtrl!.value),
+                    builder: (context, _) => buildRotatingRing(_haloCtrl!.value),
                   )
-                : buildMarker(0.0),
+                : buildRotatingRing(0.0),
           ),
+
+          // 2. Center Avatar Icon (Stays upright regardless of vehicle heading)
+          Opacity(
+            opacity: isStale ? 0.45 : 1.0,
+            child: Icon(
+              iconData,
+              size: 22,
+              color: isIdle ? Colors.white.withValues(alpha: 0.5) : effectiveColor,
+            ),
+          ),
+
+          // 3. Upright Callsign Badge Chip
           Positioned(
             top: -6,
             child: Container(
@@ -130,17 +167,15 @@ class _CustomUserMarkerState extends State<CustomUserMarker> with SingleTickerPr
   }
 }
 
-class _MarkerPainter extends CustomPainter {
+class _RingAndChevronPainter extends CustomPainter {
   final Color color;
   final double haloIntensity;
   final bool isIdle;
-  final bool isLocalUser;
 
-  _MarkerPainter({
+  _RingAndChevronPainter({
     required this.color,
     required this.haloIntensity,
     required this.isIdle,
-    required this.isLocalUser,
   });
 
   @override
@@ -150,7 +185,7 @@ class _MarkerPainter extends CustomPainter {
     final center = Offset(cx, cy);
     final coreRadius = size.width * 0.35;
 
-    // 1. Glowing Halo Effect (when moving)
+    // 1. Glowing Halo Effect (when moving at speed)
     if (haloIntensity > 0) {
       final haloRadius = coreRadius + (size.width * 0.15 * haloIntensity);
       canvas.drawCircle(
@@ -171,7 +206,7 @@ class _MarkerPainter extends CustomPainter {
         ..style = PaintingStyle.fill,
     );
 
-    // 3. Neon Border
+    // 3. Neon Border Ring
     canvas.drawCircle(
       center,
       coreRadius,
@@ -181,11 +216,14 @@ class _MarkerPainter extends CustomPainter {
         ..strokeWidth = 2.0,
     );
 
-    // 4. Directional Chevron (Arrow pointing North relative to rotation)
+    // 4. Directional Navigation Arrowhead (Prominent sharp chevron pointing North)
+    final tipY = cy - coreRadius - 9;
+    final baseY = cy - coreRadius + 2;
     final path = Path()
-      ..moveTo(cx, cy - coreRadius - 6)
-      ..lineTo(cx + 6, cy - coreRadius + 2)
-      ..lineTo(cx - 6, cy - coreRadius + 2)
+      ..moveTo(cx, tipY)
+      ..lineTo(cx + 7, baseY)
+      ..lineTo(cx, baseY - 3) // Aerodynamic inner notch like Google Maps
+      ..lineTo(cx - 7, baseY)
       ..close();
       
     canvas.drawPath(
@@ -193,33 +231,13 @@ class _MarkerPainter extends CustomPainter {
       Paint()
         ..color = color
         ..style = PaintingStyle.fill
-        ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 2),
-    );
-
-    // 5. Draw Person Icon (Replacing initial letters)
-    final iconData = isLocalUser ? Icons.person_pin_circle_rounded : Icons.person_rounded;
-    final textPainter = TextPainter(textDirection: TextDirection.ltr);
-    
-    textPainter.text = TextSpan(
-      text: String.fromCharCode(iconData.codePoint),
-      style: TextStyle(
-        color: isIdle ? Colors.white.withValues(alpha: 0.5) : color,
-        fontSize: 22,
-        fontFamily: iconData.fontFamily,
-        package: iconData.fontPackage,
-      ),
-    );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      Offset(cx - textPainter.width / 2, cy - textPainter.height / 2),
+        ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 1.5),
     );
   }
 
   @override
-  bool shouldRepaint(_MarkerPainter old) => 
+  bool shouldRepaint(_RingAndChevronPainter old) => 
     old.color != color || 
     old.haloIntensity != haloIntensity || 
-    old.isIdle != isIdle ||
-    old.isLocalUser != isLocalUser;
+    old.isIdle != isIdle;
 }
