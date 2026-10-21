@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/trip_history_model.dart';
+import '../utils/geo_bearing_helper.dart';
 
 class RoutePlaybackController extends ChangeNotifier {
   final CompletedTrip trip;
@@ -8,6 +9,7 @@ class RoutePlaybackController extends ChangeNotifier {
   double _playbackSpeed = 1.0; // 1x, 2x, 5x, 10x
   int _currentIndex = 0;
   Timer? _ticker;
+  double? _lastValidHeading;
 
   RoutePlaybackController({required this.trip});
 
@@ -24,18 +26,48 @@ class RoutePlaybackController extends ChangeNotifier {
           : null;
 
   double? get currentHeading {
-    if (trip.routePoints.length < 2) return null;
-    final idx = _currentIndex.clamp(0, trip.routePoints.length - 2);
-    final p1 = trip.routePoints[idx];
-    final p2 = trip.routePoints[idx + 1];
-    final dLat = p2.latitude - p1.latitude;
-    final dLng = p2.longitude - p1.longitude;
-    if (dLat == 0 && dLng == 0) return 0.0;
-    if (dLng == 0) return dLat > 0 ? 0.0 : 180.0;
-    final y = dLng;
-    final x = dLat;
-    final angle = ((90.0 - (x != 0 ? (y / x) : 0.0)) % 360.0).toDouble();
-    return angle;
+    final points = trip.routePoints;
+    if (points.length < 2) return null;
+
+    final currIdx = _currentIndex.clamp(0, points.length - 1);
+    final pCurrent = points[currIdx];
+
+    // 1. Look-ahead forward: find next distinct point (distance >= ~1.5m)
+    for (int j = currIdx + 1; j < points.length; j++) {
+      final pNext = points[j];
+      final dLat = (pNext.latitude - pCurrent.latitude).abs();
+      final dLng = (pNext.longitude - pCurrent.longitude).abs();
+      // ~0.000015 deg roughly equals ~1.6m on Earth
+      if (dLat > 0.000015 || dLng > 0.000015) {
+        final heading = GeoBearingHelper.calculateBearingRaw(
+          pCurrent.latitude,
+          pCurrent.longitude,
+          pNext.latitude,
+          pNext.longitude,
+        );
+        _lastValidHeading = heading;
+        return heading;
+      }
+    }
+
+    // 2. Near route finish: look backward to find approach vector
+    for (int j = currIdx - 1; j >= 0; j--) {
+      final pPrev = points[j];
+      final dLat = (pCurrent.latitude - pPrev.latitude).abs();
+      final dLng = (pCurrent.longitude - pPrev.longitude).abs();
+      if (dLat > 0.000015 || dLng > 0.000015) {
+        final heading = GeoBearingHelper.calculateBearingRaw(
+          pPrev.latitude,
+          pPrev.longitude,
+          pCurrent.latitude,
+          pCurrent.longitude,
+        );
+        _lastValidHeading = heading;
+        return heading;
+      }
+    }
+
+    return _lastValidHeading ?? 0.0;
   }
 
   void play() {

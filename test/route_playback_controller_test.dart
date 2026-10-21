@@ -98,10 +98,76 @@ void main() {
 
     test('Heading angle is computed accurately along route direction', () {
       final controller = RoutePlaybackController(trip: testTrip);
+      // testTrip moves South (latitude -6.2000 to -6.2040)
       final heading = controller.currentHeading;
       expect(heading, isNotNull);
-      expect(heading, isA<double>());
+      expect(heading!, closeTo(180.0, 1.0));
       controller.dispose();
+    });
+
+    test('Heading angle computes East, West and handles stationary clusters', () {
+      final now = DateTime.now();
+      // Eastbound trip (longitude increases)
+      final eastTrip = CompletedTrip(
+        id: 'east_trip',
+        startTime: now,
+        endTime: now.add(const Duration(seconds: 4)),
+        durationSeconds: 4,
+        distanceMeters: 400.0,
+        avgSpeedKmh: 40.0,
+        maxSpeedKmh: 50.0,
+        routePoints: [
+          RoutePoint(latitude: -6.2000, longitude: 106.8000, timestamp: 1000, speed: 30.0),
+          RoutePoint(latitude: -6.2000, longitude: 106.8010, timestamp: 2000, speed: 30.0),
+          RoutePoint(latitude: -6.2000, longitude: 106.8020, timestamp: 3000, speed: 30.0),
+        ],
+      );
+      final cEast = RoutePlaybackController(trip: eastTrip);
+      expect(cEast.currentHeading, closeTo(90.0, 1.0));
+      cEast.dispose();
+
+      // Westbound trip (longitude decreases)
+      final westTrip = CompletedTrip(
+        id: 'west_trip',
+        startTime: now,
+        endTime: now.add(const Duration(seconds: 4)),
+        durationSeconds: 4,
+        distanceMeters: 400.0,
+        avgSpeedKmh: 40.0,
+        maxSpeedKmh: 50.0,
+        routePoints: [
+          RoutePoint(latitude: -6.2000, longitude: 106.8020, timestamp: 1000, speed: 30.0),
+          RoutePoint(latitude: -6.2000, longitude: 106.8010, timestamp: 2000, speed: 30.0),
+          RoutePoint(latitude: -6.2000, longitude: 106.8000, timestamp: 3000, speed: 30.0),
+        ],
+      );
+      final cWest = RoutePlaybackController(trip: westTrip);
+      expect(cWest.currentHeading, closeTo(270.0, 1.0));
+      cWest.dispose();
+
+      // Trip with stationary red-light stop in the middle
+      final stopTrip = CompletedTrip(
+        id: 'stop_trip',
+        startTime: now,
+        endTime: now.add(const Duration(seconds: 5)),
+        durationSeconds: 5,
+        distanceMeters: 300.0,
+        avgSpeedKmh: 20.0,
+        maxSpeedKmh: 35.0,
+        routePoints: [
+          RoutePoint(latitude: -6.2000, longitude: 106.8000, timestamp: 1000, speed: 30.0),
+          // Stopped at intersection (same coordinates)
+          RoutePoint(latitude: -6.2010, longitude: 106.8000, timestamp: 2000, speed: 0.0),
+          RoutePoint(latitude: -6.2010, longitude: 106.8000, timestamp: 3000, speed: 0.0),
+          // Moving again South
+          RoutePoint(latitude: -6.2020, longitude: 106.8000, timestamp: 4000, speed: 30.0),
+        ],
+      );
+      final cStop = RoutePlaybackController(trip: stopTrip);
+      cStop.seekToIndex(1); // At stopped point
+      // Look-ahead should still find next point moving South (180°) instead of snapping to 0.0!
+      expect(cStop.currentHeading, closeTo(180.0, 1.0));
+      cStop.dispose();
     });
   });
 }
