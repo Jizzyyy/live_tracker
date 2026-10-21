@@ -407,7 +407,7 @@ class RoomNotifier extends Notifier<RoomState> {
   }
 
   /// Throttled WS Broadcast (1s normal, 5s in low-bandwidth mode) to reduce battery/bandwidth
-  void sendPosition(Position pos, {int? batteryPercent}) {
+  void sendPosition(Position pos, {int? batteryPercent, double? heading}) {
     if (state.status != TrackingConnectionStatus.connected) return;
     final now = DateTime.now().millisecondsSinceEpoch;
     final settings = ref.read(appSettingsProvider);
@@ -416,13 +416,14 @@ class RoomNotifier extends Notifier<RoomState> {
     _lastWsSendMs = now;
 
     final userName = settings.userName.trim();
+    final effectiveHeading = heading ?? (pos.heading > 0.0 ? pos.heading : null);
 
     _ws.send({
       'type': 'position_update',
       'lat': pos.latitude,
       'lng': pos.longitude,
       'speed': pos.speed * 3.6, // send km/h
-      'heading': pos.heading,
+      'heading': effectiveHeading,
       'battery': batteryPercent,
       'name': userName.isNotEmpty ? userName : null,
       'timestamp': pos.timestamp.millisecondsSinceEpoch,

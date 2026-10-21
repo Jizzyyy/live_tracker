@@ -18,6 +18,7 @@ import '../utils/ui_helpers.dart';
 import '../utils/sound_manager.dart';
 import '../utils/custom_snackbar.dart';
 import '../utils/app_theme.dart';
+import '../utils/geo_bearing_helper.dart';
 import '../src/core/services/battery_service.dart';
 import '../widgets/modals/add_poi_sheet.dart';
 import '../widgets/modals/poi_detail_sheet.dart';
@@ -39,6 +40,8 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
   bool _isMapReady = false;
   int _lastBatteryCheckMs = 0;
   int? _cachedBatteryLevel;
+  LatLng? _lastGpsPos;
+  double _currentHeading = 0.0;
 
   @override
   void initState() {
@@ -122,9 +125,26 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
         });
       }
 
+      final currentPos = LatLng(pos.latitude, pos.longitude);
+      if (_lastGpsPos != null) {
+        final d = const Distance().as(LengthUnit.Meter, _lastGpsPos!, currentPos);
+        // Compute Course-Over-Ground (COG) bearing if movement >= 1.5m (filters stationary GPS jitter)
+        if (d >= 1.5) {
+          _currentHeading = GeoBearingHelper.calculateBearing(_lastGpsPos!, currentPos);
+          _lastGpsPos = currentPos;
+        } else if (pos.heading > 0.0 && (pos.speed * 3.6) > 2.0) {
+          _currentHeading = pos.heading;
+        }
+        // When stationary (< 1.5m), _currentHeading is retained so arrow does NOT snap to North!
+      } else {
+        _lastGpsPos = currentPos;
+        if (pos.heading > 0.0) _currentHeading = pos.heading;
+      }
+
       ref.read(roomProvider.notifier).sendPosition(
         pos,
         batteryPercent: _cachedBatteryLevel ?? BatteryService.cachedLevel,
+        heading: _currentHeading,
       );
 
       final isAutoFollow = ref.read(autoFollowProvider);
@@ -376,6 +396,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                           point: LatLng(m.latitude, m.longitude),
                           width: 56,
                           height: 56,
+                          rotate: true,
                           child: GestureDetector(
                             onTap: () {
                               HapticFeedback.selectionClick();
@@ -484,6 +505,7 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                           point: LatLng(pos.latitude, pos.longitude),
                           width: 56,
                           height: 56,
+                          rotate: true,
                           child: CustomUserMarker(
                             isLocalUser: true,
                             location: MemberLocation(
@@ -491,8 +513,9 @@ class _LiveTrackerScreenState extends ConsumerState<LiveTrackerScreen>
                               latitude: pos.latitude,
                               longitude: pos.longitude,
                               lastUpdated: pos.timestamp,
-                              heading: pos.heading,
+                              heading: _currentHeading,
                               speedKmh: pos.speed * 3.6,
+                              isIdle: (pos.speed * 3.6) < 1.0,
                             ),
                             color: AppTheme.primaryCyan,
                           ),
